@@ -1,0 +1,32 @@
+version: 2.1
+
+# Default actions to perform on each Emacs version
+default: &default-steps
+  steps:
+    - checkout
+    - run: apt-get update && apt-get install make -y
+    - run: make version
+    # - run: make lint
+    - run: make test
+
+# Enumerated list of Emacs versions
+jobs:
+  test-emacs-26:
+    docker:
+      - image: silex/emacs:26.2-dev
+        entrypoint: bash
+    <<: *default-steps
+
+  test-emacs-master:
+    docker:
+      - image: silex/emacs:master-dev
+        entrypoint: bash
+    <<: *default-steps
+
+# Executing in parallel
+workflows:
+  version: 2
+  ci-test-matrix:
+    jobs:
+      - test-emacs-26
+      - test-emacs-master
