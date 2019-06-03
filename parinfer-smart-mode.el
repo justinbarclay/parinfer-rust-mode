@@ -32,7 +32,7 @@
 (defvar-local parinfer-smart--previous-change nil "The last set of changes recorded in the buffer")
 (defvar-local parinfer-smart--current-changes nil "A list of changes made in between running of parinfer-smart--execute")
 (defvar-local parinfer-smart--test-p nil "Are we in test mode?")
-
+(defvar-local parinfer-smart--disable nil "Temporarily disable parinfer")
 ;; Helper functions
 (defun parinfer-smart--get-cursor-x ()
   (- (point) (point-at-bol)))
@@ -64,12 +64,14 @@
 
 (defun parinfer-smart--track-changes (region-start region-end length)
   "Track changes to the buffer."
-  (let* ((old-buffer-text (when (local-variable-if-set-p 'parinfer-smart--previous-change)
-                            (gethash 'text parinfer-smart--previous-change)))
-         (current-change (parinfer-smart--get-line-changes region-start region-end length old-buffer-text)))
-    (if parinfer-smart--current-changes
-        (add-to-list 'parinfer-smart--current-changes current-change)
-      (setq-local parinfer-smart--current-changes (list current-change)))))
+  (if parinfer-smart--disable
+      nil
+      (let* ((old-buffer-text (when (local-variable-if-set-p 'parinfer-smart--previous-change)
+                                (gethash 'text parinfer-smart--previous-change)))
+             (current-change (parinfer-smart--get-line-changes region-start region-end length old-buffer-text)))
+        (if parinfer-smart--current-changes
+            (add-to-list 'parinfer-smart--current-changes current-change)
+          (setq-local parinfer-smart--current-changes (list current-change))))))
 
 (defun parinfer-smart--capture-changes (&optional old-options changes)
   "Capture the current change information needed by Parinfer."
@@ -130,41 +132,43 @@
 (defun parinfer-smart--execute (&rest _args)
   "Run parinfer in the current buffer"
   (interactive)
-  (let* ((change-list (if parinfer-smart--current-changes
-                          (puthash
-                           'changes
-                           parinfer-smart--current-changes
-                           (make-hash-table))
-                        ()))
-         (old-options (when (and (local-variable-if-set-p 'parinfer-smart--previous-change)
-                                 parinfer-smart--previous-change)
-                        (gethash 'options parinfer-smart--previous-change)))
-         (current-change (progn
-                           (parinfer-smart--capture-changes old-options
-                                                            change-list)))
-         (response (json-read-from-string
-                    (parinfer-rust-execute
-                     (json-encode-hash-table
-                      current-change))))
-         (replacement-string (cdr (assoc 'text response)))
-         (error-p (cdr (assoc 'error response))))
-    (setq-local inhibit-modification-hooks 't)
-    (when (and (local-variable-if-set-p 'parinfer-smart--debug-p)
-               parinfer-smart--debug-p)
-      (parinfer-smart--debug-to-file current-change response))
-    (if error-p
-        (message (format "%s"
-                         (cdr (assoc 'message error-p))))
-      (save-mark-and-excursion ;; This way we automatically get our point saved
-        (let ((current (current-buffer))
-              (new-buf (get-buffer-create "*parinfer*")))
-          (switch-to-buffer new-buf)
-          (insert replacement-string)
-          (switch-to-buffer current)
-          (replace-buffer-contents new-buf)
-          (kill-buffer new-buf))))
-    (with-no-warnings ;; TODO: Fix this issue
-      (setq-local inhibit-modification-hooks nil))))
+  (if parinfer-smart--disable
+      nil
+      (let* ((change-list (if parinfer-smart--current-changes
+                              (puthash
+                               'changes
+                               parinfer-smart--current-changes
+                               (make-hash-table))
+                            ()))
+             (old-options (when (and (local-variable-if-set-p 'parinfer-smart--previous-change)
+                                     parinfer-smart--previous-change)
+                            (gethash 'options parinfer-smart--previous-change)))
+             (current-change (progn
+                               (parinfer-smart--capture-changes old-options
+                                                                change-list)))
+             (response (json-read-from-string
+                        (parinfer-rust-execute
+                         (json-encode-hash-table
+                          current-change))))
+             (replacement-string (cdr (assoc 'text response)))
+             (error-p (cdr (assoc 'error response))))
+        (setq-local inhibit-modification-hooks 't)
+        (when (and (local-variable-if-set-p 'parinfer-smart--debug-p)
+                   parinfer-smart--debug-p)
+          (parinfer-smart--debug-to-file current-change response))
+        (if error-p
+            (message (format "%s"
+                             (cdr (assoc 'message error-p))))
+          (save-mark-and-excursion ;; This way we automatically get our point saved
+            (let ((current (current-buffer))
+                  (new-buf (get-buffer-create "*parinfer*")))
+              (switch-to-buffer new-buf)
+              (insert replacement-string)
+              (switch-to-buffer current)
+              (replace-buffer-contents new-buf)
+              (kill-buffer new-buf))))
+        (with-no-warnings ;; TODO: Fix this issue
+          (setq-local inhibit-modification-hooks nil)))))
 
 (defun parinfer-smart-mode-enable ()
   "Enable Parinfer"
@@ -185,13 +189,23 @@
   (if parinfer-enabled-p
       (setq parinfer-smart--debug-p nil)
     (setq parinfer-smart--debug-p t)))
+
+(defun parinfer-smart-toggle-disable ()
+  (interactive)
+  (if parinfer-smart--disable
+      (progn
+        (message "Parinfer enabled")
+        (setq-local parinfer-smart--disable nil))
+    (progn
+      (message "Parinfer disabled")
+      (setq-local parinfer-smart--disable 't))))
 ;;;###autoload
 
 (defvar parinfer-smart-mode-map
   (let ((m (make-sparse-keymap)))
     (define-key m (kbd "C-c s") 'parinfer-smart-switch-mode)
-    (define-key m (kbd "C-c d") 'parinfer-smart-mode)
-    (define-key m (kbd "DEL") 'paredit-backward-delete) ; We need to not hungry delete spaces
+    (define-key m (kbd "C-c d") 'parinfer-smart-toggle-disable)
+    ;; (define-key m (kbd "DEL") 'paredit-backward-delete) ; We need to not hungry delete spaces
     m)
   "Keymap for `parinfer-smart-mode'.")
 
