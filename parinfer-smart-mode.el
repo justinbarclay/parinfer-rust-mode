@@ -11,6 +11,7 @@
  ((eq system-type 'gnu/linux) (setq parinfer-smart--lib-name "parinfer-rust-linux.so")))
 
 (require 'parinfer-rust parinfer-smart--lib-name)
+(require 'subr-x)
 (require 'cl-lib)
 (require 'json)
 
@@ -20,8 +21,8 @@
 ;;  1.1 Find an efficient way to build up change sets of buffer (done)
 ;; 2. Build parinfer object on each change of the buffer (done)
 ;;   2.2 Find the line a change happened on (done)
-;; 3. Handle errors returned from library (not done)
-;;  3.1 Test handling of errors from library
+;; 3. Handle errors returned from library (done)
+;;  3.1 Test handling of errors from library (ignore, error messages are passed along to message buffer)
 ;; 4. Update buffer with new changes proposed (done)
 ;;  4.1 test updating of buffer (done)
 
@@ -61,6 +62,14 @@
                                                   (+ region-start length)) ;; We don't use region-end because region-end represents the end of change of the new text
                        ""))                                            ;; so instead we calculate from the start of both strings to the length of changes made
      (cons "newText" (buffer-substring-no-properties region-start region-end)))))
+
+(defun parinfer-smart--reposition-cursor (point-x line-number)
+  (let* ((new-line (- line-number (parinfer-smart--get-cursor-line)))
+         (new-x (- point-x (parinfer-smart--get-cursor-x))))
+    (when (not (= new-line 0))
+      (forward-line new-line))
+    (when (not (= new-x 0))
+      (forward-char new-x))))
 
 (defun parinfer-smart--track-changes (region-start region-end length)
   "Track changes to the buffer."
@@ -159,14 +168,18 @@
         (if error-p
             (message (format "%s"
                              (cdr (assoc 'message error-p))))
-          (save-mark-and-excursion ;; This way we automatically get our point saved
-            (let ((current (current-buffer))
-                  (new-buf (get-buffer-create "*parinfer*")))
-              (switch-to-buffer new-buf)
-              (insert replacement-string)
-              (switch-to-buffer current)
-              (replace-buffer-contents new-buf)
-              (kill-buffer new-buf))))
+          (progn
+            (save-mark-and-excursion ;; This way we automatically get our point saved
+              (let ((current (current-buffer))
+                    (new-buf (get-buffer-create "*parinfer*")))
+                (switch-to-buffer new-buf)
+                (insert replacement-string)
+                (switch-to-buffer current)
+                (replace-buffer-contents new-buf)
+                (kill-buffer new-buf)))
+            (when-let ((new-x (cdr (assoc 'cursorX response)))
+                       (new-line (cdr (assoc 'cursorLine response))))
+                (parinfer-smart--reposition-cursor new-x new-line))))
         (with-no-warnings ;; TODO: Fix this issue
           (setq-local inhibit-modification-hooks nil)))))
 
@@ -203,10 +216,10 @@
 
 (defvar parinfer-smart-mode-map
   (let ((m (make-sparse-keymap)))
-    (define-key m (kbd "C-c s") 'parinfer-smart-switch-mode)
-    (define-key m (kbd "C-c d") 'parinfer-smart-toggle-disable)
-    ;; (define-key m (kbd "DEL") 'paredit-backward-delete) ; We need to not hungry delete spaces
-    m)
+      (define-key m (kbd "C-c s") 'parinfer-smart-switch-mode)
+      (define-key m (kbd "C-c d") 'parinfer-smart-toggle-disable)
+      (define-key m (kbd "DEL") 'paredit-backward-delete) ; We need to not hungry delete spaces
+      m)
   "Keymap for `parinfer-smart-mode'.")
 
 (define-minor-mode parinfer-smart-mode
