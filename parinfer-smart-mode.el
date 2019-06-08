@@ -15,17 +15,6 @@
 (require 'cl-lib)
 (require 'json)
 
-;; Todo:
-;; 0. Learn what vars need to be set and learn about var locals (done)
-;; 1. Implement functions that fully build up a parinfer object (done)
-;;  1.1 Find an efficient way to build up change sets of buffer (done)
-;; 2. Build parinfer object on each change of the buffer (done)
-;;   2.2 Find the line a change happened on (done)
-;; 3. Handle errors returned from library (done)
-;;  3.1 Test handling of errors from library (ignore, error messages are passed along to message buffer)
-;; 4. Update buffer with new changes proposed (done)
-;;  4.1 test updating of buffer (done)
-
 ;; Local Vars
 (defvar-local parinfer-enabled-p nil "Tracks whether parinfer has been enabled")
 (defvar-local parinfer-smart--debug-p nil "Whether the request response to the rust plugin or not")
