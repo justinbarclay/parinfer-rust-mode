@@ -66,12 +66,12 @@
   "Track changes to the buffer."
   (if parinfer-smart--disable
       nil
-      (let* ((old-buffer-text (when (local-variable-if-set-p 'parinfer-smart--previous-change)
-                                (gethash 'text parinfer-smart--previous-change)))
-             (current-change (parinfer-smart--get-line-changes region-start region-end length old-buffer-text)))
-        (if parinfer-smart--current-changes
-            (add-to-list 'parinfer-smart--current-changes current-change)
-          (setq-local parinfer-smart--current-changes (list current-change))))))
+    (let* ((old-buffer-text (when (local-variable-if-set-p 'parinfer-smart--previous-change)
+                              (gethash 'text parinfer-smart--previous-change)))
+           (current-change (parinfer-smart--get-line-changes region-start region-end length old-buffer-text)))
+      (if parinfer-smart--current-changes
+          (add-to-list 'parinfer-smart--current-changes current-change)
+        (setq-local parinfer-smart--current-changes (list current-change))))))
 
 (defun parinfer-smart--capture-changes (&optional old-options changes)
   "Capture the current change information needed by Parinfer."
@@ -87,10 +87,10 @@
                (puthash 'cursorLine (parinfer-smart--get-cursor-line)
                         options-table)
                (puthash 'prevCursorX (when old-options
-                                         (gethash 'cursorX old-options))
+                                       (gethash 'cursorX old-options))
                         options-table)
                (puthash 'prevCursorLine (when old-options
-                                            (gethash 'cursorLine old-options))
+                                          (gethash 'cursorLine old-options))
                         options-table)
                (puthash 'selectionStartLine nil
                         options-table)
@@ -132,7 +132,7 @@
 (defun parinfer-smart--execute (&rest _args)
   "Run parinfer in the current buffer"
   (interactive)
-  (if (or parinfer-smart--disable
+  (if (or parinfer-smart--disable ;; Don't run Execute if disabled by user or right after an undo
           parinfer-smart--undo-p)
       nil
     (let* ((change-list (if parinfer-smart--current-changes
@@ -160,7 +160,7 @@
       (if error-p
           (message (format "%s"
                            (cdr (assoc 'message error-p))))
-        (if (not (string-equal (gethash 'text current-change) replacement-string)) ;; this is a hack we should see if we can get this information from the plugin
+        (if (not (string-equal (gethash 'text current-change) replacement-string)) ;; This stops Emacs from flickering when scrolling
             (progn
               (save-mark-and-excursion ;; This way we automatically get our point saved
                 (let ((current (current-buffer))
@@ -182,6 +182,10 @@
   (message "undoing")
   (setq-local parinfer-smart--undo-p 't))
 
+(defun parinfer-smart-toggle-debug ()
+  (if parinfer-enabled-p
+      (setq parinfer-smart--debug-p nil)
+    (setq parinfer-smart--debug-p t)))
 
 (defun parinfer-smart-mode-enable ()
   "Enable Parinfer"
@@ -204,28 +208,21 @@
   (remove-hook 'post-command-hook 'parinfer-smart--execute t)
   (setq-local parinfer-enabled-p nil))
 
-(defun parinfer-smart-toggle-debug ()
-  (if parinfer-enabled-p
-      (setq parinfer-smart--debug-p nil)
-    (setq parinfer-smart--debug-p t)))
-
 (defun parinfer-smart-toggle-disable ()
+  "Temporarily, stop parinfer from tracking what you're doing or from executing parinfer-smart--execute"
   (interactive)
   (if parinfer-smart--disable
-      (progn
-        (message "Parinfer enabled")
-        (setq-local parinfer-smart--disable nil))
-    (progn
-      (message "Parinfer disabled")
-      (setq-local parinfer-smart--disable 't))))
+      (setq-local parinfer-smart--disable nil)
+    (setq-local parinfer-smart--disable 't)))
+
 ;;;###autoload
 
 (defvar parinfer-smart-mode-map
   (let ((m (make-sparse-keymap)))
-      (define-key m (kbd "C-c s") 'parinfer-smart-switch-mode)
-      (define-key m (kbd "C-c d") 'parinfer-smart-toggle-disable)
-      (define-key m (kbd "DEL") 'paredit-backward-delete) ; We need to not hungry delete spaces
-      m)
+    (define-key m (kbd "C-c s") 'parinfer-smart-switch-mode)
+    (define-key m (kbd "C-c d") 'parinfer-smart-toggle-disable)
+    (define-key m (kbd "DEL") 'paredit-backward-delete) ; We need to not hungry delete spaces
+    m)
   "Keymap for `parinfer-smart-mode'.")
 
 (define-minor-mode parinfer-smart-mode
