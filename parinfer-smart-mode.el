@@ -23,6 +23,8 @@
 (defvar-local parinfer-smart--current-changes nil "A list of changes made in between running of parinfer-smart--execute")
 (defvar-local parinfer-smart--test-p nil "Are we in test mode?")
 (defvar-local parinfer-smart--disable nil "Temporarily disable parinfer")
+(defvar-local parinfer-smart--undo-p nil "Tracks if the user has recently run the undo command")
+
 ;; Helper functions
 (defun parinfer-smart--get-cursor-x ()
   (- (point) (point-at-bol)))
@@ -130,47 +132,56 @@
 (defun parinfer-smart--execute (&rest _args)
   "Run parinfer in the current buffer"
   (interactive)
-  (if parinfer-smart--disable
+  (if (or parinfer-smart--disable
+          parinfer-smart--undo-p)
       nil
-      (let* ((change-list (if parinfer-smart--current-changes
-                              (puthash
-                               'changes
-                               parinfer-smart--current-changes
-                               (make-hash-table))
-                            ()))
-             (old-options (when (and (local-variable-if-set-p 'parinfer-smart--previous-change)
-                                     parinfer-smart--previous-change)
-                            (gethash 'options parinfer-smart--previous-change)))
-             (current-change (progn
-                               (parinfer-smart--capture-changes old-options
-                                                                change-list)))
-             (response (json-read-from-string
-                        (parinfer-rust-execute
-                         (json-encode-hash-table
-                          current-change))))
-             (replacement-string (cdr (assoc 'text response)))
-             (error-p (cdr (assoc 'error response))))
-        (setq-local inhibit-modification-hooks 't)
-        (when (and (local-variable-if-set-p 'parinfer-smart--debug-p)
-                   parinfer-smart--debug-p)
-          (parinfer-smart--debug-to-file current-change response))
-        (if error-p
-            (message (format "%s"
-                             (cdr (assoc 'message error-p))))
-          (progn
-            (save-mark-and-excursion ;; This way we automatically get our point saved
-              (let ((current (current-buffer))
-                    (new-buf (get-buffer-create "*parinfer*")))
-                (switch-to-buffer new-buf)
-                (insert replacement-string)
-                (switch-to-buffer current)
-                (replace-buffer-contents new-buf)
-                (kill-buffer new-buf)))
-            (when-let ((new-x (cdr (assoc 'cursorX response)))
-                       (new-line (cdr (assoc 'cursorLine response))))
-                (parinfer-smart--reposition-cursor new-x new-line))))
-        (with-no-warnings ;; TODO: Fix this issue
-          (setq-local inhibit-modification-hooks nil)))))
+    (let* ((change-list (if parinfer-smart--current-changes
+                            (puthash
+                             'changes
+                             parinfer-smart--current-changes
+                             (make-hash-table))
+                          ()))
+           (old-options (when (and (local-variable-if-set-p 'parinfer-smart--previous-change)
+                                   parinfer-smart--previous-change)
+                          (gethash 'options parinfer-smart--previous-change)))
+           (current-change (progn
+                             (parinfer-smart--capture-changes old-options
+                                                              change-list)))
+           (response (json-read-from-string
+                      (parinfer-rust-execute
+                       (json-encode-hash-table
+                        current-change))))
+           (replacement-string (cdr (assoc 'text response)))
+           (error-p (cdr (assoc 'error response))))
+      (setq-local inhibit-modification-hooks 't)
+      (when (and (local-variable-if-set-p 'parinfer-smart--debug-p)
+                 parinfer-smart--debug-p)
+        (parinfer-smart--debug-to-file current-change response))
+      (if error-p
+          (message (format "%s"
+                           (cdr (assoc 'message error-p))))
+        (if (not (string-equal (gethash 'text current-change) replacement-string)) ;; this is a hack we should see if we can get this information from the plugin
+            (progn
+              (save-mark-and-excursion ;; This way we automatically get our point saved
+                (let ((current (current-buffer))
+                      (new-buf (get-buffer-create "*parinfer*")))
+                  (switch-to-buffer new-buf)
+                  (insert replacement-string)
+                  (switch-to-buffer current)
+                  (replace-buffer-contents new-buf)
+                  (kill-buffer new-buf)))
+              (when-let ((new-x (cdr (assoc 'cursorX response)))
+                         (new-line (cdr (assoc 'cursorLine response))))
+                (parinfer-smart--reposition-cursor new-x new-line)))))
+      (if parinfer-smart--undo-p (setq-local parinfer-smart--undo-p nil))
+      (with-no-warnings ;; TODO: Fix this issue
+        (setq-local inhibit-modification-hooks nil)))))
+
+(defun parinfer-smart--track-undo (&rest _)
+  "Used to track when an undo action is performed, so we can temporarily disable parinfer"
+  (message "undoing")
+  (setq-local parinfer-smart--undo-p 't))
+
 
 (defun parinfer-smart-mode-enable ()
   "Enable Parinfer"
@@ -178,11 +189,17 @@
   (setq-local parinfer-enabled-p 't)
   (setq-local parinfer-smart--current-changes nil)
   (setq-local parinfer-smart--mode "paren")
+  (advice-add 'undo :before 'parinfer-smart--track-undo)
+  (when (fboundp 'undo-tree-undo)
+    (advice-add 'undo-tree-undo :before 'parinfer-smart--track-undo))
   (add-hook 'after-change-functions 'parinfer-smart--track-changes t t)
   (add-hook 'post-command-hook 'parinfer-smart--execute t t))
 
 (defun parinfer-smart-mode-disable ()
   "Disable Parinfer"
+  (advice-remove 'undo 'parinfer-smart--track-undo)
+  (when (fboundp 'undo-tree-undo)
+    (advice-add 'undo-tree-undo :before 'parinfer-smart--track-undo))
   (remove-hook 'after-change-functions 'parinfer-smart--track-changes t)
   (remove-hook 'post-command-hook 'parinfer-smart--execute t)
   (setq-local parinfer-enabled-p nil))
