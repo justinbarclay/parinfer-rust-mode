@@ -134,7 +134,7 @@
   (interactive)
   (if (or parinfer-smart--disable ;; Don't run Execute if disabled by user or right after an undo
           parinfer-smart--undo-p)
-      nil
+      (setq-local parinfer-smart--undo-p nil)
     (let* ((change-list (if parinfer-smart--current-changes
                             (puthash
                              'changes
