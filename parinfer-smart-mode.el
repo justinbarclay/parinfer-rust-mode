@@ -221,7 +221,6 @@
   (let ((m (make-sparse-keymap)))
     (define-key m (kbd "C-c s") 'parinfer-smart-switch-mode)
     (define-key m (kbd "C-c d") 'parinfer-smart-toggle-disable)
-    (define-key m (kbd "DEL") 'paredit-backward-delete) ; We need to not hungry delete spaces
     m)
   "Keymap for `parinfer-smart-mode'.")
 
