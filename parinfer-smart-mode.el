@@ -70,7 +70,7 @@
                               (gethash 'text parinfer-smart--previous-change)))
            (current-change (parinfer-smart--get-line-changes region-start region-end length old-buffer-text)))
       (if parinfer-smart--current-changes
-          (add-to-list 'parinfer-smart--current-changes current-change)
+          (setq-local parinfer-smart--current-changes (cons current-change parinfer-smart--current-changes))
         (setq-local parinfer-smart--current-changes (list current-change))))))
 
 (defun parinfer-smart--capture-changes (&optional old-options changes)
