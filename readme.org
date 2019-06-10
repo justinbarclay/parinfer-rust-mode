@@ -1,0 +1,51 @@
+#+ATTR_HTML: :alt CirclCI
+[[https://circleci.com/gh/justinbarclay/parinfer-smart-mode][https://circleci.com/gh/justinbarclay/parinfer-smart-mode.svg?style=svg]]
+* Parinfer
+[[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. It infers the meaning of your code through whitespace.
+
+Capabilities:
+  - Making code auto-adhere to formatting conventions
+  - Influencing expression-nesting with indentation
+  - Maintaining indentation when expressions shift
+  - Allowing Paredit-like features without hotkeys
+
+** Requirements
+1. Emacs (25+) compiled with Dynamic Module support.
+2. Running on MacOS/Linux, with Windows support coming soon.
+
+** Installation
+*** Manual
+After you download parinfer-smart-mode, add the following to your init.el file
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "/path/to/parinfer-smart-mode")
+  (add-hook 'emacs-lisp-mode 'parinfer-smart-mode)
+#+END_SRC
+
+*** MELPA
+Coming soon...
+** Commands
+| Key   | Command                     | Description                                               |
+|-------+-----------------------------+-------------------------------------------------------|
+| C-c s | parinfer-switch-mode        | Quickly switch between paren, indent, and smart modes |
+| C-c d | Disable parinfer-smart-mode | Sometimes you need to make a change or undo things quickly and the easiest way to accomplish that is with parinfer-smart-mode disabled. |
+
+** Modes
+Parinfer can operate under three different modes when writing lisp.
+*** Paren
+Paren Mode gives you full control of parens, while Parinfer corrects indentation. You can still adjust indentation, but you won't be able to indent/dedent past certain boundaries set by parens on previous lines.
+
+[[./videos/paren-mode.gif]]
+*** Indent
+Indent Mode gives you full control of indentation, while Parinfer corrects or inserts close-parens where appropriate. Specifically, it only touches the groups of close-parens at the end of each line.
+
+[[./videos/indent-mode.gif]]
+*** Smart
+Smart Mode is like Indent Mode, but it tries to preserve the structure too.
+
+[[./videos/smart-mode.gif]]
+** parinfer-mode
+There is an alternate implementation of Parinfer for Emacs called [[https://github.com/DogLooksGood/parinfer-mode][parinfer-mode]]. It currently has support for Parinfer's "paren" and "indent". Additionally, it has had experimental support for "smart" mode, however, this has remained hidden on a branch and not accessible from MELPA for over a year.
+parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
+** Known Issues
+- Multiple cursors do not work as intended
+- Major slow on files over 1000 lines

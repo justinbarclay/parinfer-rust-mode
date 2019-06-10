@@ -2,8 +2,32 @@
 
 ;; Copyright (C) 2019  Justin Barclay
 
-;; Author: Justin Barclay
-;; Keywords: extensions
+;; Author: Justin Barclay <justinbarclay@gmail.com>
+;; URL: https://github.com/justinbarclay/parinfer-smart-mode
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "25"))
+;; Keywords: lisps
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; Helper functions for running ERT for parinfer-smart-mode
+
+;;; Code:
 
 (require 'parinfer-smart-mode)
 
@@ -16,8 +40,8 @@
 (defvar parinfer-result-string nil "Result of running a test on parinfer")
 
 
-;; We're stealing this from Emacs 27, because I am too lazy to find a way to make this test work in 26 without it.
-(when (not (fboundp 'replace-region-contents))
+
+(when (not (fboundp 'replace-region-contents)) ;; This function does not exist in Emacs <27
   (defun replace-region-contents (beg end replace-fn
                                       &optional max-secs max-costs)
     "Replace the region between BEG and END using REPLACE-FN.
