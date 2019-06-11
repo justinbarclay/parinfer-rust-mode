@@ -34,11 +34,17 @@
  ((eq system-type 'darwin) (setq parinfer-smart--lib-name "parinfer-rust-mac.so"))
  ((eq system-type 'gnu/linux) (setq parinfer-smart--lib-name "parinfer-rust-linux.so")))
 
-(require 'parinfer-rust parinfer-smart--lib-name)
+
 (require 'subr-x)
 (require 'cl-lib)
 (require 'json)
+(require 'url)
 
+(unless (file-exists-p (concat default-directory parinfer-smart--lib-name))
+  (url-copy-file (concat "https://github.com/justinbarclay/parinfer-smart-mode/raw/master/" parinfer-smart--lib-name)
+                 (concat default-directory parinfer-smart--lib-name)))
+
+(require 'parinfer-rust parinfer-smart--lib-name)
 ;; Local Vars
 (defvar-local parinfer-enabled-p nil "Tracks whether parinfer has been enabled")
 (defvar-local parinfer-smart--debug-p nil "Whether the request response to the rust plugin or not")
