@@ -29,7 +29,7 @@
 
 ;;; Code:
 
-(defvar parinfer-smart--lib-name nil "System dependent library name")
+(defvar parinfer-smart--lib-name nil "System dependent library name for parinfer-smart-mode")
 (cond
  ((eq system-type 'darwin) (setq parinfer-smart--lib-name "parinfer-rust-mac.so"))
  ((eq system-type 'gnu/linux) (setq parinfer-smart--lib-name "parinfer-rust-linux.so")))
@@ -40,11 +40,16 @@
 (require 'json)
 (require 'url)
 
-(unless (file-exists-p (concat default-directory parinfer-smart--lib-name))
-  (url-copy-file (concat "https://github.com/justinbarclay/parinfer-smart-mode/raw/master/" parinfer-smart--lib-name)
-                 (concat default-directory parinfer-smart--lib-name)))
+(defcustom parinfer-smart-library (locate-user-emacs-file parinfer-smart--lib-name)
+  "The location to store the parinfer-rust library."
+  :type 'file
+  :group 'multiple-cursors)
 
-(require 'parinfer-rust parinfer-smart--lib-name)
+(unless (file-exists-p parinfer-smart-library)
+  (url-copy-file (concat "https://github.com/justinbarclay/parinfer-smart-mode/raw/master/" parinfer-smart--lib-name)
+                 parinfer-smart-library))
+
+(require 'parinfer-rust parinfer-smart-library)
 ;; Local Vars
 (defvar-local parinfer-enabled-p nil "Tracks whether parinfer has been enabled")
 (defvar-local parinfer-smart--debug-p nil "Whether the request response to the rust plugin or not")
