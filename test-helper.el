@@ -105,44 +105,30 @@ it makes no sense to convert it to a string using
                            (lambda (&rest _args) (cdr (assoc 'newText change))))
   (setq-local parinfer-smart--test-line-no nil))
 
-
 ;; Shadow capture-changes for a test friendly version
-(defun parinfer-smart--capture-changes (&optional old-options changes)
-  (let* ((table (make-hash-table))
-         (options-table (make-hash-table)))
-    (puthash 'text
-             (buffer-substring-no-properties (point-min) (point-max)) ;; Needs to be substring to remove all the properties from the document
-             table)
-    (puthash 'options
-             (progn
-               (when (not (and parinfer-smart--test-p ;; If we're in test mode and no cursor is present don't
-                               parinfer-smart--test-no-cursor ;; capture this information because it causes tests to fail
-                               parinfer-smart--test-has-no-prev-cursor))
-                 (puthash 'cursorX (when (not parinfer-smart--test-no-cursor)
-                                     (parinfer-smart--get-cursor-x))
-                          options-table)
-                 (puthash 'cursorLine (when (not parinfer-smart--test-no-cursor)
-                                        (parinfer-smart--get-cursor-line))
-                          options-table)
-                 (puthash 'prevCursorX (when old-options
-                                         (gethash 'cursorX old-options))
-                          options-table)
-                 (puthash 'prevCursorLine (when old-options
-                                            (gethash 'cursorLine old-options))
-                          options-table)
-                 (puthash 'selectionStartLine nil
-                          options-table))
-               (when changes (puthash 'changes changes
-                                      options-table))
-               options-table)
-             table)
-    (puthash 'mode ;; Test only on smart mode
-             parinfer-smart--mode
-             table)
-    (if parinfer-smart--test-no-cursor ;; Turn off so we don't get a false positive next run
-        (setq-local parinfer-smart--test-no-cursor nil))
-    (setq-local parinfer-smart--previous-change table)
-    table))
+(defun parinfer-smart--generate-options (old-options changes)
+  "Capture the current buffer state and it's associated meta information needed to execute parinfer"
+  (if (not (and parinfer-smart--test-p ;; If we're in test mode and no cursor is present don't
+                  parinfer-smart--test-no-cursor ;; capture this information because it causes tests to fail
+                  parinfer-smart--test-has-no-prev-cursor))
+    (let* ((cursor-x (when (not parinfer-smart--test-no-cursor)
+                       (parinfer-smart--get-cursor-x)))
+           (cursor-line (when (not parinfer-smart--test-no-cursor)
+                          (parinfer-smart--get-cursor-line)))
+           (options (parinfer-rust-new-options
+                     cursor-x
+                     cursor-line
+                     nil
+                     old-options
+                     changes)))
+      (setq-local parinfer-smart--current-changes nil)
+      options)
+    (parinfer-rust-new-options
+                     nil
+                     nil
+                     nil
+                     old-options
+                     changes)))
 
 (defun simulate-parinfer-in-another-buffer--without-changes (test-string mode)
   "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
@@ -152,6 +138,7 @@ it makes no sense to convert it to a string using
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
       (setq-local parinfer-smart--test-no-cursor nil)
+      (setq-local parinfer-smart--debug-p 't)
       (setq-local parinfer-smart--test-p 't)
       (setq-local remove-first-line-p nil)
       (insert test-string)
@@ -159,13 +146,15 @@ it makes no sense to convert it to a string using
       (setq-local parinfer-smart--mode mode)
       (move-cursor-to-previous-position)
       (when (not parinfer-smart--test-has-no-prev-cursor)
-        (parinfer-smart--capture-changes))
+        (setq parinfer-smart--previous-options (parinfer-smart--generate-options (parinfer-rust-make-option)
+                                                                                 (parinfer-rust-make-changes))))
       (move-cursor-to-current-position)
       (parinfer-smart--execute)
       (when remove-first-line-p ;; if we created a new line in move-cursor-current-position
-        (goto-char 0)
-        (kill-line)
-        (setq remove-first-line-p nil))
+        (progn                 ;; remove it
+          (goto-char 0)
+          (kill-line)
+          (setq remove-first-line-p nil)))
       (setq parinfer-result-string (buffer-string)) ;; Save the string before we kill our current buffer
       (switch-to-buffer current)
       (kill-buffer new-buf)))
@@ -179,30 +168,34 @@ it makes no sense to convert it to a string using
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
       (setq-local parinfer-smart--test-no-cursor nil)
+      (setq-local parinfer-smart--debug-p 't)
       (setq-local parinfer-smart--test-p 't)
       (setq-local remove-first-line-p nil)
       (insert test-string)
       (when changes
-        (mapc
-         'reverse-changes-in-buffer
-         (reverse changes)))
+        (progn
+          (mapcar
+           'reverse-changes-in-buffer
+           (reverse changes))))
       (goto-char 0)
       (move-cursor-to-previous-position)
       (parinfer-smart-mode)
       (setq-local parinfer-smart--mode mode)
       (when changes
-        (mapc
+        (mapcar
          'apply-changes-in-buffer
          changes))
       (move-cursor-to-current-position)
+      (parinfer-rust-print-changes parinfer-smart--current-changes)
       (parinfer-smart--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
       (parinfer-smart-mode)
       (when remove-first-line-p
-        (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
-        (goto-char 0)
-        (kill-line)
-        (setq remove-first-line-p nil)
-        (setq-local inhibit-modification-hooks nil))
+        (progn
+          (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
+          (goto-char 0)
+          (kill-line)
+          (setq remove-first-line-p nil)
+          (setq-local inhibit-modification-hooks nil)))
       (setq parinfer-result-string (buffer-string)) ;; Save the string before we kill our current buffer
       (switch-to-buffer current)
       (kill-buffer new-buf)))
