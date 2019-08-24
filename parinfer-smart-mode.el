@@ -39,11 +39,20 @@
                                   ((eq system-type 'darwin) (setq parinfer-smart--lib-name "parinfer-rust-mac.so"))
                                   ((eq system-type 'gnu/linux) (setq parinfer-smart--lib-name "parinfer-rust-linux.so")))
   "System dependent library name for parinfer-smart-mode")
+(defconst parinfer-smart--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
 
 (defcustom parinfer-smart-library (locate-user-emacs-file parinfer-smart--lib-name)
   "The location to store or to find the parinfer-rust library."
   :type 'file
   :group 'parinfer-smart-mode)
+
+(defcustom parinfer-smart-preferred-mode "smart"
+  "The location to store or to find the parinfer-rust library."
+  :type '(radio (const :tag "indent" "indent")
+                (const :tag "smart" "smart")
+                (const :tag "paren" "paren"))
+  :group 'parinfer-smart-mode)
+
 
 (check-for-library parinfer-smart-library)
 ;; Local Vars
@@ -160,7 +169,7 @@
                     (switch-to-buffer current)
                     (replace-buffer-contents new-buf)
                     (kill-buffer new-buf))))))
-                ;; (when-let ((new-x (cdr (assoc 'cursorX response)))
+                ;; (when-let ((new-x (cdr (assoc 'cursorX response))) ;; TODO handle errors
                 ;;            (new-line (cdr (assoc 'cursorLine response))))
                 ;;   (parinfer-smart--reposition-cursor new-x new-line)))))
         (when parinfer-smart--undo-p (setq-local parinfer-smart--undo-p nil))
@@ -172,8 +181,8 @@
   (interactive)
   (setq-local parinfer-smart--mode
               (completing-read "Choose parinfer mode:"
-                               (remove parinfer-smart--mode
-                                       (list "indent" "smart" "paren"))
+                               (remove 'parinfer-smart--mode
+                                       parinfer-smart--mode-types)
                                nil
                                t)))
 
@@ -197,7 +206,8 @@
   (setq-local parinfer-enabled-p 't)
   (setq-local parinfer-smart--current-changes nil)
   (setq-local parinfer-smart--mode "indent")
-
+  (parinfer-smart--execute)
+  (setq-local parinfer-smart--mode parinfer-smart-preferred-mode)
   (advice-add 'undo :before 'parinfer-smart--track-undo)
   (when (fboundp 'undo-tree-undo)
     (advice-add 'undo-tree-undo :before 'parinfer-smart--track-undo))
