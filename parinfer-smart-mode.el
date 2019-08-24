@@ -28,26 +28,24 @@
 ;; Manage your parenthesis automatically based on whitespace.
 
 ;;; Code:
-
-(defvar parinfer-smart--lib-name nil "System dependent library name for parinfer-smart-mode")
-(cond
- ((eq system-type 'darwin) (setq parinfer-smart--lib-name "parinfer-rust-mac.so"))
- ((eq system-type 'gnu/linux) (setq parinfer-smart--lib-name "parinfer-rust-linux.so")))
-
-(defcustom parinfer-smart-library (locate-user-emacs-file parinfer-smart--lib-name)
-  "The location to store the parinfer-rust library."
-  :type 'file
-  :group 'parinfer-smart-mode)
-
-(unless (file-exists-p parinfer-smart-library)
-  (url-copy-file (concat "https://github.com/justinbarclay/parinfer-smart-mode/raw/master/" parinfer-smart--lib-name)
-                 parinfer-smart-library))
-
+(require 'parinfer-helper)
 (require 'parinfer-rust parinfer-smart-library)
 (require 'subr-x)
 (require 'cl-lib)
 (require 'url)
 
+(defvar supported-parinfer-rust-version "0.2.0" "The version of the parinfer-rust library that parinfer-smart-mode was tested against")
+(defvar parinfer-smart--lib-name (cond
+                                  ((eq system-type 'darwin) (setq parinfer-smart--lib-name "parinfer-rust-mac.so"))
+                                  ((eq system-type 'gnu/linux) (setq parinfer-smart--lib-name "parinfer-rust-linux.so")))
+  "System dependent library name for parinfer-smart-mode")
+
+(defcustom parinfer-smart-library (locate-user-emacs-file parinfer-smart--lib-name)
+  "The location to store or to find the parinfer-rust library."
+  :type 'file
+  :group 'parinfer-smart-mode)
+
+(check-for-library parinfer-smart-library)
 ;; Local Vars
 (defvar-local parinfer-enabled-p nil "Tracks if parinfer has been enabled")
 (defvar-local parinfer-smart--debug-p nil "When enabled, outputs the response input and output of the parinfer response to a file") ;; TODO: Set a specific file in emacs home directory
@@ -66,6 +64,7 @@
   (- (line-number-at-pos) 1))
 
 (defun parinfer-smart--reposition-cursor (point-x line-number)
+  "Moves the cursor to the new column and the line"
   (let* ((new-line (- line-number (parinfer-smart--get-cursor-line)))
          (new-x (- point-x (parinfer-smart--get-cursor-x))))
     (when (not (= new-line 0))
@@ -190,6 +189,7 @@
 
 (defun parinfer-smart-mode-enable ()
   "Enable Parinfer"
+  (check-parinfer-rust-version)
   (setq-local parinfer-smart--previous-options (parinfer-smart--generate-options
                                                 (parinfer-rust-make-option)
                                                 (parinfer-rust-make-changes)))
