@@ -156,8 +156,8 @@
                                                   (buffer-substring-no-properties (point-min) (point-max))
                                                   options))
              (answer (parinfer-rust-execute request))
-             (replacement-string (parinfer-rust-get-answer answer "text" nil))
-             (error-p (parinfer-rust-get-answer answer "error" "message")))
+             (replacement-string (parinfer-rust-get-in-answer answer "text"))
+             (error-p (parinfer-rust-get-in-answer answer "error")))
         ;; (cdr (assoc 'error response))))) ;; Disabled until I add a hashmap like function for destructuring errors
         (setq-local inhibit-modification-hooks 't) ;; We don't want other hooks to run while we're modifying the buffer
                                                    ;; that could lead to weird and unwanted behavior
