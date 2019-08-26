@@ -28,29 +28,33 @@
 ;; A helper library to download a precompiled library for you
 
 ;;; Code:
+(require 'url)
+(require 'cl)
 
+(defconst ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
+(defconst outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
-(defvar ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
-(defvar outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
-
-(defun check-for-library (library-location)
+(defun check-for-library (library-location lib-name)
   "Checks for the existence of the parinfer-rust library and if it can't be found it offers to download it for the user"
-  (unless (and (file-exists-p library-location)
-               (yes-or-no-p ask-to-download))
-    (download-from-github library-location)))
+  (when (and (not (file-exists-p library-location)) ;; Using when here instead of unless so we can early exit this if file does exist
+             (yes-or-no-p ask-to-download))
+    (download-from-github library-location lib-name)))
 
-(defun check-parinfer-rust-version ()
+;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
+(defun check-parinfer-rust-version (supported-version library-location lib-name)
   "Checks to see if parinfer-rust version library currently installed is compatible with parinfer-smart-helper.
    If it is not compatible, offer to download the file for the user"
   (when (and (parinfer-rust-version)
-             (not (equalp "0"
-                          supported-parinfer-rust-version))
+             (not (equalp
+                   (parinfer-rust-version)
+                   supported-version))
              (yes-or-no-p outdated-version))
-    (download-from-github)))
+    (download-from-github library-location lib-name)
+    (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
-(defun download-from-github (library-location)
-  (url-copy-file (concat "https://github.com/justinbarclay/parinfer-smart-mode/raw/master/" parinfer-smart--lib-name)
-                 library-location))
+(defun download-from-github (library-location lib-name)
+  (url-copy-file (format "https://raw.githubusercontent.com/justinbarclay/parinfer-smart-mode/master/%s" lib-name)
+                 library-location
+                 't))
 
-(defun check-for-version)
 (provide 'parinfer-helper)

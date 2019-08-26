@@ -28,23 +28,31 @@
 ;; Manage your parenthesis automatically based on whitespace.
 
 ;;; Code:
-(require 'parinfer-helper)
-(require 'parinfer-rust parinfer-smart-library)
-(require 'subr-x)
-(require 'cl-lib)
-(require 'url)
 
-(defvar supported-parinfer-rust-version "0.2.0" "The version of the parinfer-rust library that parinfer-smart-mode was tested against")
-(defvar parinfer-smart--lib-name (cond
-                                  ((eq system-type 'darwin) (setq parinfer-smart--lib-name "parinfer-rust-mac.so"))
-                                  ((eq system-type 'gnu/linux) (setq parinfer-smart--lib-name "parinfer-rust-linux.so")))
+;; Need to define these two before parinfer-rust is called
+(defconst parinfer-smart--lib-name (cond
+                                    ((eq system-type 'darwin) "parinfer-rust-mac.so")
+                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-smart-mode")
-(defconst parinfer-smart--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
 
 (defcustom parinfer-smart-library (locate-user-emacs-file parinfer-smart--lib-name)
   "The location to store or to find the parinfer-rust library."
   :type 'file
   :group 'parinfer-smart-mode)
+
+(require 'parinfer-helper)
+
+(check-for-library parinfer-smart-library parinfer-smart--lib-name) ;; Check for library and download if necessary
+(require 'parinfer-rust parinfer-smart-library)
+(require 'subr-x)
+(require 'cl)
+
+(defconst supported-parinfer-rust-version "0.2.0" "The version of the parinfer-rust library that parinfer-smart-mode was tested against")
+(defconst parinfer-smart--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
+
+(check-parinfer-rust-version supported-parinfer-rust-version
+                             parinfer-smart-library
+                             parinfer-smart--lib-name) ;; Check version and prompt to download latest version if out of date
 
 (defcustom parinfer-smart-preferred-mode "smart"
   "The location to store or to find the parinfer-rust library."
@@ -54,7 +62,6 @@
   :group 'parinfer-smart-mode)
 
 
-(check-for-library parinfer-smart-library)
 ;; Local Vars
 (defvar-local parinfer-enabled-p nil "Tracks if parinfer has been enabled")
 (defvar-local parinfer-smart--debug-p nil "When enabled, outputs the response input and output of the parinfer response to a file") ;; TODO: Set a specific file in emacs home directory
@@ -73,7 +80,7 @@
   (- (line-number-at-pos) 1))
 
 (defun parinfer-smart--reposition-cursor (point-x line-number)
-  "Moves the cursor to the new column and the line"
+  "Moves the cursor to the new line and column"
   (let* ((new-line (- line-number (parinfer-smart--get-cursor-line)))
          (new-x (- point-x (parinfer-smart--get-cursor-x))))
     (when (not (= new-line 0))
@@ -181,7 +188,7 @@
   (interactive)
   (setq-local parinfer-smart--mode
               (completing-read "Choose parinfer mode:"
-                               (remove 'parinfer-smart--mode
+                               (remove parinfer-smart--mode
                                        parinfer-smart--mode-types)
                                nil
                                t)))
@@ -198,7 +205,7 @@
 
 (defun parinfer-smart-mode-enable ()
   "Enable Parinfer"
-  (check-parinfer-rust-version)
+  ;; (check-parinfer-rust-version)
   (setq-local parinfer-smart--previous-options (parinfer-smart--generate-options
                                                 (parinfer-rust-make-option)
                                                 (parinfer-rust-make-changes)))

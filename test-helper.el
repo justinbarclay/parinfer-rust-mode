@@ -28,6 +28,12 @@
 ;; Helper functions for running ERT for parinfer-smart-mode
 
 ;;; Code:
+;; This is copy and pasted because we need this information before parinfer-smart-mode runs
+(defconst parinfer-smart--lib-name (cond
+                                    ((eq system-type 'darwin) "parinfer-rust-mac.so")
+                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
+  "System dependent library name for parinfer-smart-mode")
+(setq parinfer-smart-library (concat default-directory parinfer-smart--lib-name))
 
 (require 'parinfer-smart-mode)
 
@@ -41,10 +47,11 @@
 
 
 
-(when (not (fboundp 'replace-region-contents)) ;; This function does not exist in Emacs <27
-  (defun replace-region-contents (beg end replace-fn
-                                      &optional max-secs max-costs)
-    "Replace the region between BEG and END using REPLACE-FN.
+;; (when (not (fboundp 'replace-region-contents))) ;; This function does not exist in Emacs <27
+
+(defun replace-region-contents (beg end replace-fn
+                                    &optional max-secs max-costs)
+  "Replace the region between BEG and END using REPLACE-FN.
 REPLACE-FN runs on the current buffer narrowed to the region.  It
 should return either a string or a buffer replacing the region.
 
@@ -57,19 +64,19 @@ temporary buffer so that `replace-buffer-contents' can operate on
 it.  Therefore, if you already have the replacement in a buffer,
 it makes no sense to convert it to a string using
 `buffer-substring' or similar."
-    (save-excursion
-      (save-restriction
-        (narrow-to-region beg end)
-        (goto-char (point-min))
-        (let ((repl (funcall replace-fn)))
-	  (if (bufferp repl)
-	      (replace-buffer-contents repl max-secs max-costs)
-	    (let ((source-buffer (current-buffer)))
-	      (with-temp-buffer
-	        (insert repl)
-	        (let ((tmp-buffer (current-buffer)))
-		  (set-buffer source-buffer)
-		  (replace-buffer-contents tmp-buffer))))))))))
+  (save-excursion
+    (save-restriction
+      (narrow-to-region beg end)
+      (goto-char (point-min))
+      (let ((repl (funcall replace-fn)))
+	(if (bufferp repl)
+	    (replace-buffer-contents repl max-secs max-costs)
+	  (let ((source-buffer (current-buffer)))
+	    (with-temp-buffer
+	      (insert repl)
+	      (let ((tmp-buffer (current-buffer)))
+		(set-buffer source-buffer)
+		(replace-buffer-contents tmp-buffer)))))))))
 
 (defun move-cursor-to-previous-position ()
   (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
@@ -129,6 +136,24 @@ it makes no sense to convert it to a string using
                      nil
                      old-options
                      changes)))
+;; Shadow function form parinfer-smart-mode because it executes buffer before everything is set-up in some test cases
+(defun parinfer-smart-mode-enable ()
+  "Enable Parinfer"
+  (setq-local parinfer-smart--previous-options (parinfer-smart--generate-options
+                                                (parinfer-rust-make-option)
+                                                (parinfer-rust-make-changes)))
+  (setq-local parinfer-smart--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
+  (setq-local parinfer-enabled-p 't)
+  (setq-local parinfer-smart--current-changes nil)
+  ;; (setq-local parinfer-smart--mode "indent") ;; Don't call these because these because they override what we want done in the tests.
+  ;; (parinfer-smart--execute)                  ;; We don't want to override whatever is being set in parinfer-smart--mode and we don't want
+                                                ;; To run parinfer-smart--execute for a second time
+  (setq-local parinfer-smart--mode parinfer-smart-preferred-mode)
+  (advice-add 'undo :before 'parinfer-smart--track-undo)
+  (when (fboundp 'undo-tree-undo)
+    (advice-add 'undo-tree-undo :before 'parinfer-smart--track-undo))
+  (add-hook 'after-change-functions 'parinfer-smart--track-changes t t)
+  (add-hook 'post-command-hook 'parinfer-smart--execute t t))
 
 (defun simulate-parinfer-in-another-buffer--without-changes (test-string mode)
   "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
