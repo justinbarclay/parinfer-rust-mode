@@ -4,7 +4,7 @@
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-smart-mode
-;; Version: 0.1.0
+;; Version: 0.3.0
 ;; Package-Requires: ((emacs "25"))
 ;; Keywords: lisps
 

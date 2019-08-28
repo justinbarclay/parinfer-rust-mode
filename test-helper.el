@@ -3,10 +3,6 @@
 ;; Copyright (C) 2019  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
-;; URL: https://github.com/justinbarclay/parinfer-smart-mode
-;; Version: 0.1.0
-;; Package-Requires: ((emacs "25"))
-;; Keywords: lisps
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
