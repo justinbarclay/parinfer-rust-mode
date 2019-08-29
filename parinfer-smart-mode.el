@@ -165,7 +165,7 @@
                    parinfer-smart--debug-p)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
         (if error-p
-            (message (format "%s" error-p))
+            (message (format "%s" (parinfer-rust-get-in-error error-p "message")))
           (if (not (string-equal parinfer-smart--previous-buffer-text replacement-string)) ;; This stops Emacs from flickering when scrolling
               (progn
                 (save-mark-and-excursion ;; This way we automatically get our point saved
