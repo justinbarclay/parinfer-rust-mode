@@ -176,9 +176,9 @@
                     (switch-to-buffer current)
                     (replace-buffer-contents new-buf)
                     (kill-buffer new-buf))))))
-                ;; (when-let ((new-x (cdr (assoc 'cursorX response))) ;; TODO handle errors
-                ;;            (new-line (cdr (assoc 'cursorLine response))))
-                ;;   (parinfer-smart--reposition-cursor new-x new-line)))))
+        (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x")) ;; TODO handle errors
+                   (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
+          (parinfer-smart--reposition-cursor new-x new-line))
         (when parinfer-smart--undo-p (setq-local parinfer-smart--undo-p nil))
         (with-no-warnings ;; TODO: Fix this issue
           (setq-local inhibit-modification-hooks nil))))))
