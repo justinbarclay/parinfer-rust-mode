@@ -212,7 +212,7 @@
   (setq-local parinfer-smart--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max))) ; We need to store thiqs separately because it's not being tracked with options anymore
   (setq-local parinfer-enabled-p 't)
   (setq-local parinfer-smart--current-changes nil)
-  (setq-local parinfer-smart--mode "indent")
+  (setq-local parinfer-smart--mode "paren")
   (parinfer-smart--execute)
   (setq-local parinfer-smart--mode parinfer-smart-preferred-mode)
   (advice-add 'undo :before 'parinfer-smart--track-undo)
