@@ -88,28 +88,37 @@
     (when (not (= new-x 0))
       (forward-char new-x))))
 
+(defun parinfer-smart--bound-number (text num)
+  "Bounds number to be within range of string "
+  (let ((max (length text)))
+    (cond ((< num 0) 0)
+          ((> num max) max)
+          ('t num))))
+
 (defmacro local-bound-and-true (var)
   "Helper macro for determining if a variable is locally set and if it's assigned a value "
   `(and (local-variable-if-set-p (quote ,var)) ,var))
 
 (defun parinfer-smart--make-change (region-start region-end length old-buffer-text)
-  (let ((lineNo (- (line-number-at-pos region-start parinfer-smart--test-p)
-                   1)) ;; If we're in test-mode we want the absolute position otherwise relative is fine
-        (x (save-excursion
-             (save-restriction
-               (widen)
-               (goto-char region-start)
-               (parinfer-smart--get-cursor-x))))
-        (region-start (- region-start 0)))
+  (let* ((lineNo (- (line-number-at-pos region-start parinfer-smart--test-p)
+                    1)) ;; If we're in test-mode we want the absolute position otherwise relative is fine
+         (x (save-excursion
+              (save-restriction
+                (widen)
+                (goto-char region-start)
+                (parinfer-smart--get-cursor-x)))) ;; We don't use region-end because region-end represents the end of change of the new text
+         (old-region-end (parinfer-smart--bound-number old-buffer-text (+ region-start length)))
+         (old-region-start (parinfer-smart--bound-number old-buffer-text region-start)))
     (parinfer-rust-new-change lineNo
                               x
                               (if old-buffer-text
                                   (substring-no-properties old-buffer-text
-                                                           region-start
-                                                           (+ region-start length)) ;; We don't use region-end because region-end represents the end of change of the new text
+                                                           old-region-start
+                                                           old-region-end)
                                 "")
                               (buffer-substring-no-properties region-start region-end))))
 
+;; TODO catch args out of range error
 (defun parinfer-smart--track-changes (region-start region-end length)
   "Add the current change into a list of changes from when `parinfer-rust--execute` was last run."
   (if parinfer-smart--disable
@@ -158,7 +167,6 @@
              (answer (parinfer-rust-execute request))
              (replacement-string (parinfer-rust-get-in-answer answer "text"))
              (error-p (parinfer-rust-get-in-answer answer "error")))
-        ;; (cdr (assoc 'error response))))) ;; Disabled until I add a hashmap like function for destructuring errors
         (setq-local inhibit-modification-hooks 't) ;; We don't want other hooks to run while we're modifying the buffer
                                                    ;; that could lead to weird and unwanted behavior
         (when (and (local-variable-if-set-p 'parinfer-smart--debug-p)
@@ -180,6 +188,7 @@
                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-smart--reposition-cursor new-x new-line))
         (when parinfer-smart--undo-p (setq-local parinfer-smart--undo-p nil))
+        (setq parinfer-smart--previous-options options)
         (with-no-warnings ;; TODO: Fix this issue
           (setq-local inhibit-modification-hooks nil))))))
 
@@ -195,7 +204,6 @@
 
 (defun parinfer-smart--track-undo (&rest _)
   "Used to track when an undo action is performed, so we can temporarily disable parinfer"
-  (message "undoing")
   (setq-local parinfer-smart--undo-p 't))
 
 (defun parinfer-smart-toggle-debug ()
