@@ -408,9 +408,7 @@ nil)
     baz)"))
     (should (equal (simulate-parinfer-in-another-buffer before "smart" changes)
                    after))))
-;; TODO: Figure out why I can't insert at the end of a temp buffer
 (ert-deftest parinfer-smart-30 ()
-  :expected-result :failed
  (let ((before
 "((reduce-kv (fn [m k v]
             {}
@@ -424,7 +422,6 @@ nil)
     (should (equal (simulate-parinfer-in-another-buffer before "smart" changes)
                    after))))
 (ert-deftest parinfer-smart-31 ()
-  :expected-result :failed
   (let ((before
 "(let [a 1]
   (
@@ -438,7 +435,6 @@ nil)
     (should (equal (simulate-parinfer-in-another-buffer before "smart" changes)
                    after))))
 (ert-deftest parinfer-smart-32 ()
-  :expected-result :failed
  (let ((before
 "(let [a 1]
   (let [a 1]
