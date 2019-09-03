@@ -1,7 +1,7 @@
 (source gnu)
 (source melpa)
 
-(package-file "parinfer-smart-mode.el")
+(package-file "parinfer-rust-mode.el")
 
 (development
  (depends-on "f")

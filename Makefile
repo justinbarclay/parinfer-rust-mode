@@ -2,7 +2,7 @@ export EMACS ?= emacs
 EMACSFLAGS = -L .
 CASK = cask
 VERSION = $(shell git describe --tags --abbrev=0 | sed 's/^v//')
-PKG = parinfer-smart-mode
+PKG = parinfer-rust-mode
 
 ELS_ALL = $(wildcard *.el)
 ELS = $(filter-out $(PKG)-autoloads.el,$(ELS_ALL))

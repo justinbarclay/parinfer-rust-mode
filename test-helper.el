@@ -21,23 +21,23 @@
 
 ;;; Commentary:
 
-;; Helper functions for running ERT for parinfer-smart-mode
+;; Helper functions for running ERT for parinfer-rust-mode
 
 ;;; Code:
-;; This is copy and pasted because we need this information before parinfer-smart-mode runs
-(defconst parinfer-smart--lib-name (cond
+;; This is copy and pasted because we need this information before parinfer-rust-mode runs
+(defconst parinfer-rust--lib-name (cond
                                     ((eq system-type 'darwin) "parinfer-rust-mac.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
-  "System dependent library name for parinfer-smart-mode")
-(setq parinfer-smart-library (concat default-directory parinfer-smart--lib-name))
+  "System dependent library name for parinfer-rust-mode")
+(setq parinfer-rust-library (concat default-directory parinfer-rust--lib-name))
 
-(require 'parinfer-smart-mode)
+(require 'parinfer-rust-mode)
 
-(defvar-local parinfer-smart--test-no-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-smart--capture-changes")
-(defvar-local parinfer-smart--test-has-no-prev-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-smart--capture-changes")
-(defvar-local parinfer-smart--test-p nil "An indicator that parinfer-smart is being tested.")
-(defvar-local parinfer-smart--test-line-no nil "The line change that the current change/replace is happening on")
-(defvar-local parinfer-smart--debug-p 't "Tell parinfer-smart-mode to print out it's debug information to a file")
+(defvar-local parinfer-rust--test-no-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
+(defvar-local parinfer-rust--test-has-no-prev-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
+(defvar-local parinfer-rust--test-p nil "An indicator that parinfer-rust is being tested.")
+(defvar-local parinfer-rust--test-line-no nil "The line change that the current change/replace is happening on")
+(defvar-local parinfer-rust--debug-p 't "Tell parinfer-rust-mode to print out it's debug information to a file")
 (defvar-local remove-first-line-p nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
 (defvar parinfer-result-string nil "Result of running a test on parinfer")
 
@@ -78,14 +78,14 @@ it makes no sense to convert it to a string using
   (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
   (if (search-forward "@" nil t) ;; If we find a cursor replace our cursor with that one
       (delete-char -1)
-    (setq-local parinfer-smart--test-has-no-prev-cursor 't))
+    (setq-local parinfer-rust--test-has-no-prev-cursor 't))
   (setq-local inhibit-modification-hooks nil))
 
 (defun move-cursor-to-current-position ()
   (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
   (if (search-forward "|" nil t) ;; If we find a cursor replace our cursor with that one
       (delete-char -1)
-    (setq-local parinfer-smart--test-no-cursor 't))
+    (setq-local parinfer-rust--test-no-cursor 't))
   (setq-local inhibit-modification-hooks nil))
 
 (defun reverse-changes-in-buffer (change)
@@ -102,29 +102,29 @@ it makes no sense to convert it to a string using
   (with-no-warnings
     (goto-line (+ 1 (cdr (assoc 'lineNo change)))))
   (forward-char (cdr (assoc 'x change)))
-  (setq-local parinfer-smart--test-line-no (line-number-at-pos))
+  (setq-local parinfer-rust--test-line-no (line-number-at-pos))
   (replace-region-contents (point)
                            (+ (point) (length (cdr (assoc 'oldText change))))
                            (lambda (&rest _args) (cdr (assoc 'newText change))))
-  (setq-local parinfer-smart--test-line-no nil))
+  (setq-local parinfer-rust--test-line-no nil))
 
 ;; Shadow capture-changes for a test friendly version
-(defun parinfer-smart--generate-options (old-options changes)
+(defun parinfer-rust--generate-options (old-options changes)
   "Capture the current buffer state and it's associated meta information needed to execute parinfer"
-  (if (not (and parinfer-smart--test-p ;; If we're in test mode and no cursor is present don't
-                  parinfer-smart--test-no-cursor ;; capture this information because it causes tests to fail
-                  parinfer-smart--test-has-no-prev-cursor))
-    (let* ((cursor-x (when (not parinfer-smart--test-no-cursor)
-                       (parinfer-smart--get-cursor-x)))
-           (cursor-line (when (not parinfer-smart--test-no-cursor)
-                          (parinfer-smart--get-cursor-line)))
+  (if (not (and parinfer-rust--test-p ;; If we're in test mode and no cursor is present don't
+                  parinfer-rust--test-no-cursor ;; capture this information because it causes tests to fail
+                  parinfer-rust--test-has-no-prev-cursor))
+    (let* ((cursor-x (when (not parinfer-rust--test-no-cursor)
+                       (parinfer-rust--get-cursor-x)))
+           (cursor-line (when (not parinfer-rust--test-no-cursor)
+                          (parinfer-rust--get-cursor-line)))
            (options (parinfer-rust-new-options
                      cursor-x
                      cursor-line
                      nil
                      old-options
                      changes)))
-      (setq-local parinfer-smart--current-changes nil)
+      (setq-local parinfer-rust--current-changes nil)
       options)
     (parinfer-rust-new-options
                      nil
@@ -132,24 +132,24 @@ it makes no sense to convert it to a string using
                      nil
                      old-options
                      changes)))
-;; Shadow function form parinfer-smart-mode because it executes buffer before everything is set-up in some test cases
-(defun parinfer-smart-mode-enable ()
+;; Shadow function form parinfer-rust-mode because it executes buffer before everything is set-up in some test cases
+(defun parinfer-rust-mode-enable ()
   "Enable Parinfer"
-  (setq-local parinfer-smart--previous-options (parinfer-smart--generate-options
+  (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
                                                 (parinfer-rust-make-option)
                                                 (parinfer-rust-make-changes)))
-  (setq-local parinfer-smart--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
+  (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
   (setq-local parinfer-enabled-p 't)
-  (setq-local parinfer-smart--current-changes nil)
-  ;; (setq-local parinfer-smart--mode "indent") ;; Don't call these because these because they override what we want done in the tests.
-  ;; (parinfer-smart--execute)                  ;; We don't want to override whatever is being set in parinfer-smart--mode and we don't want
-                                                ;; To run parinfer-smart--execute for a second time
-  (setq-local parinfer-smart--mode parinfer-smart-preferred-mode)
-  (advice-add 'undo :before 'parinfer-smart--track-undo)
+  (setq-local parinfer-rust--current-changes nil)
+  ;; (setq-local parinfer-rust--mode "indent") ;; Don't call these because these because they override what we want done in the tests.
+  ;; (parinfer-rust--execute)                  ;; We don't want to override whatever is being set in parinfer-rust--mode and we don't want
+                                                ;; To run parinfer-rust--execute for a second time
+  (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
+  (advice-add 'undo :before 'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
-    (advice-add 'undo-tree-undo :before 'parinfer-smart--track-undo))
-  (add-hook 'after-change-functions 'parinfer-smart--track-changes t t)
-  (add-hook 'post-command-hook 'parinfer-smart--execute t t))
+    (advice-add 'undo-tree-undo :before 'parinfer-rust--track-undo))
+  (add-hook 'after-change-functions 'parinfer-rust--track-changes t t)
+  (add-hook 'post-command-hook 'parinfer-rust--execute t t))
 
 (defun simulate-parinfer-in-another-buffer--without-changes (test-string mode)
   "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
@@ -158,19 +158,19 @@ it makes no sense to convert it to a string using
     (let ((current (current-buffer))
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
-      (setq-local parinfer-smart--test-no-cursor nil)
-      (setq-local parinfer-smart--debug-p 't)
-      (setq-local parinfer-smart--test-p 't)
+      (setq-local parinfer-rust--test-no-cursor nil)
+      (setq-local parinfer-rust--debug-p 't)
+      (setq-local parinfer-rust--test-p 't)
       (setq-local remove-first-line-p nil)
       (insert test-string)
       (goto-char 0)
-      (setq-local parinfer-smart--mode mode)
+      (setq-local parinfer-rust--mode mode)
       (move-cursor-to-previous-position)
-      (when (not parinfer-smart--test-has-no-prev-cursor)
-        (setq parinfer-smart--previous-options (parinfer-smart--generate-options (parinfer-rust-make-option)
+      (when (not parinfer-rust--test-has-no-prev-cursor)
+        (setq parinfer-rust--previous-options (parinfer-rust--generate-options (parinfer-rust-make-option)
                                                                                  (parinfer-rust-make-changes))))
       (move-cursor-to-current-position)
-      (parinfer-smart--execute)
+      (parinfer-rust--execute)
       (when remove-first-line-p ;; if we created a new line in move-cursor-current-position
         (progn                 ;; remove it
           (goto-char 0)
@@ -188,9 +188,9 @@ it makes no sense to convert it to a string using
     (let ((current (current-buffer))
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
-      (setq-local parinfer-smart--test-no-cursor nil)
-      (setq-local parinfer-smart--debug-p 't)
-      (setq-local parinfer-smart--test-p 't)
+      (setq-local parinfer-rust--test-no-cursor nil)
+      (setq-local parinfer-rust--debug-p 't)
+      (setq-local parinfer-rust--test-p 't)
       (setq-local remove-first-line-p nil)
       (insert test-string)
       (when changes
@@ -200,16 +200,16 @@ it makes no sense to convert it to a string using
            (reverse changes))))
       (goto-char 0)
       (move-cursor-to-previous-position)
-      (parinfer-smart-mode)
-      (setq-local parinfer-smart--mode mode)
+      (parinfer-rust-mode)
+      (setq-local parinfer-rust--mode mode)
       (when changes
         (mapcar
          'apply-changes-in-buffer
          changes))
       (move-cursor-to-current-position)
-      (parinfer-rust-print-changes parinfer-smart--current-changes)
-      (parinfer-smart--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
-      (parinfer-smart-mode)
+      (parinfer-rust-print-changes parinfer-rust--current-changes)
+      (parinfer-rust--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
+      (parinfer-rust-mode)
       (when remove-first-line-p
         (progn
           (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change

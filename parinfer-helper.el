@@ -1,4 +1,4 @@
-;;; parinfer-smart-mode.el --- parinfer-smart-mode   -*- lexical-binding: t; -*-
+;;; parinfer-helper.el --- parinfer-helper   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Justin Barclay
 
@@ -37,7 +37,7 @@
 
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
 (defun check-parinfer-rust-version (supported-version library-location lib-name)
-  "Checks to see if parinfer-rust version library currently installed is compatible with parinfer-smart-helper.
+  "Checks to see if parinfer-rust version library currently installed is compatible with parinfer-rust-helper.
    If it is not compatible, offer to download the file for the user"
   (when (and (parinfer-rust-version)
              (not (equalp
@@ -48,7 +48,7 @@
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
 (defun download-from-github (library-location lib-name)
-  (url-copy-file (format "https://raw.githubusercontent.com/justinbarclay/parinfer-smart-mode/master/%s" lib-name)
+  (url-copy-file (format "https://raw.githubusercontent.com/justinbarclay/parinfer-rust-mode/master/%s" lib-name)
                  library-location
                  't))
 
