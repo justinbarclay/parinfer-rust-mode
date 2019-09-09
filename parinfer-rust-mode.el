@@ -213,10 +213,10 @@
 
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer"
-  ;; (check-parinfer-rust-version)
+  (parinfer-rust--detetect-troublesome-modes)
   (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
-                                                (parinfer-rust-make-option)
-                                                (parinfer-rust-make-changes)))
+                                               (parinfer-rust-make-option)
+                                               (parinfer-rust-make-changes)))
   (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max))) ; We need to store thiqs separately because it's not being tracked with options anymore
   (setq-local parinfer-enabled-p 't)
   (setq-local parinfer-rust--current-changes nil)

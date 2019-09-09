@@ -52,4 +52,30 @@
                  library-location
                  't))
 
+(defun parinfer-rust--is-active-minor-mode (minor-mode-maybe)
+  "Returns true if MINOR-MODE-MAYBE is active in the current buffer."
+  (cl-reduce (lambda (acc mode)
+               (or
+                (and (boundp mode)
+                     (symbol-value mode)
+                     (eq mode minor-mode-maybe))
+                acc))
+             minor-mode-list
+             :initial-value nil))
+
+(defun parinfer-rust--detetect-troublesome-modes ()
+  "Checks to see if a list of troublesome modes are enabled in the same buffer and offers to disables them for the user.
+  If the user does not disable these modes then it may cause bugs or crashes"
+    (let (warning-list)
+      (dolist (mode '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode))
+        (when (parinfer-rust--is-active-minor-mode mode)
+          (add-to-list 'warning-list mode)))
+      (if (and
+           warning-list
+           (yes-or-no-p
+                (format "The following modes may cause issues with parinfer-rust, do you want to disable them? Mode(s): %s"
+                        (mapconcat (lambda (sym) (symbol-name sym)) warning-list ","))))
+          (dolist (mode warning-list)
+            (apply mode '(-1))))))
+
 (provide 'parinfer-helper)
