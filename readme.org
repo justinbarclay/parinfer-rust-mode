@@ -1,5 +1,5 @@
 #+ATTR_HTML: :alt CirclCI
-[[https://circleci.com/gh/justinbarclay/parinfer-smart-mode][https://circleci.com/gh/justinbarclay/parinfer-smart-mode.svg?style=svg]]
+[[https://circleci.com/gh/justinbarclay/parinfer-smart-mode][https://circleci.com/gh/justinbarclay/parinfer-rust-mode.svg?style=svg]]
 * Parinfer
 [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. It infers the meaning of your code through whitespace.
 
@@ -14,20 +14,25 @@ Capabilities:
 2. Running on MacOS/Linux, with Windows support coming soon.
 
 ** Installation
+*** From Source
+1. compile libraries from parinfer-rust
+2. save libraries somewhere on path
+3. clone parinfer-rust-mode and add to load path
+4. tell parinfer-rust-mode where where the parinfer-rust library is stored
 *** Manual
-After you download parinfer-smart-mode, add the following to your init.el file
+After you download parinfer-rust-mode, add the following to your init.el file
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "/path/to/parinfer-smart-mode")
-  (add-hook 'emacs-lisp-mode 'parinfer-smart-mode)
+  (add-to-list 'load-path "/path/to/parinfer-rust-mode")
+  (add-hook 'emacs-lisp-mode 'parinfer-rust-mode)
 #+END_SRC
 
 *** MELPA
 Coming soon...
 ** Commands
-| Key   | Command                     | Description                                               |
-|-------+-----------------------------+-------------------------------------------------------|
-| C-c s | parinfer-switch-mode        | Quickly switch between paren, indent, and smart modes |
-| C-c d | Disable parinfer-smart-mode | Sometimes you need to make a change or undo things quickly and the easiest way to accomplish that is with parinfer-smart-mode disabled. |
+| Key   | Command                     | Description                                                                                                                             |
+|-------+-----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------|
+| C-c s | parinfer-switch-mode        | Quickly switch between paren, indent, and smart modes                                                                                   |
+| C-c d | Disable parinfer-rust-mode | Sometimes you need to make a change or undo things quickly and the easiest way to accomplish that is with parinfer-rust-mode disabled. |
 
 ** Modes
 Parinfer can operate under three different modes when writing lisp.
@@ -48,4 +53,4 @@ There is an alternate implementation of Parinfer for Emacs called [[https://gith
 parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
 ** Known Issues
 - Multiple cursors do not work as intended
-- Major slow on files over 1000 lines
+- Does not play well with other modes that insert parens or manage whitespace. If you have modes like electric-pair-mode or hungry-delete-mode enabled, you may want to disable them for any mode that has parinfer-rust-mode enabled
