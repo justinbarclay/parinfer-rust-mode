@@ -33,7 +33,7 @@
   "Checks for the existence of the parinfer-rust library and if it can't be found it offers to download it for the user"
   (when (and (not (file-exists-p library-location)) ;; Using when here instead of unless so we can early exit this if file does exist
              (yes-or-no-p ask-to-download))
-    (download-from-github library-location lib-name)))
+    (parinfer-rust--download-from-github parinfer-rust-version library-location lib-name)))
 
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
 (defun check-parinfer-rust-version (supported-version library-location lib-name)
@@ -44,11 +44,11 @@
                    (parinfer-rust-version)
                    supported-version))
              (yes-or-no-p outdated-version))
-    (download-from-github library-location lib-name)
+    (parinfer-rust--download-from-github supported-version library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
-(defun download-from-github (library-location lib-name)
-  (url-copy-file (format "https://raw.githubusercontent.com/justinbarclay/parinfer-rust-mode/master/%s" lib-name)
+(defun parinfer-rust--download-from-github (parinfer-rust-version library-location lib-name)
+  (url-copy-file (format "https://github.com/justinbarclay/parinfer-rust/releases/download/%s/%s" parinfer-rust-version lib-name)
                  library-location
                  't))
 
