@@ -34,6 +34,9 @@
                                     ((eq system-type 'darwin) "parinfer-rust-mac.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode")
+(defconst parinfer-rust-version "0.2.0" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
+(defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
+
 
 (defcustom parinfer-rust-library (locate-user-emacs-file parinfer-rust--lib-name)
   "The location to store or to find the parinfer-rust library."
@@ -42,17 +45,14 @@
 
 (require 'parinfer-helper)
 
-(check-for-library parinfer-rust-library parinfer-rust--lib-name) ;; Check for library and download if necessary
+(parinfer-rust--check-for-library parinfer-rust-library parinfer-rust--lib-name) ;; Check for library and download if necessary
 (require 'parinfer-rust parinfer-rust-library)
 (require 'subr-x)
 (require 'cl)
 
-(defconst supported-parinfer-rust-version "0.2.0" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
-(defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
-
-(check-parinfer-rust-version supported-parinfer-rust-version
-                             parinfer-rust-library
-                             parinfer-rust--lib-name) ;; Check version and prompt to download latest version if out of date
+(parinfer-rust--check-version supported-parinfer-rust-version
+                              parinfer-rust-library
+                              parinfer-rust--lib-name) ;; Check version and prompt to download latest version if out of date
 
 (defcustom parinfer-rust-preferred-mode "smart"
   "The location to store or to find the parinfer-rust library."
