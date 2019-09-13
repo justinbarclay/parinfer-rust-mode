@@ -152,9 +152,9 @@
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer"
   (interactive)
-  (if (or parinfer-rust--disable ;; Don't run if disabled by user or right after an undo
-          parinfer-rust--undo-p)
-      (setq-local parinfer-rust--undo-p nil)
+  (when (not (or parinfer-rust--disable ;; Don't run if disabled by user or right after an undo
+                 parinfer-rust--undo-p))
+      nil
     (progn
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
       (let* ((old-options (or (local-bound-and-true parinfer-rust--previous-options)
@@ -189,7 +189,6 @@
         (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x")) ;; TODO handle errors
                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-rust--reposition-cursor new-x new-line))
-        (when parinfer-rust--undo-p (setq-local parinfer-rust--undo-p nil))
         (setq parinfer-rust--previous-options options)
         (with-no-warnings ;; TODO: Fix this issue
           (setq-local inhibit-modification-hooks nil))))))
@@ -225,7 +224,8 @@
   (setq-local parinfer-rust--mode "paren")
   (parinfer-rust--execute)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
-  (advice-add 'undo :before 'parinfer-rust--track-undo)
+  (advice-add 'undo :before (lambda (&rest _) (setq-local parinfer-rust--undo-p 't)))
+  (advice-add 'undo :after (lambda (&rest _) (setq-local parinfer-rust--undo-p nil)))
   (when (fboundp 'undo-tree-undo)
     (advice-add 'undo-tree-undo :before 'parinfer-rust--track-undo))
   (add-hook 'after-change-functions 'parinfer-rust--track-changes t t)
