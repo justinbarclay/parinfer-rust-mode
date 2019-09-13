@@ -29,13 +29,12 @@
                                     ((eq system-type 'darwin) "parinfer-rust-mac.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode")
-(setq parinfer-rust-library (concat default-directory parinfer-rust--lib-name))
-
+(defvar parinfer-rust-library (concat default-directory parinfer-rust--lib-name))
+(defconst parinfer-test-helper 't)
 (require 'parinfer-rust-mode)
 
 (defvar-local parinfer-rust--test-no-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
 (defvar-local parinfer-rust--test-has-no-prev-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
-(defvar-local parinfer-rust--test-p nil "An indicator that parinfer-rust is being tested.")
 (defvar-local parinfer-rust--test-line-no nil "The line change that the current change/replace is happening on")
 (defvar-local parinfer-rust--debug-p 't "Tell parinfer-rust-mode to print out it's debug information to a file")
 (defvar-local remove-first-line-p nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
@@ -112,8 +111,8 @@ it makes no sense to convert it to a string using
 (defun parinfer-rust--generate-options (old-options changes)
   "Capture the current buffer state and it's associated meta information needed to execute parinfer"
   (if (not (and parinfer-rust--test-p ;; If we're in test mode and no cursor is present don't
-                  parinfer-rust--test-no-cursor ;; capture this information because it causes tests to fail
-                  parinfer-rust--test-has-no-prev-cursor))
+                parinfer-rust--test-no-cursor ;; capture this information because it causes tests to fail
+                parinfer-rust--test-has-no-prev-cursor))
     (let* ((cursor-x (when (not parinfer-rust--test-no-cursor)
                        (parinfer-rust--get-cursor-x)))
            (cursor-line (when (not parinfer-rust--test-no-cursor)
@@ -160,7 +159,6 @@ it makes no sense to convert it to a string using
       (switch-to-buffer new-buf)
       (setq-local parinfer-rust--test-no-cursor nil)
       (setq-local parinfer-rust--debug-p 't)
-      (setq-local parinfer-rust--test-p 't)
       (setq-local remove-first-line-p nil)
       (insert test-string)
       (goto-char 0)
@@ -190,7 +188,6 @@ it makes no sense to convert it to a string using
       (switch-to-buffer new-buf)
       (setq-local parinfer-rust--test-no-cursor nil)
       (setq-local parinfer-rust--debug-p 't)
-      (setq-local parinfer-rust--test-p 't)
       (setq-local remove-first-line-p nil)
       (insert test-string)
       (when changes
