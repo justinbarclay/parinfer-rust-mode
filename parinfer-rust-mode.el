@@ -36,7 +36,8 @@
   "System dependent library name for parinfer-rust-mode")
 (defconst parinfer-rust-version "123" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
 (defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
-(defvar-local parinfer-rust--test-p (not (null parinfer-test-helper)) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.")
+
+(defvar-local parinfer-rust--test-p (bound-and-true-p parinfer-test-helper) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.")
 
 (defcustom parinfer-rust-library (locate-user-emacs-file parinfer-rust--lib-name)
   "The location to store or to find the parinfer-rust library."
