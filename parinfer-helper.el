@@ -52,9 +52,11 @@
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
 (defun parinfer-rust--download-from-github (parinfer-rust-version library-location lib-name)
-  (url-copy-file (format "https://github.com/justinbarclay/parinfer-rust/releases/download/%s/%s" parinfer-rust-version lib-name)
-                 library-location
-                 't))
+  (if (executable-find "curl")
+      (shell-command (format "curl -L %s -o %s"
+                             (format "https://github.com/justinbarclay/parinfer-rust/releases/download/%s/%s" parinfer-rust-version lib-name)
+                             library-location))
+    (message "Unable to download parinfer-rust library because curl is not on $PATH")))
 
 (defun parinfer-rust--is-active-minor-mode (minor-mode-maybe)
   "Returns true if MINOR-MODE-MAYBE is active in the current buffer."
