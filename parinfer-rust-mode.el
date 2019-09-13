@@ -34,7 +34,7 @@
                                     ((eq system-type 'darwin) "parinfer-rust-mac.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode")
-(defconst parinfer-rust-version "0.2.0" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
+(defconst parinfer-rust-version "123" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
 (defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
 
 
