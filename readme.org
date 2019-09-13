@@ -12,7 +12,7 @@ Capabilities:
 ** Requirements
 1. Emacs (25+) compiled with Dynamic Module support.
 2. Running on MacOS/Linux, with Windows support coming soon.
-
+3. (Optional) Curl - to download the library for you
 ** Installation
 *** From Source
 **** Build the Parinfer Rust library
