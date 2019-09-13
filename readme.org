@@ -15,11 +15,35 @@ Capabilities:
 
 ** Installation
 *** From Source
-1. compile libraries from parinfer-rust
-2. save libraries somewhere on path
-3. clone parinfer-rust-mode and add to load path
-4. tell parinfer-rust-mode where where the parinfer-rust library is stored
+**** Build the Parinfer Rust library
+When compiling manually the library name differs from platform to platform. Additionally, Emacs expects that these libraries have specific file extensions when first loading them up. This is a problem for MacOS because Rust compiles it as ~.dylib~ and we'll need to give the file an ~.so~ extension when we copy it to it's final location.
+
+| Platform | File name              | Required extension |
+|----------+------------------------+--------------------|
+| Linux    | libparinfer_rust.so    | .so                |
+| MacOS    | libparinfer_rust.dylib | .so                |
+| Windows  | parinfer_rust.dll      | .dll               |
+
+#+BEGIN_SRC shell
+git clone git@github.com:justinbarclay/parinfer-rust.git
+cd parinfer-rus
+git checkout emacs-integrations
+cargo build --release
+cp ./target/release/${library-name} ~/.emacs.d/parinfer-rust/${lib-name}
+#+END_SRC
+**** Configure parinfer-rust-mode
+Once you have compiled the libraries from source code you'll need to tell ~parinfer-rust-mode~ how to find these libraries
+#+BEGIN_SRC elisp
+(setq parinfer-rust-library "/path/to/parinfer-rust-library.so")
+#+END_SRC
+
 *** Manual
+Download parinfer-rust-mode
+#+BEGIN_SRC shell
+cd /path/for/elisp-packages
+git clone git@github.com:justinbarclay/parinfer-rust-mode.git
+#+END_SRC
+
 After you download parinfer-rust-mode, add the following to your init.el file
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "/path/to/parinfer-rust-mode")
