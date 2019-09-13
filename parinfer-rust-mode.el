@@ -29,9 +29,9 @@
 
 ;;; Code:
 
-;; Need to define these two before parinfer-rust is called
+;; Need to define these two before parinfer-rust and parinfer-helper are called
 (defconst parinfer-rust--lib-name (cond
-                                    ((eq system-type 'darwin) "parinfer-rust-mac.so")
+                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode")
 (defconst parinfer-rust-version "123" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
@@ -52,7 +52,7 @@
 (require 'subr-x)
 (require 'cl)
 
-(parinfer-rust--check-version supported-parinfer-rust-version
+(parinfer-rust--check-version parinfer-rust-version
                               parinfer-rust-library
                               parinfer-rust--lib-name) ;; Check version and prompt to download latest version if out of date
 

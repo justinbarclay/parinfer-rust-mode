@@ -75,7 +75,7 @@
     (let (warning-list)
       (dolist (mode '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode))
         (when (parinfer-rust--is-active-minor-mode mode)
-          (add-to-list 'warning-list mode)))
+          (push mode 'warning-list)))
       (if (and
            warning-list
            (yes-or-no-p
