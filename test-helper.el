@@ -30,7 +30,7 @@
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode")
 (defvar parinfer-rust-library (concat default-directory parinfer-rust--lib-name))
-(defconst parinfer-test-helper 't)
+
 (require 'parinfer-rust-mode)
 
 (defvar-local parinfer-rust--test-no-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")

@@ -1,5 +1,5 @@
 export EMACS ?= emacs
-EMACSFLAGS = -L .
+EMACSFLAGS = -Q -L .
 CASK = cask
 VERSION = $(shell git describe --tags --abbrev=0 | sed 's/^v//')
 PKG = parinfer-rust-mode
