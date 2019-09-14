@@ -207,6 +207,10 @@
   "Used to track when an undo action is performed, so we can temporarily disable parinfer"
   (setq-local parinfer-rust--undo-p 't))
 
+(defun parinfer-rust--untrack-undo (&rest _)
+  "Used to turn off tracking of undo"
+  (setq-local parinfer-rust--undo-p nil))
+
 (defun parinfer-rust-toggle-debug ()
   (if parinfer-enabled-p
       (setq parinfer-rust--debug-p nil)
@@ -224,18 +228,21 @@
   (setq-local parinfer-rust--mode "paren")
   (parinfer-rust--execute)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
-  (advice-add 'undo :before (lambda (&rest _) (setq-local parinfer-rust--undo-p 't)))
-  (advice-add 'undo :after (lambda (&rest _) (setq-local parinfer-rust--undo-p nil)))
+  (advice-add 'undo :before 'parinfer-rust--track-undo)
+  (advice-add 'undo :after 'parinfer-rust--untrack-undo)
   (when (fboundp 'undo-tree-undo)
-    (advice-add 'undo-tree-undo :before 'parinfer-rust--track-undo))
+    (advice-add 'undo-tree-undo :before 'parinfer-rust--track-undo)
+    (advice-add 'undo-tree-undo :after 'parinfer-rust--untrack-undo))
   (add-hook 'after-change-functions 'parinfer-rust--track-changes t t)
   (add-hook 'post-command-hook 'parinfer-rust--execute t t))
 
 (defun parinfer-rust-mode-disable ()
   "Disable Parinfer"
   (advice-remove 'undo 'parinfer-rust--track-undo)
+  (advice-remove 'undo 'parinfer-rust--untrack-undo)
   (when (fboundp 'undo-tree-undo)
-    (advice-add 'undo-tree-undo :before 'parinfer-rust--track-undo))
+    (advice-remove 'undo-tree-undo 'parinfer-rust--track-undo)
+    (advice-remove 'undo-tree-undo 'parinfer-rust--untrack-undo))
   (remove-hook 'after-change-functions 'parinfer-rust--track-changes t)
   (remove-hook 'post-command-hook 'parinfer-rust--execute t)
   (setq-local parinfer-enabled-p nil))
