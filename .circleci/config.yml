@@ -5,6 +5,7 @@ default: &default-steps
   steps:
     - checkout
     - run: apt-get update && apt-get install make -y
+    - run export parinfer_rust_test="true"
     - run: make version
     # - run: make lint
     - run: make test
