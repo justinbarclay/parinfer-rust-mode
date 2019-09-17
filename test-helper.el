@@ -36,6 +36,7 @@
 (defvar-local parinfer-rust--test-no-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
 (defvar-local parinfer-rust--test-has-no-prev-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
 (defvar-local parinfer-rust--test-line-no nil "The line change that the current change/replace is happening on")
+(defvar-local parinfer-rust--test-p 't "Boolean value for running tests in the current buffer")
 (defvar-local parinfer-rust--debug-p 't "Tell parinfer-rust-mode to print out it's debug information to a file")
 (defvar-local remove-first-line-p nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
 (defvar parinfer-result-string nil "Result of running a test on parinfer")
@@ -192,7 +193,7 @@ it makes no sense to convert it to a string using
       (insert test-string)
       (when changes
         (progn
-          (mapcar
+          (mapc
            'reverse-changes-in-buffer
            (reverse changes))))
       (goto-char 0)
@@ -200,7 +201,7 @@ it makes no sense to convert it to a string using
       (parinfer-rust-mode)
       (setq-local parinfer-rust--mode mode)
       (when changes
-        (mapcar
+        (mapc
          'apply-changes-in-buffer
          changes))
       (move-cursor-to-current-position)

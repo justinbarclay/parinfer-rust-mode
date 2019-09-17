@@ -73,6 +73,7 @@
 (defvar-local parinfer-rust--current-changes nil "The set of currently tracked changes since parinfer-rust--execute was ran")
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
 (defvar-local parinfer-rust--undo-p nil "Tracks if the user has recently run the undo command")
+(defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
 
 ;; Helper functions
 (defun parinfer-rust--get-cursor-x ()
