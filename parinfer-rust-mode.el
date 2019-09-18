@@ -34,7 +34,7 @@
                                     ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode")
-(defconst parinfer-rust-version "123" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
+(defconst parinfer-rust-supported-version "123" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
 (defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
 
 (defvar-local parinfer-rust--test-p (not (not (getenv "parinfer_rust_test"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
@@ -46,14 +46,18 @@
 
 (require 'parinfer-helper)
 
-(parinfer-rust--check-for-library parinfer-rust-version
+(parinfer-rust--check-for-library parinfer-rust-supported-version
                                   parinfer-rust-library
                                   parinfer-rust--lib-name) ;; Check for library and download if necessary
 (require 'parinfer-rust parinfer-rust-library)
 (require 'subr-x)
 (require 'cl)
 
-(parinfer-rust--check-version parinfer-rust-version
+;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
+
+
+(parinfer-rust--check-version parinfer-rust-supported-version
+                              (parinfer-rust-version)
                               parinfer-rust-library
                               parinfer-rust--lib-name) ;; Check version and prompt to download latest version if out of date
 

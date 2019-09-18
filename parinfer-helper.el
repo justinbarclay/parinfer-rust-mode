@@ -38,12 +38,12 @@
     (parinfer-rust--download-from-github supported-version library-location lib-name)))
 
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
-(defun parinfer-rust--check-version (supported-version library-location lib-name)
+(defun parinfer-rust--check-version (supported-version current-version library-location lib-name)
   "Checks to see if parinfer-rust version library currently installed is compatible with parinfer-rust-helper.
    If it is not compatible, offer to download the file for the user"
-  (when (and (parinfer-rust-version)
-             (not (equalp
-                   (parinfer-rust-version)
+  (when (and current-version
+             (not (string=
+                   current-version
                    supported-version))
              (and
               (not (bound-and-true-p parinfer-rust--test-p))
@@ -72,10 +72,10 @@
 (defun parinfer-rust--detetect-troublesome-modes ()
   "Checks to see if a list of troublesome modes are enabled in the same buffer and offers to disables them for the user.
   If the user does not disable these modes then it may cause bugs or crashes"
-    (let (warning-list)
+  (let ((warning-list))
       (dolist (mode '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode))
         (when (parinfer-rust--is-active-minor-mode mode)
-          (push mode 'warning-list)))
+          (push mode warning-list)))
       (if (and
            warning-list
            (yes-or-no-p
@@ -85,3 +85,4 @@
             (apply mode '(-1))))))
 
 (provide 'parinfer-helper)
+;;; parinfer-helper.el ends here

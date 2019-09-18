@@ -53,9 +53,9 @@ After you download parinfer-rust-mode, add the following to your init.el file
 *** MELPA
 Coming soon...
 ** Commands
-| Key   | Command                     | Description                                                                                                                             |
-|-------+-----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------|
-| C-c s | parinfer-switch-mode        | Quickly switch between paren, indent, and smart modes                                                                                   |
+| Key   | Command                    | Description                                                                                                                            |
+|-------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------|
+| C-c s | parinfer-switch-mode       | Quickly switch between paren, indent, and smart modes                                                                                  |
 | C-c d | Disable parinfer-rust-mode | Sometimes you need to make a change or undo things quickly and the easiest way to accomplish that is with parinfer-rust-mode disabled. |
 
 ** Modes
