@@ -29,39 +29,20 @@
 
 ;;; Code:
 
-;; Need to define these two before parinfer-rust and parinfer-helper are called
+;; Need to define these before parinfer-rust and parinfer-helper are loaded
 (defconst parinfer-rust--lib-name (cond
                                     ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode")
 (defconst parinfer-rust-supported-version "123" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
 (defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
-
 (defvar-local parinfer-rust--test-p (not (not (getenv "parinfer_rust_test"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
 
+;; User customizations
 (defcustom parinfer-rust-library (locate-user-emacs-file parinfer-rust--lib-name)
   "The location to store or to find the parinfer-rust library."
   :type 'file
   :group 'parinfer-rust-mode)
-
-(require 'parinfer-helper)
-
-(parinfer-rust--check-for-library parinfer-rust-supported-version
-                                  parinfer-rust-library
-                                  parinfer-rust--lib-name) ;; Check for library and download if necessary
-
-(require 'parinfer-rust parinfer-rust-library)
-(require 'subr-x)
-(require 'cl)
-
-;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
-
-
-(parinfer-rust--check-version parinfer-rust-supported-version
-                              (parinfer-rust-version)
-                              parinfer-rust-library
-                              parinfer-rust--lib-name) ;; Check version and prompt to download latest version if out of date
-
 (defcustom parinfer-rust-preferred-mode "smart"
   "The location to store or to find the parinfer-rust library."
   :type '(radio (const :tag "indent" "indent")
@@ -69,10 +50,26 @@
                 (const :tag "paren" "paren"))
   :group 'parinfer-rust-mode)
 
+(require 'parinfer-helper)
 
-;; Local Vars
+;; Make sure the library is installed at the appropriate location or offer to download it for the user
+(parinfer-rust--check-for-library parinfer-rust-supported-version
+                                  parinfer-rust-library
+                                  parinfer-rust--lib-name)
+
+(require 'parinfer-rust parinfer-rust-library)
+(require 'subr-x)
+(require 'cl)
+
+;; This function has a problem: Emacs can't reload dynamic libraries, which means that if we download a new library the user has to restart Emacs for changes to take effect.
+(parinfer-rust--check-version parinfer-rust-supported-version
+                              (parinfer-rust-version)
+                              parinfer-rust-library
+                              parinfer-rust--lib-name) ;; Check version and prompt to download latest version if out of date
+
+;; Mode local variables
 (defvar-local parinfer-enabled-p nil "Tracks if parinfer has been enabled")
-(defvar-local parinfer-rust--debug-p nil "When enabled, outputs the response input and output of the parinfer response to a file") ;; TODO: Set a specific file in emacs home directory
+(defvar-local parinfer-rust--debug-p nil "When enabled, outputs the response input and output of the parinfer response to a file")
 (defvar-local parinfer-rust--mode "paren" "The current mode that parinfer running under to managing your paranthesis. Either 'paren', 'indent', or 'smart'")
 (defvar-local parinfer-rust--previous-options nil "The last set of record of changes and meta information of changes in the buffer")
 (defvar-local parinfer-rust--current-changes nil "The set of currently tracked changes since parinfer-rust--execute was ran")
@@ -127,7 +124,6 @@
                                 "")
                               (buffer-substring-no-properties region-start region-end))))
 
-;; TODO catch args out of range error
 (defun parinfer-rust--track-changes (region-start region-end length)
   "Add the current change into a list of changes from when `parinfer-rust--execute` was last run."
   (if parinfer-rust--disable
@@ -184,7 +180,7 @@
                    parinfer-rust--debug-p)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
         (if error-p
-            (message (format "%s" (parinfer-rust-get-in-error error-p "message")))
+            (message (format "%s" (parinfer-rust-get-in-error error-p "message"))) ;; TODO handle errors
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string)) ;; This stops Emacs from flickering when scrolling
               (progn
                 (save-mark-and-excursion ;; This way we automatically get our point saved
@@ -195,11 +191,11 @@
                     (switch-to-buffer current)
                     (replace-buffer-contents new-buf)
                     (kill-buffer new-buf))))))
-        (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x")) ;; TODO handle errors
+        (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-rust--reposition-cursor new-x new-line))
         (setq parinfer-rust--previous-options options)
-        (with-no-warnings ;; TODO: Fix this issue
+        (with-no-warnings ;; TODO: Should not need with-no-warnings function
           (setq-local inhibit-modification-hooks nil))))))
 
 (defun parinfer-rust-switch-mode ()
@@ -265,7 +261,7 @@
   (setq-local parinfer-enabled-p nil))
 
 (defun parinfer-rust-toggle-disable ()
-  "Temporarily, stop parinfer from tracking what you're doing or from executing parinfer-rust--execute"
+  "Temporarily stop parinfer from tracking what you're doing or from executing parinfer-rust--execute"
   (interactive)
   (if parinfer-rust--disable
       (setq-local parinfer-rust--disable nil)
