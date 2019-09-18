@@ -78,6 +78,7 @@
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
 (defvar-local parinfer-rust--undo-p nil "Tracks if the user has recently run the undo command")
 (defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
+(defvar-local parinfer-rust--ignore-post-command-hook nil "A hack to not run parinfer-execute after an undo has finished processing")
 
 ;; Helper functions
 (defun parinfer-rust--get-cursor-x ()
@@ -157,9 +158,11 @@
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer"
   (interactive)
-  (when (not (or parinfer-rust--disable ;; Don't run if disabled by user or right after an undo
-                 parinfer-rust--undo-p))
-      nil
+  (if (or parinfer-rust--disable ;; Don't run if disabled by user or right after an undo
+          parinfer-rust--undo-p
+          parinfer-rust--ignore-post-command-hook)
+      (if parinfer-rust--ignore-post-command-hook
+          (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
       (let* ((old-options (or (local-bound-and-true parinfer-rust--previous-options)
@@ -208,13 +211,21 @@
                                nil
                                t)))
 
+;; The idea for these two functions:
+;; 1. is to never run during an undo operation
+;; 2. Ignore the first post command execution after an undo operation
+;; 2 is important because if we undo our last key press and that causes
+;; parinfer to modify the buffer we get stuck in a loop of trying to undo
+;; things and parinfer redoing them
 (defun parinfer-rust--track-undo (&rest _)
   "Used to track when an undo action is performed, so we can temporarily disable parinfer"
   (setq-local parinfer-rust--undo-p 't))
 
 (defun parinfer-rust--untrack-undo (&rest _)
   "Used to turn off tracking of undo"
-  (setq-local parinfer-rust--undo-p nil))
+  (setq-local parinfer-rust--undo-p nil)
+  ;; Always ignore the first post-command-hook run of parinfer after an undo
+  (setq-local parinfer-rust--ignore-post-command-hook 't))
 
 (defun parinfer-rust-toggle-debug ()
   (if parinfer-enabled-p
