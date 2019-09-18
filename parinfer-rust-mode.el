@@ -4,7 +4,7 @@
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.3.0
+;; Version: 0.4.1
 ;; Package-Requires: ((emacs "25"))
 ;; Keywords: lisps
 
@@ -49,6 +49,7 @@
 (parinfer-rust--check-for-library parinfer-rust-supported-version
                                   parinfer-rust-library
                                   parinfer-rust--lib-name) ;; Check for library and download if necessary
+
 (require 'parinfer-rust parinfer-rust-library)
 (require 'subr-x)
 (require 'cl)
