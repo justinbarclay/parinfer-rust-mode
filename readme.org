@@ -79,3 +79,7 @@ parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers
 - This is still alpha software and parinfer-rust has been known to get ~Out of Memory~ warnings and cause Emacs to crash, so use at your own risk.
 - Multiple cursors do not work as intended
 - Does not play well with other modes that insert parens or manage whitespace. If you have modes like electric-pair-mode or hungry-delete-mode enabled, you may want to disable them for any mode that has parinfer-rust-mode enabled. To help users work around this we offer to disable known troublesome modes if we detect them.
+** Thanks
+- Shaun Lebron for creating Parinfer
+- Jason Felice for creating and maintaining the parinfer-rust project
+- tianshu for helping me fall in love with parinfer-mode in Emacs.
