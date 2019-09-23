@@ -13,7 +13,7 @@ Capabilities:
 1. Emacs (25+) compiled with Dynamic Module support.
 2. Running on MacOS/Linux, with Windows support coming soon.
 3. (Optional) Curl - to download the library for you
-** Installation
+** Installing
 *** Building library from sources
 **** Build the Parinfer Rust library
 When compiling manually the library name differs from platform to platform. Additionally, Emacs expects that these libraries have specific file extensions when first loading them up. This is a problem for MacOS because Rust compiles it as ~.dylib~ and we'll need to give the file an ~.so~ extension when we copy it to it's final location.
