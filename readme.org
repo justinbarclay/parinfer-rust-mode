@@ -8,7 +8,8 @@ Capabilities:
   - Influencing expression-nesting with indentation
   - Maintaining indentation when expressions shift
   - Allowing Paredit-like features without hotkeys
-
+** Warning
+This is still beta software, please check out the [[#user-content-known-issues][Known Issues]] section before using.
 ** Requirements
 1. Emacs (25+) compiled with Dynamic Module support.
 2. Running on MacOS/Linux, with Windows support coming soon.
