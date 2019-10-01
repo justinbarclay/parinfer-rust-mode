@@ -51,11 +51,12 @@
     (parinfer-rust--download-from-github supported-version library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
+
 (defun parinfer-rust--download-from-github (parinfer-rust-version library-location lib-name)
   (if (executable-find "curl")
-      (shell-command (format "curl -L %s -o %s"
-                             (format "https://github.com/eraserhd/parinfer-rust/releases/download/%s/%s" parinfer-rust-version lib-name)
-                             library-location))
+    (shell-command (format "curl -L %s -o %s"
+                           (format "https://github.com/eraserhd/parinfer-rust/releases/download/v%s/%s" parinfer-rust-version lib-name)
+                           library-location))
     (message "Unable to download parinfer-rust library because curl is not on $PATH")))
 
 (defun parinfer-rust--is-active-minor-mode (minor-mode-maybe)
