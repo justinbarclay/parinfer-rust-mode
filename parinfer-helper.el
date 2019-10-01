@@ -54,7 +54,7 @@
 (defun parinfer-rust--download-from-github (parinfer-rust-version library-location lib-name)
   (if (executable-find "curl")
       (shell-command (format "curl -L %s -o %s"
-                             (format "https://github.com/justinbarclay/parinfer-rust/releases/download/%s/%s" parinfer-rust-version lib-name)
+                             (format "https://github.com/eraserhd/parinfer-rust/releases/download/%s/%s" parinfer-rust-version lib-name)
                              library-location))
     (message "Unable to download parinfer-rust library because curl is not on $PATH")))
 
