@@ -1,86 +1,82 @@
 #+ATTR_HTML: :alt CirclCI
 [[https://circleci.com/gh/justinbarclay/parinfer-smart-mode][https://circleci.com/gh/justinbarclay/parinfer-rust-mode.svg?style=svg]]
 * Parinfer
-[[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. It infers the meaning of your code through whitespace.
-
-Capabilities:
-  - Making code auto-adhere to formatting conventions
-  - Influencing expression-nesting with indentation
-  - Maintaining indentation when expressions shift
-  - Allowing Paredit-like features without hotkeys
-** Warning
-This is still beta software, please check out the [[#user-content-known-issues][Known Issues]] section before using.
+  [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library wraps [[https://github.com/justinbarclay/parinfer-rust][justinbarclay/parinfer-rust]] to provide an Emacs minor mode. parinfer-rust-mode aims to be a simpler adaptation of Parinfer that only offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
+** Capabilities:
+   - Making code auto-adhere to formatting conventions
+   - Influencing expression-nesting with indentation
+   - Maintaining indentation when expressions shift
+   - Allowing Paredit-like features without hot keys
 ** Requirements
-1. Emacs (25+) compiled with Dynamic Module support.
-2. Running on MacOS/Linux, with Windows support coming soon.
-3. (Optional) Curl - to download the library for you
-** Installing
-*** Building library from sources
-**** Build the Parinfer Rust library
-When compiling manually the library name differs from platform to platform. Additionally, Emacs expects that these libraries have specific file extensions when first loading them up. This is a problem for MacOS because Rust compiles it as ~.dylib~ and we'll need to give the file an ~.so~ extension when we copy it to it's final location.
+   1. Emacs (25+) compiled with Dynamic Module support.
+   2. Running on MacOS/Linux, with Windows support coming soon.
+   3. (Optional) Curl - to download the library for you
+** Installation
+*** Option 1: Building library from sources
+**** Step 1: Build the Parinfer Rust library
+     When compiling manually the library name differs from platform to platform. Additionally, Emacs expects that these libraries have specific file extensions when first loading them up. This is a problem for MacOS because Rust compiles it as ~.dylib~ and we'll need to give the file an ~.so~ extension when we copy it to it's final location.
 
-| Platform | File name              | Required extension |
-|----------+------------------------+--------------------|
-| Linux    | libparinfer_rust.so    | .so                |
-| MacOS    | libparinfer_rust.dylib | .so                |
-| Windows  | parinfer_rust.dll      | .dll               |
+     | Platform | File name              | Required extension |
+     |----------+------------------------+--------------------|
+     | Linux    | libparinfer_rust.so    | .so                |
+     | MacOS    | libparinfer_rust.dylib | .so                |
+     | Windows  | parinfer_rust.dll      | .dll               |
 
-#+BEGIN_SRC shell
-git clone git@github.com:justinbarclay/parinfer-rust.git
-cd parinfer-rus
-git checkout emacs-integrations
-cargo build --release
-cp ./target/release/${library-name} ~/.emacs.d/parinfer-rust/${lib-name}
-#+END_SRC
-**** Configure parinfer-rust-mode
-Once you have compiled the libraries from source code you'll need to tell ~parinfer-rust-mode~ how to find these libraries
-#+BEGIN_SRC elisp
-(setq parinfer-rust-library "/path/to/parinfer-rust-library.so")
-#+END_SRC
+     #+BEGIN_SRC shell
+       git clone git@github.com:justinbarclay/parinfer-rust.git
+       cd parinfer-rus
+       git checkout emacs-integrations
+       cargo build --release
+       cp ./target/release/${library-name} ~/.emacs.d/parinfer-rust/${lib-name}
+     #+END_SRC
+**** Step 2: Configure parinfer-rust-mode
+     Once you have compiled the libraries from source code you'll need to tell ~parinfer-rust-mode~ how to find these libraries
+     #+BEGIN_SRC elisp
+       (setq parinfer-rust-library "/path/to/parinfer-rust-library.so")
+     #+END_SRC
 
-*** Manual
-Download parinfer-rust-mode
-#+BEGIN_SRC shell
-cd /path/for/elisp-packages
-git clone git@github.com:justinbarclay/parinfer-rust-mode.git
-#+END_SRC
+*** Option 2: Manual
+**** Step 1: Download parinfer-rust-mode
+     #+BEGIN_SRC shell
+       cd /path/for/elisp-packages
+       git clone git@github.com:justinbarclay/parinfer-rust-mode.git
+     #+END_SRC
+**** Step 2: add the following to your init.el file
+     #+BEGIN_SRC emacs-lisp
+       (add-to-list 'load-path "/path/to/parinfer-rust-mode")
+       (add-hook 'emacs-lisp-mode 'parinfer-rust-mode)
+     #+END_SRC
 
-After you download parinfer-rust-mode, add the following to your init.el file
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "/path/to/parinfer-rust-mode")
-  (add-hook 'emacs-lisp-mode 'parinfer-rust-mode)
-#+END_SRC
-
-*** MELPA
-Coming soon?
+*** Option 3: MELPA
+    Coming soon?
 ** Commands
-| Key   | Command                    | Description                                                                                                                            |
-|-------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------|
-| C-c s | parinfer-switch-mode       | Quickly switch between paren, indent, and smart modes                                                                                  |
-| C-c d | Disable parinfer-rust-mode | Sometimes you need to make a change or undo things quickly and the easiest way to accomplish that is with parinfer-rust-mode disabled. |
+   | Key   | Command                    | Description                                                                                                                            |
+   |-------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------|
+   | C-c s | parinfer-switch-mode       | Quickly switch between paren, indent, and smart modes                                                                                  |
+   | C-c d | Disable parinfer-rust-mode | Sometimes you need to make a change or undo things quickly and the easiest way to accomplish that is with parinfer-rust-mode disabled. |
 
 ** Modes
-Parinfer can operate under three different modes when writing lisp.
+   Parinfer can operate under three different modes when writing lisp.
 *** Paren
-Paren Mode gives you full control of parens, while Parinfer corrects indentation. You can still adjust indentation, but you won't be able to indent/dedent past certain boundaries set by parens on previous lines.
+    Paren Mode gives you full control of parens, while Parinfer corrects indentation. You can still adjust indentation, but you won't be able to indent/dedent past certain boundaries set by parens on previous lines.
 
-[[./videos/paren-mode.gif]]
+    [[./videos/paren-mode.gif]]
 *** Indent
-Indent Mode gives you full control of indentation, while Parinfer corrects or inserts close-parens where appropriate. Specifically, it only touches the groups of close-parens at the end of each line.
+    Indent Mode gives you full control of indentation, while Parinfer corrects or inserts close-parens where appropriate. Specifically, it only touches the groups of close-parens at the end of each line.
 
-[[./videos/indent-mode.gif]]
+    [[./videos/indent-mode.gif]]
 *** Smart
-Smart Mode is like Indent Mode, but it tries to preserve the structure too.
+    Smart Mode is like Indent Mode, but it tries to preserve the structure too.
 
-[[./videos/smart-mode.gif]]
+    [[./videos/smart-mode.gif]]
 ** parinfer-mode
-There is an alternate implementation of Parinfer for Emacs called [[https://github.com/DogLooksGood/parinfer-mode][parinfer-mode]]. It currently has support for Parinfer's "paren" and "indent". Additionally, it has had experimental support for "smart" mode, however, this has remained hidden on a branch and not accessible from MELPA for over a year.
-parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
+   There is an alternate implementation of Parinfer for Emacs called [[https://github.com/DogLooksGood/parinfer-mode][parinfer-mode]]. It currently has support for Parinfer's "paren" and "indent". Additionally, it has had experimental support for "smart" mode, however, this has remained hidden on a branch and not accessible from MELPA for over a year.
+   parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
 ** Known Issues
-- This is still alpha software and parinfer-rust has been known to get ~Out of Memory~ warnings and cause Emacs to crash, so use at your own risk.
-- Multiple cursors do not work as intended
-- Does not play well with other modes that insert parens or manage whitespace. If you have modes like electric-pair-mode or hungry-delete-mode enabled, you may want to disable them for any mode that has parinfer-rust-mode enabled. To help users work around this we offer to disable known troublesome modes if we detect them.
+   - This is still alpha software and parinfer-rust has been known to get ~Out of Memory~ warnings and cause Emacs to crash, so use at your own risk.
+   - Multiple cursors do not work as intended
+   - Does not play well with other modes that insert parens or manage whitespace. If you have modes like electric-pair-mode or hungry-delete-mode enabled, you may want to disable them for any mode that has parinfer-rust-mode enabled. To help users work around this we offer to disable known troublesome modes if we detect them.
 ** Thanks
-- Shaun Lebron for creating Parinfer
-- Jason Felice for creating and maintaining the parinfer-rust project
-- tianshu for helping me fall in love with parinfer-mode in Emacs.
+   - Shaun Lebron for creating Parinfer
+   - Jason Felice for creating and maintaining the parinfer-rust project
+   - tianshu for helping me fall in love with parinfer-mode in Emacs.
