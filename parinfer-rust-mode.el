@@ -59,7 +59,7 @@
 
 (require 'parinfer-rust parinfer-rust-library)
 (require 'subr-x)
-(require 'cl)
+(require 'cl-lib)
 
 ;; This function has a problem: Emacs can't reload dynamic libraries, which means that if we download a new library the user has to restart Emacs for changes to take effect.
 (parinfer-rust--check-version parinfer-rust-supported-version
