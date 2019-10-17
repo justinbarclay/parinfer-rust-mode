@@ -51,7 +51,7 @@
 (defvar-local parinfer-rust--test-p (not (not (getenv "parinfer_rust_test"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
 
 ;; User customizations
-(defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/") parinfer-rust--lib-name)
+(defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/" parinfer-rust--lib-name))
   "The location to store or to find the parinfer-rust library."
   :type 'file
   :group 'parinfer-rust-mode)
