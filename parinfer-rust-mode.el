@@ -4,7 +4,7 @@
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.4.1
+;; Version: 0.4.3
 ;; Package-Requires: ((emacs "25"))
 ;; Keywords: lisps
 
@@ -27,7 +27,19 @@
 
 ;; Manage your parenthesis automatically based on whitespace.
 
-;;; Code:
+;; `parinfer-rust-mode` provides an interface between the `parinfer-rust` library
+;; and Emacs. As such it's primary role is to capture meta information about the
+;; buffer and transmit it to the parinfer-rust api.
+;;
+;; In broad strokes we must:
+;; 1. Monitor and record all changes and meta information about changes in the buffer
+;; 2. Keep a record of the buffer state before the last time parinfer-rust was run
+;; 3. Run parinfer-rust and update the state of the buffer accordingly
+;;
+;; For a complete list of state that needs to be tracked read:
+;; https://github.com/shaunlebron/parinfer/tree/master/lib#api
+;; https://github.com/shaunlebron/parinfer/blob/master/lib/doc/integrating.md
+;; Code:
 
 ;; Need to define these before parinfer-rust and parinfer-helper are loaded
 (defconst parinfer-rust--lib-name (cond
