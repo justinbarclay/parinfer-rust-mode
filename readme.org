@@ -23,9 +23,8 @@
      | Windows  | parinfer_rust.dll      | .dll               |
 
      #+BEGIN_SRC shell
-       git clone git@github.com:justinbarclay/parinfer-rust.git
-       cd parinfer-rus
-       git checkout emacs-integrations
+       git clone https://github.com/eraserhd/parinfer-rust.git
+       cd parinfer-rust
        cargo build --release
        cp ./target/release/${library-name} ~/.emacs.d/parinfer-rust/${lib-name}
      #+END_SRC
