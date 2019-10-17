@@ -83,7 +83,7 @@
            warning-list
            (yes-or-no-p
                 (format "The following modes may cause issues with parinfer-rust, do you want to disable them? Mode(s): %s"
-                        (mapconcat (lambda (sym) (symbol-name sym)) warning-list ","))))
+                        (mapconcat (lambda (sym) (symbol-name sym)) warning-list ", "))))
           (dolist (mode warning-list)
             (apply mode '(-1))))))
 
