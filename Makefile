@@ -27,7 +27,7 @@ build: version elpa
 version:
 	$(EMACS) --version
 
-test: version build
+test: clean version build
 	$(CASK) exec ert-runner test/**.el --quiet
 
 lint: version elpa
@@ -35,6 +35,7 @@ lint: version elpa
 		--eval "(setq enable-local-variables :safe)" \
 		-l elisp-lint.el -f elisp-lint-files-batch \
 		--no-package-format \
+		--no-indent-character \
                 --no-fill-column \
 		$(ELS)
 

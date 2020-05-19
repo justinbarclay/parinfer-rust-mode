@@ -56,7 +56,7 @@
   :type 'file
   :group 'parinfer-rust-mode)
 (defcustom parinfer-rust-preferred-mode "smart"
-  "The location to store or to find the parinfer-rust library."
+  "What mode you want parinfer-rust to start in."
   :type '(radio (const :tag "indent" "indent")
                 (const :tag "smart" "smart")
                 (const :tag "paren" "paren"))
@@ -204,8 +204,8 @@
                     (switch-to-buffer current)
                     (replace-buffer-contents new-buf)
                     (kill-buffer new-buf))))))
-        (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
-                   (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
+        (when-let* ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
+                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-rust--reposition-cursor new-x new-line))
         (setq parinfer-rust--previous-options options)
         (with-no-warnings ;; TODO: Should not need with-no-warnings function

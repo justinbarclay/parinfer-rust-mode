@@ -3,7 +3,7 @@ version: 2.1
 # Default actions to perform on each Emacs version
 default: &default-steps
   environment:
-    parinfer_rust_test: true
+    PARINFER_RUST_TEST: true
   steps:
     - checkout
     - run: apt-get update && apt-get install make -y
