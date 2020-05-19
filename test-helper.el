@@ -65,14 +65,14 @@ it makes no sense to convert it to a string using
       (narrow-to-region beg end)
       (goto-char (point-min))
       (let ((repl (funcall replace-fn)))
-	(if (bufferp repl)
-	    (replace-buffer-contents repl max-secs max-costs)
-	  (let ((source-buffer (current-buffer)))
-	    (with-temp-buffer
-	      (insert repl)
-	      (let ((tmp-buffer (current-buffer)))
-		(set-buffer source-buffer)
-		(replace-buffer-contents tmp-buffer)))))))))
+        (if (bufferp repl)
+            (replace-buffer-contents repl max-secs max-costs)
+          (let ((source-buffer (current-buffer)))
+            (with-temp-buffer
+              (insert repl)
+              (let ((tmp-buffer (current-buffer)))
+                (set-buffer source-buffer)
+    (replace-buffer-contents tmp-buffer)))))))))
 
 (defun move-cursor-to-previous-position ()
   (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
