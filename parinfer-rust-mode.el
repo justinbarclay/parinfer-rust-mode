@@ -169,7 +169,8 @@
   (interactive)
   (if (or parinfer-rust--disable ;; Don't run if disabled by user or right after an undo
           parinfer-rust--undo-p
-          parinfer-rust--ignore-post-command-hook)
+          parinfer-rust--ignore-post-command-hook
+          undo-in-progress)
       (if parinfer-rust--ignore-post-command-hook
           (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
