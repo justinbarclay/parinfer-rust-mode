@@ -12,8 +12,40 @@
    2. Running on MacOS/Linux, with Windows support coming soon.
    3. (Optional) Curl - to download the library for you
 ** Installation
-*** Option 1: Building library from sources
-**** Step 1: Build the Parinfer Rust library
+*** parinfer-rust-mode
+**** From source
+You can install ~parinfer-rust-mode~ from source (this github repo)
+#+BEGIN_SRC shell
+  cd /path/for/elisp-packages
+  git clone git@github.com:justinbarclay/parinfer-rust-mode.git
+#+END_SRC
+
+After that add it to your load path and go wild.
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "/path/to/parinfer-rust-mode")
+  (add-hook 'emacs-lisp-mode 'parinfer-rust-mode)
+#+END_SRC
+
+**** Use Package and Quelpa
+Alternatively, you can tell something like [[https://github.com/quelpa/quelpa-use-package][quelpa-use-package]] to manage it for you.
+#+BEGIN_SRC emacs-lisp
+  (use-package parinfer-rust-mode
+    :hook emacs-list-mode
+    :quelpa ((parinfer-rust-mode
+              :fetcher git
+              :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
+             :upgrade nil))
+#+END_SRC
+
+*** parinfer-rust library
+You'll also need to have the library installed on your system for you somewhere.
+**** Option 1: Let Parinfer Rust install it for you
+That's it. There are no instructions here. When parinfer-rust-mode prompts you to download the library, say yes. ~parinfer-rust-mode~ will then use curl to download ~parinfer-rust~ and save it in ~${EMACS_DIRECTORY}/parinfer-rust/~.
+
+If you're curious, you can find the library files that parinfer-rust-mode downloads as release artifacts for [[https://github.com/eraserhd/parinfer-rust/releases/tag/v0.4.3][parinfer-rust]].
+**** Option 2: Building library from sources
+For the more adventurous of you, you can also download the ~parinfer-rust~ library from source and compile it.
+***** Step 1: Build the Parinfer Rust library
      When compiling manually the library name differs from platform to platform. Additionally, Emacs expects that these libraries have specific file extensions when first loading them up. This is a problem for MacOS because Rust compiles it as ~.dylib~ and we'll need to give the file an ~.so~ extension when we copy it to it's final location.
 
      | Platform | File name              | Required extension |
@@ -28,26 +60,12 @@
        cargo build --release
        cp ./target/release/${library-name} ~/.emacs.d/parinfer-rust/${lib-name}
      #+END_SRC
-**** Step 2: Configure parinfer-rust-mode
+***** Step 2: Configure parinfer-rust-mode
      Once you have compiled the libraries from source code you'll need to tell ~parinfer-rust-mode~ how to find these libraries
      #+BEGIN_SRC elisp
        (setq parinfer-rust-library "/path/to/parinfer-rust-library.so")
      #+END_SRC
 
-*** Option 2: Manual
-**** Step 1: Download parinfer-rust-mode
-     #+BEGIN_SRC shell
-       cd /path/for/elisp-packages
-       git clone git@github.com:justinbarclay/parinfer-rust-mode.git
-     #+END_SRC
-**** Step 2: add the following to your init.el file
-     #+BEGIN_SRC emacs-lisp
-       (add-to-list 'load-path "/path/to/parinfer-rust-mode")
-       (add-hook 'emacs-lisp-mode 'parinfer-rust-mode)
-     #+END_SRC
-
-*** Option 3: MELPA
-    Coming soon?
 ** Commands
    | Key   | Command                    | Description                                                                                                                            |
    |-------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------|
@@ -75,6 +93,40 @@
    - This is still alpha software and parinfer-rust has been known to get ~Out of Memory~ warnings and cause Emacs to crash, so use at your own risk.
    - Multiple cursors do not work as intended
    - Does not play well with other modes that insert parens or manage whitespace. If you have modes like electric-pair-mode or hungry-delete-mode enabled, you may want to disable them for any mode that has parinfer-rust-mode enabled. To help users work around this we offer to disable known troublesome modes if we detect them.
+
+** Contributing
+If you'd like to help contribute to the development of ~parinfer-rust-mode~ the only caveat interesting section of note is the testing framework. 
+
+~parinfer-rust-mode~ relies on [[https://github.com/cask/cask][Cask]] to manage development libraries and to set-up the tests themselves.
+
+Then after you have made some changes just run:
+#+BEGIN_SRC shell
+PARINFER_RUST_TEST=true make test
+#+END_SRC
+
+And you should get something like:
+#+BEGIN_SRC shell
+✦ ❯ PARINFER_RUST_TEST=true make test
+emacs --version
+GNU Emacs 28.0.50
+Copyright (C) 2020 Free Software Foundation, Inc.
+GNU Emacs comes with ABSOLUTELY NO WARRANTY.
+You may redistribute copies of GNU Emacs
+under the terms of the GNU General Public License.
+For more information about these matters, see the file named COPYING.
+cask build
+Compiling /home/justin/dev/parinfer-rust-mode/parinfer-helper.el...
+Compiling /home/justin/dev/parinfer-rust-mode/parinfer-rust-mode-autoloads.el...
+Compiling /home/justin/dev/parinfer-rust-mode/parinfer-rust-mode.el...
+
+In toplevel form:
+parinfer-rust-mode.el:72:1: Error: Symbol’s value as variable is void: parinfer-rust-library
+Compiling /home/justin/dev/parinfer-rust-mode/test-helper.el...
+cask exec ert-runner test/**.el --quiet
+...............................................................................................................................................
+
+Ran 143 tests in 0.061 seconds
+#+END_SRC
 ** Thanks
    - Shaun Lebron for creating Parinfer
    - Jason Felice for creating and maintaining the parinfer-rust project
