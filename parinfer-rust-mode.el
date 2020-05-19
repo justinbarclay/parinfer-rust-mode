@@ -48,7 +48,7 @@
   "System dependent library name for parinfer-rust-mode")
 (defconst parinfer-rust-supported-version "0.4.3" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
 (defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
-(defvar-local parinfer-rust--test-p (not (not (getenv "parinfer_rust_test"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
+(defvar-local parinfer-rust--test-p (not (not (getenv "PARINFER_RUST_TEST"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
 
 ;; User customizations
 (defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/" parinfer-rust--lib-name))
