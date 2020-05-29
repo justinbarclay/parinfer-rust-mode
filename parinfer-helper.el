@@ -27,7 +27,7 @@
 
 (defconst ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
-(defvar parinfer-rust--auto-download-p nil "Automatically download the latest version of ")
+(defvar parinfer-rust--auto-download-p nil "Automatically download the latest version of parinfer-rust from github")
 (defvar parinfer-rust--test-p nil "Boolean value for running tests in the current buffer")
 
 (defun parinfer-rust--check-for-library (supported-version library-location lib-name)

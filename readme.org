@@ -43,6 +43,25 @@ You'll also need to have the library installed on your system for you somewhere.
 That's it. There are no instructions here. When parinfer-rust-mode prompts you to download the library, say yes. ~parinfer-rust-mode~ will then use curl to download ~parinfer-rust~ and save it in ~${EMACS_DIRECTORY}/parinfer-rust/~.
 
 If you're curious, you can find the library files that parinfer-rust-mode downloads as release artifacts for [[https://github.com/eraserhd/parinfer-rust/releases/tag/v0.4.3][parinfer-rust]].
+
+If you would always like parinfer-rust-mode to keep the library version in sync for you, automatically download it, then add the following line into your config:
+#+BEGIN_SRC emacs-lisp
+(setq parinfer-rust--auto-download-p 't)
+#+END_SRC
+
+If you are using the `use-package` snippet from above, that would look like:
+#+BEGIN_SRC emacs-lisp
+  (use-package parinfer-rust-mode
+      :hook emacs-list-mode
+      :quelpa ((parinfer-rust-mode
+                :fetcher git
+                :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
+               :upgrade nil)
+      :init
+      (setq parinfer-rust--auto-download-p 't))
+#+END_SRC
+
+
 **** Option 2: Building library from sources
 For the more adventurous of you, you can also download the ~parinfer-rust~ library from source and compile it.
 ***** Step 1: Build the Parinfer Rust library
