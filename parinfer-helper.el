@@ -27,13 +27,16 @@
 
 (defconst ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
+(defvar parinfer-rust--auto-download-p nil "Automatically download the latest version of ")
 (defvar parinfer-rust--test-p nil "Boolean value for running tests in the current buffer")
 
 (defun parinfer-rust--check-for-library (supported-version library-location lib-name)
   "Checks for the existence of the parinfer-rust library and if it can't be found it offers to download it for the user"
   (when (and (not (file-exists-p library-location)) ;; Using when here instead of unless so we can early exit this if file does exist
              (or
-              (and (boundp parinfer-rust--test-p) parinfer-rust--test-p)
+              parinfer-rust--auto-download-p
+              (and (boundp parinfer-rust--test-p)
+                   parinfer-rust--test-p)
               (yes-or-no-p ask-to-download)))
     (parinfer-rust--download-from-github supported-version library-location lib-name)))
 
@@ -58,7 +61,8 @@
         (unless (file-directory-p (file-name-directory library-location)) (make-directory (file-name-directory library-location)))
         (shell-command (format "curl -L %s -o %s"
                                (format "https://github.com/eraserhd/parinfer-rust/releases/download/v%s/%s" parinfer-rust-version lib-name)
-                               library-location)))
+                               library-location))
+        (message "Installing %s v%s to %s" lib-name parinfer-rust-version library-location))
     (message "Unable to download parinfer-rust library because curl is not on $PATH")))
 
 (defun parinfer-rust--is-active-minor-mode (minor-mode-maybe)
