@@ -30,7 +30,7 @@ After that add it to your load path and go wild.
 Alternatively, you can tell something like [[https://github.com/quelpa/quelpa-use-package][quelpa-use-package]] to manage it for you.
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-    :hook emacs-list-mode
+    :hook emacs-lisp-mode
     :quelpa ((parinfer-rust-mode
               :fetcher git
               :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
