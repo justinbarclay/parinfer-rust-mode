@@ -60,7 +60,7 @@
       (progn
         (unless (file-directory-p (file-name-directory library-location)) (make-directory (file-name-directory library-location)))
         (shell-command (format "curl -L %s -o %s"
-                               (format "https://github.com/eraserhd/parinfer-rust/releases/download/v%s/%s" parinfer-rust-version lib-name)
+                               (format "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s" parinfer-rust-version lib-name)
                                library-location))
         (message "Installing %s v%s to %s" lib-name parinfer-rust-version library-location))
     (message "Unable to download parinfer-rust library because curl is not on $PATH")))
