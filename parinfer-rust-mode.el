@@ -211,6 +211,17 @@
         (with-no-warnings ;; TODO: Should not need with-no-warnings function
           (setq-local inhibit-modification-hooks nil))))))
 
+(defun parinfer-rust--set-default-state ()
+  "Set up parinfer for execution in a default context. Good for switching modes, after an undo,
+   or when first starting parinfer."
+  (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
+                                               (parinfer-rust-make-option)
+                                               (parinfer-rust-make-changes)))
+  (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties
+                                                   (point-min)
+                                                   (point-max)))
+  (setq-local parinfer-rust--current-changes nil))
+
 (defun parinfer-rust-switch-mode ()
   "Switch to a different Parinfer mode. Either: indent, smart, or paren"
   (interactive)
@@ -219,7 +230,8 @@
                                (remove parinfer-rust--mode
                                        parinfer-rust--mode-types)
                                nil
-                               t)))
+                               t))
+  (parinfer-rust--set-default-state))
 
 ;; The idea for this function:
 ;; 1. is to never run during an undo operation
@@ -238,7 +250,8 @@
      nil))               ;; ignored
   (setq-local parinfer-rust--undo-p nil)
   ;; Always ignore the first post-command-hook run of parinfer after an undo
-  (setq-local parinfer-rust--ignore-post-command-hook 't))
+  (setq-local parinfer-rust--ignore-post-command-hook 't)
+  (parinfer-rust--set-default-state))
 
 (defun parinfer-rust-toggle-debug ()
   (interactive)
@@ -248,16 +261,12 @@
 
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer"
-  (parinfer-rust--detect-troublesome-modes)
-  (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
-                                               (parinfer-rust-make-option)
-                                               (parinfer-rust-make-changes)))
-  (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max))) ; We need to store this separately because it's not being tracked with options anymore
   (setq-local parinfer-enabled-p 't)
-  (setq-local parinfer-rust--current-changes nil)
-  (setq-local parinfer-rust--mode "paren")
-  (parinfer-rust--execute)
-  (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
+  (parinfer-rust--detect-troublesome-modes)
+  (parinfer-rust--set-default-state)
+  (setq-local parinfer-rust--mode "paren")                        ;; As per spec, always run paren on a buffer before entering any mode
+  (parinfer-rust--execute)                                        ;; this ensure that all functions are aligned to a point parinfer won't
+  (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)   ;; change the meaning of code
   (advice-add 'undo :around 'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
     (advice-add 'undo-tree-undo :around 'parinfer-rust--track-undo))
