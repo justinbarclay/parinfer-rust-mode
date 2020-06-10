@@ -1,7 +1,7 @@
 #+ATTR_HTML: :alt CirclCI
 [[https://circleci.com/gh/justinbarclay/parinfer-smart-mode][https://circleci.com/gh/justinbarclay/parinfer-rust-mode.svg?style=svg]]
 * Parinfer
-  [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library wraps [[https://github.com/justinbarclay/parinfer-rust][justinbarclay/parinfer-rust]] to provide an Emacs minor mode. parinfer-rust-mode aims to be a simpler adaptation of Parinfer that only offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
+  [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library wraps [[https://github.com/eraserhd/parinfer-rust][eraserhd/parinfer-rust]] to provide an Emacs minor mode. parinfer-rust-mode aims to be a simpler adaptation of Parinfer that only offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
 ** Capabilities:
    - Making code auto-adhere to formatting conventions
    - Influencing expression-nesting with indentation

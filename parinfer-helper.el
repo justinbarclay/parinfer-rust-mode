@@ -54,7 +54,6 @@
     (parinfer-rust--download-from-github supported-version library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
-
 (defun parinfer-rust--download-from-github (parinfer-rust-version library-location lib-name)
   (if (executable-find "curl")
       (progn
