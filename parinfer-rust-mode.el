@@ -248,7 +248,7 @@
 
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer"
-  (parinfer-rust--detetect-troublesome-modes)
+  (parinfer-rust--detect-troublesome-modes)
   (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
                                                (parinfer-rust-make-option)
                                                (parinfer-rust-make-changes)))

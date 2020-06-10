@@ -76,7 +76,7 @@
              minor-mode-list
              :initial-value nil))
 
-(defun parinfer-rust--detetect-troublesome-modes ()
+(defun parinfer-rust--detect-troublesome-modes ()
   "Checks to see if a list of troublesome modes are enabled in the same buffer and offers to disables them for the user.
   If the user does not disable these modes then it may cause bugs or crashes"
   (let ((warning-list))
