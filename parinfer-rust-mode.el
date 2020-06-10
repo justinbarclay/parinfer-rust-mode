@@ -86,7 +86,7 @@
 (defvar-local parinfer-rust--previous-options nil "The last set of record of changes and meta information of changes in the buffer")
 (defvar-local parinfer-rust--current-changes nil "The set of currently tracked changes since parinfer-rust--execute was ran")
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
-(defvar-local parinfer-rust--undo-p nil "Tracks if the user has recently run the undo command")
+(defvar-local parinfer-rust--undo-p nil "Tracks if parinfer-rust-mode is within an undo command")
 (defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
 (defvar-local parinfer-rust--ignore-post-command-hook nil "A hack to not run parinfer-execute after an undo has finished processing")
 
@@ -221,23 +221,27 @@
                                nil
                                t)))
 
-;; The idea for these two functions:
+;; The idea for this function:
 ;; 1. is to never run during an undo operation
-;; 2. Ignore the first post command execution after an undo operation
+;; 2. Set a flag to ignore the first post command execution after an undo
+;;    operation
 ;; 2 is important because if we undo our last key press and that causes
 ;; parinfer to modify the buffer we get stuck in a loop of trying to undo
 ;; things and parinfer redoing them
-(defun parinfer-rust--track-undo (&rest _)
-  "Used to track when an undo action is performed, so we can temporarily disable parinfer"
-  (setq-local parinfer-rust--undo-p 't))
-
-(defun parinfer-rust--untrack-undo (&rest _)
-  "Used to turn off tracking of undo"
+(defun parinfer-rust--track-undo (orig-func &rest args)
+  "Used to turn on tracking of undo"
+  (setq-local parinfer-rust--undo-p 't)
+  (condition-case-unless-debug err
+      (apply orig-func args)
+    (error               ;; We want to "Ignore" errors here otherwise the function exits
+     (message "%s" (cadr err))  ;; and causes the following commands, where we set flags, to be
+     nil))               ;; ignored
   (setq-local parinfer-rust--undo-p nil)
   ;; Always ignore the first post-command-hook run of parinfer after an undo
   (setq-local parinfer-rust--ignore-post-command-hook 't))
 
 (defun parinfer-rust-toggle-debug ()
+  (interactive)
   (if parinfer-enabled-p
       (setq parinfer-rust--debug-p nil)
     (setq parinfer-rust--debug-p t)))
@@ -254,11 +258,9 @@
   (setq-local parinfer-rust--mode "paren")
   (parinfer-rust--execute)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
-  (advice-add 'undo :before 'parinfer-rust--track-undo)
-  (advice-add 'undo :after 'parinfer-rust--untrack-undo)
+  (advice-add 'undo :around 'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
-    (advice-add 'undo-tree-undo :before 'parinfer-rust--track-undo)
-    (advice-add 'undo-tree-undo :after 'parinfer-rust--untrack-undo))
+    (advice-add 'undo-tree-undo :around 'parinfer-rust--track-undo))
   (add-hook 'after-change-functions 'parinfer-rust--track-changes t t)
   (add-hook 'post-command-hook 'parinfer-rust--execute t t))
 
