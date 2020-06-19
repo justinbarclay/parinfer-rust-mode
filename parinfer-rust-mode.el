@@ -125,8 +125,8 @@
                 (widen)
                 (goto-char region-start)
                 (parinfer-rust--get-cursor-x)))) ;; We don't use region-end because region-end represents the end of change of the new text
-         (old-region-end (parinfer-rust--bound-number old-buffer-text (+ region-start length)))
-         (old-region-start (parinfer-rust--bound-number old-buffer-text region-start)))
+         (old-region-end (parinfer-rust--bound-number old-buffer-text (+ region-start length -1)))
+         (old-region-start (parinfer-rust--bound-number old-buffer-text (- region-start 1))))
     (parinfer-rust-new-change lineNo
                               x
                               (if old-buffer-text
@@ -143,6 +143,9 @@
     (let* ((old-buffer-text (when (local-variable-if-set-p 'parinfer-rust--previous-buffer-text)
                               parinfer-rust--previous-buffer-text))
            (current-change (parinfer-rust--make-change region-start region-end length old-buffer-text)))
+      (setq parinfer-rust--previous-buffer-text (save-restriction
+                                                  (widen)
+                                                  (buffer-substring-no-properties (point-min) (point-max))))
       (if parinfer-rust--current-changes
           (parinfer-rust-add-change
            parinfer-rust--current-changes
