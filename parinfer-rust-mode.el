@@ -118,7 +118,7 @@
   `(and (local-variable-if-set-p (quote ,var)) ,var))
 
 (defun parinfer-rust--make-change (region-start region-end length old-buffer-text)
-  (let* ((lineNo (- (line-number-at-pos region-start parinfer-rust--test-p)
+  (let* ((lineNo (- (line-number-at-pos region-start 't)
                     1)) ;; If we're in test-mode we want the absolute position otherwise relative is fine
          (x (save-excursion
               (save-restriction
