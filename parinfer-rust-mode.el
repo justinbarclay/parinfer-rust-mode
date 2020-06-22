@@ -89,6 +89,10 @@
 (defvar-local parinfer-rust--undo-p nil "Tracks if parinfer-rust-mode is within an undo command")
 (defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
 (defvar-local parinfer-rust--ignore-post-command-hook nil "A hack to not run parinfer-execute after an undo has finished processing")
+(defvar parinfer-rust-treat-command-as '((paredit-forward-barf-sexp . "paren")
+                                          (paredit-forward-slurp-sexp . "paren")
+                                          (yank . "paren")
+                                          (counsel-yank-pop . "paren")) "A curated alist of commands and the mode the command should be run in. This is a hack around Emacs complex command and scripting system. In some cases parinfer-rust-mode sucks at picking up the correct changes in the buffer, so the `treat-command-as` system is a means to work around `parinfer-rust-mode's` or Emacs limitations and give hints to `parinfer-rust-mode` for how you want to treat specific commands in `smart-mode`.")
 
 ;; Helper functions
 (defun parinfer-rust--get-cursor-x ()
@@ -119,7 +123,7 @@
 
 (defun parinfer-rust--make-change (region-start region-end length old-buffer-text)
   (let* ((lineNo (- (line-number-at-pos region-start 't)
-                    1)) ;; If we're in test-mode we want the absolute position otherwise relative is fine
+                    1))
          (x (save-excursion
               (save-restriction
                 (widen)
@@ -178,7 +182,11 @@
           (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
-      (let* ((old-options (or (local-bound-and-true parinfer-rust--previous-options)
+      (let* ((parinfer-rust--mode (if-let ((mode (and (string= "smart" parinfer-rust--mode)
+                                                  (alist-get last-command parinfer-rust-treat-command-as))))
+                                      mode
+                                    parinfer-rust--mode))
+             (old-options (or (local-bound-and-true parinfer-rust--previous-options)
                               (parinfer-rust-make-option)))
              (changes (or (local-bound-and-true parinfer-rust--current-changes)
                           (parinfer-rust-make-changes)))
