@@ -29,7 +29,7 @@
 
 ;; `parinfer-rust-mode` provides an interface between the `parinfer-rust` library
 ;; and Emacs. As such it's primary role is to capture meta information about the
-;; buffer and transmit it to the parinfer-rust api.
+;; buffer and transmit it to the parinfer-rust API.
 ;;
 ;; In broad strokes we must:
 ;; 1. Monitor and record all changes and meta information about changes in the buffer
@@ -39,15 +39,16 @@
 ;; For a complete list of state that needs to be tracked read:
 ;; https://github.com/shaunlebron/parinfer/tree/master/lib#api
 ;; https://github.com/shaunlebron/parinfer/blob/master/lib/doc/integrating.md
-;; Code:
+;;; Code:
 
 ;; Need to define these before parinfer-rust and parinfer-helper are loaded
 (defconst parinfer-rust--lib-name (cond
                                     ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
-  "System dependent library name for parinfer-rust-mode")
-(defconst parinfer-rust-supported-version "0.4.4-beta" "The version of the parinfer-rust library that parinfer-rust-mode was tested against")
-(defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on")
+  "System dependent library name for parinfer-rust-mode.")
+
+(defconst parinfer-rust-supported-version "0.4.4-beta" "The version of the parinfer-rust library that parinfer-rust-mode was tested against.")
+(defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on.")
 (defvar-local parinfer-rust--test-p (not (not (getenv "PARINFER_RUST_TEST"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
 
 ;; User customizations
@@ -96,13 +97,15 @@
 
 ;; Helper functions
 (defun parinfer-rust--get-cursor-x ()
+  "Get the column of the cursor."
   (- (point) (point-at-bol)))
 
 (defun parinfer-rust--get-cursor-line ()
+  "Get the 0 based line number of the cursor."
   (- (line-number-at-pos) 1))
 
 (defun parinfer-rust--reposition-cursor (point-x line-number)
-  "Moves the cursor to the new line and column"
+  "Moves the cursor to the new line and column."
   (let* ((new-line (- line-number (parinfer-rust--get-cursor-line)))
          (new-x (- point-x (parinfer-rust--get-cursor-x))))
     (when (not (= new-line 0))
@@ -111,17 +114,18 @@
       (forward-char new-x))))
 
 (defun parinfer-rust--bound-number (text num)
-  "Bounds number to be within range of string "
+  "Bounds number to be within range of string."
   (let ((max (length text)))
     (cond ((< num 0) 0)
           ((> num max) max)
           ('t num))))
 
 (defmacro local-bound-and-true (var)
-  "Helper macro for determining if a variable is locally set and if it's assigned a value "
+  "Helper macro for determining if a VAR is locally set and if it's assigned a value."
   `(and (local-variable-if-set-p (quote ,var)) ,var))
 
 (defun parinfer-rust--make-change (region-start region-end length old-buffer-text)
+  "Create a parinfer-rust compatible change struct based on REGION-START, REGION-END, and LENGTH, using OLD-BUFFER-TEXT."
   (let* ((lineNo (- (line-number-at-pos region-start 't)
                     1))
          (x (save-excursion
@@ -161,7 +165,8 @@
            current-change))))))
 
 (defun parinfer-rust--generate-options (old-options changes)
-  "Capture the current buffer state and it's associated meta information needed to execute parinfer"
+  "Capture the current buffer state and it's associated meta information needed to
+execute parinfer. Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
   (let ((options (parinfer-rust-new-options
                   (parinfer-rust--get-cursor-x)
                   (parinfer-rust--get-cursor-line)
@@ -172,8 +177,7 @@
     options))
 
 (defun parinfer-rust--execute (&rest _args)
-  "Run parinfer in the current buffer"
-  (interactive)
+  "Run parinfer in the current buffer."
   (if (or parinfer-rust--disable ;; Don't run if disabled by user or right after an undo
           parinfer-rust--undo-p
           parinfer-rust--ignore-post-command-hook
@@ -234,7 +238,7 @@
   (setq-local parinfer-rust--current-changes nil))
 
 (defun parinfer-rust-switch-mode ()
-  "Switch to a different Parinfer mode. Either: indent, smart, or paren"
+  "Switch to a different Parinfer mode. Either: indent, smart, or paren."
   (interactive)
   (setq-local parinfer-rust--mode
               (completing-read "Choose parinfer mode:"
@@ -252,7 +256,7 @@
 ;; parinfer to modify the buffer we get stuck in a loop of trying to undo
 ;; things and parinfer redoing them
 (defun parinfer-rust--track-undo (orig-func &rest args)
-  "Used to turn on tracking of undo"
+  "Wraps ORIG-FUNC and ARGS in some state tracking for parinfer-rust-mode. Used to turn on tracking of undo."
   (setq-local parinfer-rust--undo-p 't)
   (condition-case-unless-debug err
       (apply orig-func args)
@@ -265,13 +269,14 @@
   (parinfer-rust--set-default-state))
 
 (defun parinfer-rust-toggle-debug ()
+  "Turn on debug for parinfer. This will create a text file in the current directory."
   (interactive)
   (if parinfer-enabled-p
       (setq parinfer-rust--debug-p nil)
     (setq parinfer-rust--debug-p t)))
 
 (defun parinfer-rust-mode-enable ()
-  "Enable Parinfer"
+  "Enable Parinfer."
   (setq-local parinfer-enabled-p 't)
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
@@ -285,7 +290,7 @@
   (add-hook 'post-command-hook 'parinfer-rust--execute t t))
 
 (defun parinfer-rust-mode-disable ()
-  "Disable Parinfer"
+  "Disable Parinfer."
   (advice-remove 'undo 'parinfer-rust--track-undo)
   (advice-remove 'undo 'parinfer-rust--untrack-undo)
   (when (fboundp 'undo-tree-undo)
@@ -296,7 +301,7 @@
   (setq-local parinfer-enabled-p nil))
 
 (defun parinfer-rust-toggle-disable ()
-  "Temporarily stop parinfer from tracking what you're doing or from executing parinfer-rust--execute"
+  "Temporarily stop parinfer from tracking what you're doing or from executing parinfer-rust--execute."
   (interactive)
   (if parinfer-rust--disable
       (setq-local parinfer-rust--disable nil)
