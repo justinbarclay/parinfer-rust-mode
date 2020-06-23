@@ -109,10 +109,23 @@ For the more adventurous of you, you can also download the ~parinfer-rust~ libra
    There is an alternate implementation of Parinfer for Emacs called [[https://github.com/DogLooksGood/parinfer-mode][parinfer-mode]]. It currently has support for Parinfer's "paren" and "indent". Additionally, it has had experimental support for "smart" mode, however, this has remained hidden on a branch and not accessible from MELPA for over a year.
    parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
 ** Known Issues
-   - This is still alpha software and parinfer-rust has been known to get ~Out of Memory~ warnings and cause Emacs to crash, so use at your own risk.
    - Multiple cursors do not work as intended
    - Does not play well with other modes that insert parens or manage whitespace. If you have modes like electric-pair-mode or hungry-delete-mode enabled, you may want to disable them for any mode that has parinfer-rust-mode enabled. To help users work around this we offer to disable known troublesome modes if we detect them.
+*** Out of Memory 
+This is still alpha software and parinfer-rust has been known to get ~Out of Memory~ warnings and cause Emacs to crash, so use at your own risk.
++ I'm maintaining a [[https://github.com/justinbarclay/parinfer-rust][fork]] of parinfer-rust, that patches the libraries ability to cause an ~Out of Memory~ error.
++ In fairness to the maintainer of parinfer-rust, the reason that the library is crashing is due to the changes I am passing to the library. Which admittedly, can be non-sensical from parinfer's perspective.
+** Reporting bugs
+In some cases, parinfer-rust-mode can misbehave by making the wrong choices. When that happens I recommend you file a bug report. If you want to make my life easier, I recommend following [[https://github.com/justinbarclay/parinfer-rust-mode/issues/7][these]] [[https://github.com/justinbarclay/parinfer-rust-mode/issues/9][two]] as some pretty great examples on how to file a bug report.
+** Escape hatch
+Is parinfer misbehaving in ~smart-mode~? This could be due to a bug or because some commands are just plain weird. ~parinfer-rust-treat-command-as~ is an escape hatch for smart mode that allows you to tell parinfer-rust-mode what mode to run a specific command. ~parinfer-rust-treat-command-as~ is a list of pairs.The first item in the pair specifies the command and the second item in the pair specifies the mode the command should be run under. For example ~`(yank . "paren")~, tells ~parinfer-rust-mode~ to override smart mode and run under paren mode when it detects that yank caused a change in the buffer.
 
+You can extend to parinfer-rust-treat-command-as using ~add-to-list~ as shown below:
+#+BEGIN_SRC elisp
+  (add-to-list 'parinfer-rust-treat-command-as '(your-command . "paren")) 
+  ;;or
+  (add-to-list 'parinfer-rust-treat-command-as '(your-command . "indent"))
+#+END_SRC
 ** Contributing
 If you'd like to help contribute to the development of ~parinfer-rust-mode~ the only caveat interesting section of note is the testing framework. 
 
