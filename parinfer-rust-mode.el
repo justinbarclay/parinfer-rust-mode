@@ -281,7 +281,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
 (defun parinfer-rust-toggle-debug ()
   "Turn on debug for parinfer. This will create a text file in the current directory."
   (interactive)
-  (if parinfer-enabled-p
+  (if parinfer-rust--debug-p
       (setq parinfer-rust--debug-p nil)
     (setq parinfer-rust--debug-p t)))
 
