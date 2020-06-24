@@ -197,7 +197,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
     (progn
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
       (let* ((parinfer-rust--mode (if-let ((mode (and (string= "smart" parinfer-rust--mode)
-                                                      (alist-get last-command parinfer-rust-treat-command-as))))
+                                                      (alist-get this-command parinfer-rust-treat-command-as))))
                                       mode
                                     parinfer-rust--mode))
              (old-options (or (local-bound-and-true parinfer-rust--previous-options)
