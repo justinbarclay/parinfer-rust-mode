@@ -302,10 +302,8 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
 (defun parinfer-rust-mode-disable ()
   "Disable Parinfer."
   (advice-remove 'undo 'parinfer-rust--track-undo)
-  (advice-remove 'undo 'parinfer-rust--untrack-undo)
   (when (fboundp 'undo-tree-undo)
-    (advice-remove 'undo-tree-undo 'parinfer-rust--track-undo)
-    (advice-remove 'undo-tree-undo 'parinfer-rust--untrack-undo))
+    (advice-remove 'undo-tree-undo 'parinfer-rust--track-undo))
   (remove-hook 'after-change-functions 'parinfer-rust--track-changes t)
   (remove-hook 'post-command-hook 'parinfer-rust--execute t)
   (setq-local parinfer-enabled-p nil))
