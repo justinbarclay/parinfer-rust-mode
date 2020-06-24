@@ -90,10 +90,20 @@
 (defvar-local parinfer-rust--undo-p nil "Tracks if parinfer-rust-mode is within an undo command")
 (defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
 (defvar-local parinfer-rust--ignore-post-command-hook nil "A hack to not run parinfer-execute after an undo has finished processing")
-(defvar parinfer-rust-treat-command-as '((paredit-forward-barf-sexp . "paren")
-                                          (paredit-forward-slurp-sexp . "paren")
-                                          (yank . "paren")
-                                          (counsel-yank-pop . "paren")) "A curated alist of commands and the mode the command should be run in. This is a hack around Emacs complex command and scripting system. In some cases parinfer-rust-mode sucks at picking up the correct changes in the buffer, so the `treat-command-as` system is a means to work around `parinfer-rust-mode's` or Emacs limitations and give hints to `parinfer-rust-mode` for how you want to treat specific commands in `smart-mode`.")
+
+;; This is a hack around Emacs complex command and scripting system. In some cases
+;; parinfer-rust-mode sucks at picking up the correct changes in the buffer, so the
+;; `treat-command-as` system is a means to work around `parinfer-rust-mode's` or Emacs limitations
+;; and give hints to `parinfer-rust-mode` for how you want to treat specific commands in
+;; `smart-mode`."
+
+(defvar parinfer-rust-treat-command-as
+  '((paredit-forward-barf-sexp . "paren")
+    (paredit-forward-slurp-sexp . "paren")
+    (yank . "paren")
+    (counsel-yank-pop . "paren"))
+  "A curated list of pairs consisting of a command and the mode the command should be run in.
+Ex: '((yank . \"paren\"))")
 
 ;; Helper functions
 (defun parinfer-rust--get-cursor-x ()
@@ -165,8 +175,8 @@
            current-change))))))
 
 (defun parinfer-rust--generate-options (old-options changes)
-  "Capture the current buffer state and it's associated meta information needed to
-execute parinfer. Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
+  "Capture the current buffer state and it's associated meta information needed to execute parinfer.
+Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
   (let ((options (parinfer-rust-new-options
                   (parinfer-rust--get-cursor-x)
                   (parinfer-rust--get-cursor-line)
@@ -187,7 +197,7 @@ execute parinfer. Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and 
     (progn
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
       (let* ((parinfer-rust--mode (if-let ((mode (and (string= "smart" parinfer-rust--mode)
-                                                  (alist-get last-command parinfer-rust-treat-command-as))))
+                                                      (alist-get last-command parinfer-rust-treat-command-as))))
                                       mode
                                     parinfer-rust--mode))
              (old-options (or (local-bound-and-true parinfer-rust--previous-options)
