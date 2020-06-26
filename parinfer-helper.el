@@ -90,5 +90,33 @@
           (dolist (mode warning-list)
             (apply mode '(-1))))))
 
+;; Helper functions for dealing with parinfer and emacs
+(defmacro local-bound-and-true (var)
+  "Helper macro for determining if a variable is locally set and if it's assigned a value "
+  `(and (local-variable-if-set-p (quote ,var)) ,var))
+
+(defun parinfer-rust--get-cursor-x ()
+  (- (point) (point-at-bol)))
+
+(defun parinfer-rust--get-cursor-line ()
+  (- (line-number-at-pos) 1))
+
+(defun parinfer-rust--bound-number (text num)
+  "Bounds number to be within range of string "
+  (let ((max (length text)))
+    (cond ((< num 0) 0)
+          ((> num max) max)
+          ('t num))))
+
+
+;; Backporting this for emacs 26 compatability
+(cl-defgeneric seq-length (sequence)
+  "Return the number of elements of SEQUENCE."
+  (length sequence))
+
+(cl-defgeneric seq-empty-p (sequence)
+  "Return non-nil if the SEQUENCE is empty, nil otherwise."
+  (= 0 (seq-length sequence)))
+
 (provide 'parinfer-helper)
 ;;; parinfer-helper.el ends here

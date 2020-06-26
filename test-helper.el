@@ -205,7 +205,7 @@ it makes no sense to convert it to a string using
          'apply-changes-in-buffer
          changes))
       (move-cursor-to-current-position)
-      (parinfer-rust-print-changes parinfer-rust--current-changes)
+      ;; (parinfer-rust-print-changes parinfer-rust--current-changes)
       (parinfer-rust--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
       (parinfer-rust-mode)
       (when remove-first-line-p

@@ -56,6 +56,7 @@
   "The location to store or to find the parinfer-rust library."
   :type 'file
   :group 'parinfer-rust-mode)
+
 (defcustom parinfer-rust-preferred-mode "smart"
   "What mode you want parinfer-rust to start in."
   :type '(radio (const :tag "indent" "indent")
@@ -70,10 +71,11 @@
                                   parinfer-rust-library
                                   parinfer-rust--lib-name)
 
-(require 'parinfer-rust parinfer-rust-library)
+
 (require 'subr-x)
 (require 'cl-lib)
-
+(require 'parinfer-rust parinfer-rust-library)
+(require 'parinfer-rust-changes)
 ;; This function has a problem: Emacs can't reload dynamic libraries, which means that if we download a new library the user has to restart Emacs for changes to take effect.
 (parinfer-rust--check-version parinfer-rust-supported-version
                               (parinfer-rust-version)
@@ -85,7 +87,7 @@
 (defvar-local parinfer-rust--debug-p nil "When enabled, outputs the response input and output of the parinfer response to a file")
 (defvar-local parinfer-rust--mode "paren" "The current mode that parinfer running under to managing your paranthesis. Either 'paren', 'indent', or 'smart'")
 (defvar-local parinfer-rust--previous-options nil "The last set of record of changes and meta information of changes in the buffer")
-(defvar-local parinfer-rust--current-changes nil "The set of currently tracked changes since parinfer-rust--execute was ran")
+(defvar-local parinfer-rust--current-changes nil "The set of currently tracked changes since parinfer-rust--execute was ran") ;; TODO this might be not needed anymore
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
 (defvar-local parinfer-rust--undo-p nil "Tracks if parinfer-rust-mode is within an undo command")
 (defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
@@ -123,57 +125,6 @@ Ex: '((yank . \"paren\"))")
     (when (not (= new-x 0))
       (forward-char new-x))))
 
-(defun parinfer-rust--bound-number (text num)
-  "Bounds number to be within range of string."
-  (let ((max (length text)))
-    (cond ((< num 0) 0)
-          ((> num max) max)
-          ('t num))))
-
-(defmacro local-bound-and-true (var)
-  "Helper macro for determining if a VAR is locally set and if it's assigned a value."
-  `(and (local-variable-if-set-p (quote ,var)) ,var))
-
-(defun parinfer-rust--make-change (region-start region-end length old-buffer-text)
-  "Create a parinfer-rust compatible change struct based on REGION-START, REGION-END, and LENGTH, using OLD-BUFFER-TEXT."
-  (let* ((lineNo (- (line-number-at-pos region-start 't)
-                    1))
-         (x (save-excursion
-              (save-restriction
-                (widen)
-                (goto-char region-start)
-                (parinfer-rust--get-cursor-x)))) ;; We don't use region-end because region-end represents the end of change of the new text
-         (old-region-end (parinfer-rust--bound-number old-buffer-text (+ region-start length -1)))
-         (old-region-start (parinfer-rust--bound-number old-buffer-text (- region-start 1))))
-    (parinfer-rust-new-change lineNo
-                              x
-                              (if old-buffer-text
-                                  (substring-no-properties old-buffer-text
-                                                           old-region-start
-                                                           old-region-end)
-                                "")
-                              (buffer-substring-no-properties region-start region-end))))
-
-(defun parinfer-rust--track-changes (region-start region-end length)
-  "Add the current change into a list of changes from when `parinfer-rust--execute` was last run."
-  (if parinfer-rust--disable
-      nil
-    (let* ((old-buffer-text (when (local-variable-if-set-p 'parinfer-rust--previous-buffer-text)
-                              parinfer-rust--previous-buffer-text))
-           (current-change (parinfer-rust--make-change region-start region-end length old-buffer-text)))
-      (setq parinfer-rust--previous-buffer-text (save-restriction
-                                                  (widen)
-                                                  (buffer-substring-no-properties (point-min) (point-max))))
-      (if parinfer-rust--current-changes
-          (parinfer-rust-add-change
-           parinfer-rust--current-changes
-           current-change)
-        (progn
-          (setq-local parinfer-rust--current-changes (parinfer-rust-make-changes))
-          (parinfer-rust-add-change
-           parinfer-rust--current-changes
-           current-change))))))
-
 (defun parinfer-rust--generate-options (old-options changes)
   "Capture the current buffer state and it's associated meta information needed to execute parinfer.
 Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
@@ -192,9 +143,13 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
           parinfer-rust--undo-p
           parinfer-rust--ignore-post-command-hook
           undo-in-progress)
-      (if parinfer-rust--ignore-post-command-hook
-          (setq-local parinfer-rust--ignore-post-command-hook nil))
+      ;; Do nothing and disable flags
+      (when parinfer-rust--ignore-post-command-hook
+        (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
+      (when (not (seq-empty-p parinfer-rust--changes))
+        (parinfer-rust--build-changes (parinfer-rust--combine-changes parinfer-rust--changes))
+        (setq-local parinfer-rust--changes '()))
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
       (let* ((parinfer-rust--mode (if-let ((mode (and (string= "smart" parinfer-rust--mode)
                                                       (alist-get this-command parinfer-rust-treat-command-as))))
