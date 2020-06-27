@@ -64,6 +64,11 @@
                 (const :tag "paren" "paren"))
   :group 'parinfer-rust-mode)
 
+(defcustom parinfer-rust-check-before-enable 't "Have parinfer-rust ask the user if it wants to be enable parinfer-rust-mode if it detects it needs to change the indentation in the buffer to run."
+  :type 'boolean
+  :group 'parinfer-rust-mode)
+
+;; Require helper so we can check for library
 (require 'parinfer-helper)
 
 ;; Make sure the library is installed at the appropriate location or offer to download it for the user
@@ -240,6 +245,18 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
       (setq parinfer-rust--debug-p nil)
     (setq parinfer-rust--debug-p t)))
 
+(defun parinfer-rust--execute-change-buffer-p (mode)
+  "Returns true if running parinfer-rust--execute with MODE would change the current buffer."
+  (let ((parinfer-rust--mode mode)
+        (old-buffer (current-buffer))
+        (current-text (buffer-substring-no-properties (point-min) (point-max))))
+    (with-temp-buffer
+      (insert-buffer-substring old-buffer)
+      (parinfer-rust--execute)
+      (not
+       (string= (buffer-substring-no-properties (point-min) (point-max))
+                current-text)))))
+
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
   (setq-local parinfer-enabled-p 't)
@@ -286,7 +303,22 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
   :keymap parinfer-rust-mode-map
   (if parinfer-enabled-p
       (parinfer-rust-mode-disable)
-    (parinfer-rust-mode-enable)))
+    (let ((changes-buffer-p (parinfer-rust--execute-change-buffer-p "paren")))
+      (cond
+       ;; We don't care about changing indentation
+       ((not parinfer-rust-check-before-enable)
+        (parinfer-rust-mode-enable))
+       ;; We care about parinfer changing indentation
+       ;; and it does change indentation
+       ((and parinfer-rust-check-before-enable
+             changes-buffer-p
+             (y-or-n-p "Parinfer needs to modify indentation in this buffer to work. Continue? "))
+        (parinfer-rust-mode-enable))
+       ;; Do we care about parinfer changing indentation
+       ;; and does not change the current buffer
+       ((and parinfer-rust-check-before-enable
+             (not changes-buffer-p))
+        (parinfer-rust-mode-enable))))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here

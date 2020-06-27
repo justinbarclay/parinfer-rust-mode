@@ -41,6 +41,9 @@
 (defvar-local remove-first-line-p nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
 (defvar parinfer-result-string nil "Result of running a test on parinfer")
 
+;; Don't prompt for permission to modify buffer
+;; We're running tests, prompting will break things
+(setq parinfer-rust-check-before-enable nil)
 
 
 ;; (when (not (fboundp 'replace-region-contents))) ;; This function does not exist in Emacs <27
