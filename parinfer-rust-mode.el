@@ -318,7 +318,13 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
        ;; and does not change the current buffer
        ((and parinfer-rust-check-before-enable
              (not changes-buffer-p))
-        (parinfer-rust-mode-enable))))))
+        (parinfer-rust-mode-enable))
+
+       ('t (progn
+             ;; This needs to be on so that we can turn off the
+             ;; emacs' tracking of this mode
+             (setq parinfer-enabled-p 't)
+             (parinfer-rust-mode -1)))))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here
