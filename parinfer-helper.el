@@ -27,14 +27,17 @@
 
 (defconst ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
-(defvar parinfer-rust--auto-download-p nil "Automatically download the latest version of parinfer-rust from github")
+(defcustom parinfer-rust-auto-download-p nil "Automatically download the latest version of parinfer-rust from github"
+  :type 'boolean
+  :group 'parinfer-rust-mode)
+
 (defvar parinfer-rust--test-p nil "Boolean value for running tests in the current buffer")
 
 (defun parinfer-rust--check-for-library (supported-version library-location lib-name)
   "Checks for the existence of the parinfer-rust library and if it can't be found it offers to download it for the user"
   (when (and (not (file-exists-p library-location)) ;; Using when here instead of unless so we can early exit this if file does exist
              (or
-              parinfer-rust--auto-download-p
+              parinfer-rust-auto-download-p
               (and (boundp parinfer-rust--test-p)
                    parinfer-rust--test-p)
               (yes-or-no-p ask-to-download)))
