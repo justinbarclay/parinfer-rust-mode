@@ -47,7 +47,7 @@ If you're curious, you can find the library files that parinfer-rust-mode downlo
 
 If you would always like parinfer-rust-mode to keep the library version in sync for you, automatically download it, then add the following line into your config:
 #+BEGIN_SRC emacs-lisp
-(setq parinfer-rust--auto-download-p 't)
+(setq parinfer-rust-auto-download-p 't)
 #+END_SRC
 
 If you are using the `use-package` snippet from above, that would look like:
@@ -59,7 +59,7 @@ If you are using the `use-package` snippet from above, that would look like:
                 :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
                :upgrade nil)
       :init
-      (setq parinfer-rust--auto-download-p 't))
+      (setq parinfer-rust-auto-download-p 't))
 #+END_SRC
 
 
@@ -106,6 +106,38 @@ For the more adventurous of you, you can also download the ~parinfer-rust~ libra
     Smart Mode is like Indent Mode, but it tries to preserve the structure too.
 
     [[./videos/smart-mode.gif]]
+** Customizations
+parinfer-rust-mode is purposefully light on option, but it does give a few options to tweak behavior.
+
+- ~parinfer-rust-library~
+
+  The location to find or install the parinfer-rust library.
+  #+BEGIN_QUOTE
+   default: ~/.emacs.d/parinfer-rust/parinfer-rust-*.so
+  #+END_QUOTE
+- ~parinfer-rust-preferred-mode~
+
+  The mode you want parinfer-rust-mode to start in.
+  Options:
+    + smart
+    + indent
+    + paren
+
+  #+BEGIN_QUOTE
+  default: smart
+  #+END_QUOTE
+- ~parinfer-rust-check-before-enable~
+
+  Have parinfer-rust prompt you if you wants to enable parinfer-rust-mode if it detects the buffer has incorrect indentation.
+  #+BEGIN_QUOTE
+  default: 't
+  #+END_QUOTE
+- ~parinfer-rust-auto-download-p~
+
+  Have parinfer-rust-mode download the latest version of the parinfer-rust library without prompting you. Generally used for automating your set-up.
+  #+BEGIN_QUOTE
+  default: nil
+  #+END_QUOTE
 ** parinfer-mode
    There is an alternate implementation of Parinfer for Emacs called [[https://github.com/DogLooksGood/parinfer-mode][parinfer-mode]]. It currently has support for Parinfer's "paren" and "indent". Additionally, it has had experimental support for "smart" mode, however, this has remained hidden on a branch and not accessible from MELPA for over a year.
    parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
