@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
-
+;; Package-Requires: ((emacs "25"))
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -208,7 +208,6 @@ it makes no sense to convert it to a string using
          'apply-changes-in-buffer
          changes))
       (move-cursor-to-current-position)
-      ;; (parinfer-rust-print-changes parinfer-rust--current-changes)
       (parinfer-rust--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
       (parinfer-rust-mode)
       (when remove-first-line-p
@@ -221,6 +220,31 @@ it makes no sense to convert it to a string using
       (setq parinfer-result-string (buffer-string)) ;; Save the string before we kill our current buffer
       (switch-to-buffer current)
       (kill-buffer new-buf)))
+  parinfer-result-string)
+
+(defun simulate-parinfer-in-another-buffer--with-commands (test-string mode commands &optional setup)
+  (when (get-buffer "*parinfer-tests*") (kill-buffer "*parinfer-tests*"))
+  (let ((current (current-buffer))
+        (new-buf (get-buffer-create "*parinfer-tests*")))
+    (switch-to-buffer new-buf)
+    (when setup
+      (mapcar (lambda (command)
+                (apply command nil))
+              setup))
+    (insert test-string)
+    (setq parinfer-rust--mode mode)
+    (parinfer-rust-mode)
+    (cl-loop for command-set in commands do
+             (let ((lineNo (plist-get (car command-set) :lineNo))
+                   (column (plist-get (car command-set) :column))
+                   (command (cadr command-set)))
+               (goto-line lineNo)
+               (forward-char column)
+               (apply command nil)
+               (parinfer-rust--execute)))
+    (setq parinfer-result-string (buffer-string)) ;; Save the string before we kill our current buffer
+    (switch-to-buffer current)
+    (kill-buffer new-buf))
   parinfer-result-string)
 
 (defun simulate-parinfer-in-another-buffer (test-string mode &optional changes)
