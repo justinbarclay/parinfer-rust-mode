@@ -79,7 +79,7 @@
 (defvar-local parinfer-rust--test-p (not (not (getenv "PARINFER_RUST_TEST"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
 
 ;; Require helper so we can check for library
-(require 'parinfer-helper)
+(require 'parinfer-rust-helper)
 
 ;; Make sure the library is installed at the appropriate location or offer to download it for the user
 (parinfer-rust--check-for-library parinfer-rust-supported-version

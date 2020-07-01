@@ -3,9 +3,9 @@ EMACSFLAGS = -Q -L .
 CASK = cask
 VERSION = $(shell git describe --tags --abbrev=0 | sed 's/^v//')
 PKG = parinfer-rust-mode
-
+FILTER_FILES =  $(PKG)-autoloads.el test-helper.el run-tests.el generate-tests.el
 ELS_ALL = $(wildcard *.el)
-ELS = $(filter-out $(PKG)-autoloads.el,$(ELS_ALL))
+ELS = $(filter-out $(FILTER_FILES),$(ELS_ALL))
 OBJECTS = $(ELS:.el=.elc)
 
 .PHONY: elpa build version test lint clean elpaclean run-$(PKG)
