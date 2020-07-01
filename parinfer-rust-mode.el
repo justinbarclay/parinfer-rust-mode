@@ -206,7 +206,20 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
       (let* ((parinfer-rust--mode (if-let ((mode (and (string= "smart" parinfer-rust--mode)
                                                       (alist-get this-command parinfer-rust-treat-command-as))))
-                                      mode
+                                      (progn
+                                        ;; By saying a command should run under another mode, we're
+                                        ;; going to simplify parinfer-rust's behavior and clear all
+                                        ;; tracked changes so that it can more closely behave to
+                                        ;; _my_ expectations. Such expectations are that if I'm
+                                        ;; running most commands in "paren" mode, I want it to
+                                        ;; behave as if I am running it from a clean slate and not
+                                        ;; knowing all the changes I just made. That's because by
+                                        ;; knowing all the state changes it made it might make the
+                                        ;; wrong choices for similar reasons it would under smart
+                                        ;; mode, the changes Emacs reports may be different than
+                                        ;; those parinfer expects.
+                                        (setq parinfer-rust--current-changes nil)
+                                        mode)
                                     parinfer-rust--mode))
              (old-options (or (local-bound-and-true parinfer-rust--previous-options)
                               (parinfer-rust-make-option)))
@@ -220,8 +233,9 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
              (answer (parinfer-rust-execute request))
              (replacement-string (parinfer-rust-get-in-answer answer "text"))
              (error-p (parinfer-rust-get-in-answer answer "error")))
-        (setq-local inhibit-modification-hooks 't) ;; We don't want other hooks to run while we're modifying the buffer
+        ;; We don't want other hooks to run while we're modifying the buffer
         ;; that could lead to weird and unwanted behavior
+        (setq-local inhibit-modification-hooks 't)
         (when (and (local-variable-if-set-p 'parinfer-rust--debug-p)
                    parinfer-rust--debug-p)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
@@ -287,13 +301,6 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
   (setq-local parinfer-rust--ignore-post-command-hook 't)
   (parinfer-rust--set-default-state))
 
-(defun parinfer-rust-toggle-debug ()
-  "Turn on debug for parinfer. This will create a text file in the current directory."
-  (interactive)
-  (if parinfer-rust--debug-p
-      (setq parinfer-rust--debug-p nil)
-    (setq parinfer-rust--debug-p t)))
-
 (defun parinfer-rust--execute-change-buffer-p (mode)
   "Returns true if running parinfer-rust--execute with MODE would change the current buffer."
   (let ((parinfer-rust--mode mode)
@@ -305,6 +312,13 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
       (not
        (string= (buffer-substring-no-properties (point-min) (point-max))
                 current-text)))))
+
+(defun parinfer-rust-toggle-debug ()
+  "Turn on debug for parinfer. This will create a text file in the current directory."
+  (interactive)
+  (if parinfer-rust--debug-p
+      (setq parinfer-rust--debug-p nil)
+    (setq parinfer-rust--debug-p t)))
 
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
