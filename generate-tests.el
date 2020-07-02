@@ -25,7 +25,7 @@
 ;;; Commentary:
 
 ;; Generates test files for each "mode" in Parinfer based on the JSON
-;; files supplied be the reference implementation of Parinfer. Which can
+;; files supplied be the reference implementation of Parinfer.  Which can
 ;; be found at:
 ;; https://github.com/shaunlebron/parinfer/tree/master/lib/test/cases
 
@@ -35,7 +35,7 @@
                                (cons "smart" "./test/cases/smart-mode.json")))
 
 (defun insert-cursor-position (json-alist)
-  "Insets a | to represent the position of the cursor in the test text."
+  "Insert a | to represent the position of the cursor in the test text."
   (let* ((options (cdr (assoc 'options json-alist)))
          (cursorLine (cdr (assoc 'cursorLine options)))
          (cursorX (cdr (assoc 'cursorX options)))
@@ -102,7 +102,7 @@
     t))
 
 (defun generate-all-tests ()
-  "Generates all mode based tests for parinfer-smart-mode"
+  "Generate all mode based tests for parinfer-smart-mode."
   (mapcar ;; Clean up old files
    (lambda (file) (delete-file file))
    '("./paren-parinfer-tests.el" "./smart-parinfer-tests.el" "./indent-parinfer-tests.el"))

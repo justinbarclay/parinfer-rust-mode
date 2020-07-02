@@ -28,7 +28,8 @@
 (defconst parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
-  "System dependent library name for parinfer-rust-mode")
+  "System dependent library name for `parinfer-rust-mode'.")
+
 (defvar parinfer-rust-library (concat default-directory parinfer-rust--lib-name))
 
 (require 'parinfer-rust-mode)
@@ -91,16 +92,16 @@ it makes no sense to convert it to a string using
   (setq-local inhibit-modification-hooks nil))
 
 (defun reverse-changes-in-buffer (change)
-  "Given a list of change it applies the before to the specified area of the buffer"
+  "Revert a list of CHANGE to the specified area of the buffer."
   (with-no-warnings
     (goto-line (+ 1 (cdr (assoc 'lineNo change))))) ;; This is normally bad, but because we're just doing this in a test
-  (forward-char (cdr (assoc 'x change)))           ;; and we need to go to the line specified by the current change
+  (forward-char (cdr (assoc 'x change)))            ;; and we need to go to the line specified by the current change
   (replace-region-contents (point)
                            (+ (point) (length (cdr (assoc 'newText change))))
                            (lambda (&rest _args) (cdr (assoc 'oldText change)))))
 
 (defun apply-changes-in-buffer (change)
-  "Given a list of change it applies the before to the specified area of the buffer"
+  "Given a list of CHANGE apply to the specified area of the buffer."
   (with-no-warnings
     (goto-line (+ 1 (cdr (assoc 'lineNo change)))))
   (forward-char (cdr (assoc 'x change)))
@@ -154,7 +155,8 @@ it makes no sense to convert it to a string using
   (add-hook 'post-command-hook 'parinfer-rust--execute t t))
 
 (defun simulate-parinfer-in-another-buffer--without-changes (test-string mode)
-  "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
+  "Run parinfer on buffer using text and cursor position
+extracted from the json-alist."
   (when (get-buffer "*parinfer-tests*") (kill-buffer "*parinfer-tests*"))
   (save-mark-and-excursion ;; This way we automatically get our point saved
     (let ((current (current-buffer))
@@ -183,7 +185,8 @@ it makes no sense to convert it to a string using
   parinfer-result-string)
 
 (defun simulate-parinfer-in-another-buffer--with-changes (test-string mode &optional changes)
-  "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
+  "Run parinfer on buffer using text and cursor position
+extracted from the json-alist."
   (when (get-buffer "*parinfer-tests*") (kill-buffer "*parinfer-tests*"))
   (save-mark-and-excursion ;; This way we automatically get our point saved
     (let ((current (current-buffer))
@@ -248,7 +251,8 @@ it makes no sense to convert it to a string using
   parinfer-result-string)
 
 (defun simulate-parinfer-in-another-buffer (test-string mode &optional changes)
-  "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
+  "Run parinfer on buffer using text and cursor position
+extracted from the json-alist."
   (if changes
       (simulate-parinfer-in-another-buffer--with-changes test-string mode changes)
     (simulate-parinfer-in-another-buffer--without-changes test-string mode)))
