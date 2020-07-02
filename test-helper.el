@@ -228,7 +228,7 @@ it makes no sense to convert it to a string using
         (new-buf (get-buffer-create "*parinfer-tests*")))
     (switch-to-buffer new-buf)
     (when setup
-      (mapcar (lambda (command)
+      (mapc (lambda (command)
                 (apply command nil))
               setup))
     (insert test-string)
@@ -238,7 +238,8 @@ it makes no sense to convert it to a string using
              (let ((lineNo (plist-get (car command-set) :lineNo))
                    (column (plist-get (car command-set) :column))
                    (command (cadr command-set)))
-               (goto-line lineNo)
+               (goto-char (point-min))
+               (forward-line (1- lineNo))
                (forward-char column)
                (apply command nil)
                (parinfer-rust--execute)))
