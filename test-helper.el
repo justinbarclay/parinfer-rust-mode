@@ -75,7 +75,7 @@ it makes no sense to convert it to a string using
               (insert repl)
               (let ((tmp-buffer (current-buffer)))
                 (set-buffer source-buffer)
-    (replace-buffer-contents tmp-buffer)))))))))
+               (replace-buffer-contents tmp-buffer)))))))))
 
 (defun move-cursor-to-previous-position ()
   (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
@@ -170,7 +170,7 @@ it makes no sense to convert it to a string using
       (move-cursor-to-previous-position)
       (when (not parinfer-rust--test-has-no-prev-cursor)
         (setq parinfer-rust--previous-options (parinfer-rust--generate-options (parinfer-rust-make-option)
-                                                                                 (parinfer-rust-make-changes))))
+                                                                               (parinfer-rust-make-changes))))
       (move-cursor-to-current-position)
       (parinfer-rust--execute)
       (when remove-first-line-p ;; if we created a new line in move-cursor-current-position
@@ -230,7 +230,7 @@ it makes no sense to convert it to a string using
     (when setup
       (mapc (lambda (command)
                 (apply command nil))
-              setup))
+            setup))
     (insert test-string)
     (setq parinfer-rust--mode mode)
     (parinfer-rust-mode)

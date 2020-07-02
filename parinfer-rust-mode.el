@@ -1,12 +1,12 @@
-;;; parinfer-rust-mode.el --- parinfer-rust-mode   -*- lexical-binding: t; -*-
+;;; parinfer-rust-mode.el --- Infer your parens away -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019-2020  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.5.0
-;; Package-Requires: ((emacs "25"))
-;; Keywords: lisps
+;; Version: 0.7.1
+;; Package-Requires: ((emacs "26.1"))
+;; Keywords: lisp tools
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 ;; Manage your parenthesis automatically based on whitespace.
 
 ;; `parinfer-rust-mode` provides an interface between the `parinfer-rust` library
-;; and Emacs. As such it's primary role is to capture meta information about the
+;; and Emacs.  As such it's primary role is to capture meta information about the
 ;; buffer and transmit it to the parinfer-rust API.
 ;;
 ;; In broad strokes we must:
@@ -39,17 +39,24 @@
 ;; For a complete list of state that needs to be tracked read:
 ;; https://github.com/shaunlebron/parinfer/tree/master/lib#api
 ;; https://github.com/shaunlebron/parinfer/blob/master/lib/doc/integrating.md
+
 ;;; Code:
 
 ;; Need to define these before parinfer-rust and parinfer-helper are loaded
 (defconst parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
-                                   ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
+                                   ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
+                                    "parinfer-rust-linux.so"))
   "System dependent library name for parinfer-rust-mode.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User customizations
 ;;;;;;;;;;;;;;;;;;;;;;;;;
+(defcustom parinfer-rust-auto-download-p nil
+  "Automatically download the latest version of parinfer-rust from github."
+  :type 'boolean
+  :group 'parinfer-rust-mode)
+
 (defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/" parinfer-rust--lib-name))
   "The location to store or to find the parinfer-rust library."
   :type 'file
@@ -62,7 +69,7 @@
                 (const :tag "paren" "paren"))
   :group 'parinfer-rust-mode)
 
-(defcustom parinfer-rust-check-before-enable 't "Have parinfer-rust ask the user if it wants to be enable parinfer-rust-mode if it detects it needs to change the indentation in the buffer to run."
+(defcustom parinfer-rust-check-before-enable 't "Have parinfer-rust ask the user if it wants to be enable `parinfer-rust-mode' if it detects it needs to change the indentation in the buffer to run."
   :type 'boolean
   :group 'parinfer-rust-mode)
 
@@ -74,7 +81,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defconst parinfer-rust-supported-version "0.4.4-beta" "The version of the parinfer-rust library that parinfer-rust-mode was tested against.")
+(defconst parinfer-rust-supported-version "0.4.4-beta" "The version of the parinfer-rust library that `parinfer-rust-mode' was tested against.")
 (defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on.")
 (defvar-local parinfer-rust--test-p (not (not (getenv "PARINFER_RUST_TEST"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
 
@@ -84,10 +91,10 @@
 ;; Make sure the library is installed at the appropriate location or offer to download it for the user
 (parinfer-rust--check-for-library parinfer-rust-supported-version
                                   parinfer-rust-library
-                                  parinfer-rust--lib-name)
+                                  parinfer-rust--lib-name
+                                  parinfer-rust-auto-download-p)
 
 (require 'subr-x)
-(require 'cl-lib)
 (require 'font-lock)
 (require 'parinfer-rust parinfer-rust-library)
 (require 'parinfer-rust-changes)
@@ -97,20 +104,6 @@
                               (parinfer-rust-version)
                               parinfer-rust-library
                               parinfer-rust--lib-name) ;; Check version and prompt to download latest version if out of date
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Local State
-;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar-local parinfer-enabled-p nil "Tracks if parinfer has been enabled")
-(defvar-local parinfer-rust--debug-p nil "When enabled, outputs the response input and output of the parinfer response to a file")
-(defvar-local parinfer-rust--mode "paren" "The current mode that parinfer running under to managing your paranthesis. Either 'paren', 'indent', or 'smart'")
-(defvar-local parinfer-rust--previous-options nil "The last set of record of changes and meta information of changes in the buffer")
-(defvar-local parinfer-rust--current-changes nil "The set of currently tracked changes since parinfer-rust--execute was ran") ;; TODO this might be not needed anymore
-(defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
-(defvar-local parinfer-rust--undo-p nil "Tracks if parinfer-rust-mode is within an undo command")
-(defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
-(defvar-local parinfer-rust--ignore-post-command-hook nil "A hack to not run parinfer-execute after an undo has finished processing")
-
 
 ;; This is a hack around Emacs complex command and scripting system. In some cases
 ;; parinfer-rust-mode sucks at picking up the correct changes in the buffer, so the
@@ -125,6 +118,19 @@
     (counsel-yank-pop . "paren"))
   "A curated list of pairs consisting of a command and the mode the command should be run in.
 Ex: '((yank . \"paren\"))")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Local State
+;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar-local parinfer-rust-enabled-p nil "Tracks if parinfer has been enabled")
+(defvar-local parinfer-rust--debug-p nil "When enabled, outputs the response input and output of the parinfer response to a file")
+(defvar-local parinfer-rust--mode "paren" "The current mode that parinfer running under to managing your paranthesis. Either 'paren', 'indent', or 'smart'")
+(defvar-local parinfer-rust--previous-options nil "The last set of record of changes and meta information of changes in the buffer")
+(defvar-local parinfer-rust--current-changes nil "The set of currently tracked changes since parinfer-rust--execute was ran") ;; TODO this might be not needed anymore
+(defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
+(defvar-local parinfer-rust--undo-p nil "Tracks if parinfer-rust-mode is within an undo command")
+(defvar-local parinfer-rust--previous-buffer-text "" "The text in the buffer previous to when parinfer-rust ran last")
+(defvar-local parinfer-rust--ignore-post-command-hook nil "A hack to not run parinfer-execute after an undo has finished processing")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Paren Dimming
@@ -164,7 +170,7 @@ bound to occur before LIMIT."
 
 (defun parinfer-rust--dim-parens ()
   "Apply paren dimming if appropriate."
-  (if (and parinfer-enabled-p
+  (if (and parinfer-rust-enabled-p
            (not (string-equal parinfer-rust--mode "paren"))
            parinfer-rust-dim-parens)
       (font-lock-add-keywords
@@ -197,7 +203,7 @@ switching modes, after an undo, or when first starting parinfer."
 ;; parinfer to modify the buffer we get stuck in a loop of trying to undo
 ;; things and parinfer redoing them
 (defun parinfer-rust--track-undo (orig-func &rest args)
-  "Wraps ORIG-FUNC and ARGS in some state tracking for parinfer-rust-mode. Used to turn on tracking of undo."
+  "Wraps ORIG-FUNC and ARGS in some state tracking for `parinfer-rust-mode'. Used to turn on tracking of undo."
   (setq-local parinfer-rust--undo-p 't)
   (condition-case-unless-debug err
       (apply orig-func args)
@@ -213,7 +219,7 @@ switching modes, after an undo, or when first starting parinfer."
   (parinfer-rust--set-default-state))
 
 (defun parinfer-rust--execute-change-buffer-p (mode)
-  "Returns true if running parinfer-rust--execute with MODE would change the current buffer."
+  "Return non-nil if running `parinfer-rust--execute' with MODE would change the current buffer."
   (let ((parinfer-rust--mode mode)
         (old-buffer (current-buffer))
         (current-text (buffer-substring-no-properties (point-min) (point-max))))
@@ -223,24 +229,6 @@ switching modes, after an undo, or when first starting parinfer."
       (not
        (string= (buffer-substring-no-properties (point-min) (point-max))
                 current-text)))))
-
-;; Cursor management
-(defun parinfer-rust--get-cursor-x ()
-  "Get the column of the cursor."
-  (- (point) (point-at-bol)))
-
-(defun parinfer-rust--get-cursor-line ()
-  "Get the 0 based line number of the cursor."
-  (- (line-number-at-pos) 1))
-
-(defun parinfer-rust--reposition-cursor (point-x line-number)
-  "Move the cursor to the new line and column."
-  (let* ((new-line (- line-number (parinfer-rust--get-cursor-line)))
-         (new-x (- point-x (parinfer-rust--get-cursor-x))))
-    (when (not (= new-line 0))
-      (forward-line new-line))
-    (when (not (= new-x 0))
-      (forward-char new-x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interfaces for parinfer-rust
@@ -267,7 +255,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
       (when parinfer-rust--ignore-post-command-hook
         (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
-      (when (not (seq-empty-p parinfer-rust--changes))
+      (when (not (= 0 (length parinfer-rust--changes)))
         (parinfer-rust--build-changes (parinfer-rust--combine-changes parinfer-rust--changes))
         (setq-local parinfer-rust--changes '()))
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
@@ -288,9 +276,9 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
                                         (setq parinfer-rust--current-changes nil)
                                         mode)
                                     parinfer-rust--mode))
-             (old-options (or (local-bound-and-true parinfer-rust--previous-options)
+             (old-options (or (parinfer-rust--local-bound-and-true parinfer-rust--previous-options)
                               (parinfer-rust-make-option)))
-             (changes (or (local-bound-and-true parinfer-rust--current-changes)
+             (changes (or (parinfer-rust--local-bound-and-true parinfer-rust--current-changes)
                           (parinfer-rust-make-changes)))
              (options (parinfer-rust--generate-options old-options
                                                        changes))
@@ -318,8 +306,8 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
                     (switch-to-buffer current)
                     (replace-buffer-contents new-buf)
                     (kill-buffer new-buf))))))
-        (when-let* ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
-                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
+        (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
+                   (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-rust--reposition-cursor new-x new-line))
         (setq parinfer-rust--previous-options options)
         (with-no-warnings ;; TODO: Should not need with-no-warnings function
@@ -335,7 +323,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
 
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
-  (setq-local parinfer-enabled-p 't)
+  (setq-local parinfer-rust-enabled-p 't)
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
   (setq-local parinfer-rust--mode "paren")                        ;; As per spec, always run paren on a buffer before entering any mode
@@ -355,11 +343,11 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
     (advice-remove 'undo-tree-undo 'parinfer-rust--track-undo))
   (remove-hook 'after-change-functions 'parinfer-rust--track-changes t)
   (remove-hook 'post-command-hook 'parinfer-rust--execute t)
-  (setq-local parinfer-enabled-p nil)
+  (setq-local parinfer-rust-enabled-p nil)
   (parinfer-rust--dim-parens))
 
 (defun parinfer-rust-toggle-disable ()
-  "Temporarily stop parinfer from tracking what you're doing or from executing parinfer-rust--execute."
+  "Temporarily stop parinfer from tracking what you're doing or from executing `parinfer-rust--execute'."
   (interactive)
   (if parinfer-rust--disable
       (setq-local parinfer-rust--disable nil)
@@ -381,8 +369,8 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
 ;;;###autoload
 (defvar parinfer-rust-mode-map
   (let ((m (make-sparse-keymap)))
-    (define-key m (kbd "C-c s") 'parinfer-rust-switch-mode)
-    (define-key m (kbd "C-c d") 'parinfer-rust-toggle-disable)
+    (define-key m (kbd "C-c p s") 'parinfer-rust-switch-mode)
+    (define-key m (kbd "C-c p d") 'parinfer-rust-toggle-disable)
     m)
   "Keymap for `parinfer-rust-mode'.")
 ;;;###autoload
@@ -391,7 +379,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
   :lighter " parinfer"
   :init-value nil
   :keymap parinfer-rust-mode-map
-  (if parinfer-enabled-p
+  (if parinfer-rust-enabled-p
       (parinfer-rust-mode-disable)
     (let ((changes-buffer-p (parinfer-rust--execute-change-buffer-p "paren")))
       (cond
@@ -413,7 +401,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
        ('t (progn
              ;; This needs to be on so that we can turn off the
              ;; emacs' tracking of this mode
-             (setq parinfer-enabled-p 't)
+             (setq parinfer-rust-enabled-p 't)
              (parinfer-rust-mode -1)))))))
 
 (provide 'parinfer-rust-mode)

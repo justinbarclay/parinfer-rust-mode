@@ -3,9 +3,6 @@
 ;; Copyright (C) 2019-2020  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
-;; Version: 0
-;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -33,25 +30,21 @@
 
 ;;; Code:
 (require 'url)
-(require 'cl-lib)
 
-(defconst ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
-(defconst outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
-(defcustom parinfer-rust-auto-download-p nil "Automatically download the latest version of parinfer-rust from github."
-  :type 'boolean
-  :group 'parinfer-rust-mode)
+(defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
+(defconst parinfer-rust--outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
 (defvar parinfer-rust--test-p nil "Boolean value for running tests in the current buffer.")
 
-(defun parinfer-rust--check-for-library (supported-version library-location lib-name)
+(defun parinfer-rust--check-for-library (supported-version library-location lib-name auto-download-p)
   "Check for the existence of the parinfer-rust library. If it
 can't be found it offers to download it for the user."
   (when (and (not (file-exists-p library-location)) ;; Using when here instead of unless so we can early exit this if file does exist
              (or
-              parinfer-rust-auto-download-p
+              auto-download-p
               (and (boundp parinfer-rust--test-p)
                    parinfer-rust--test-p)
-              (yes-or-no-p ask-to-download)))
+              (yes-or-no-p parinfer-rust--ask-to-download)))
     (parinfer-rust--download-from-github supported-version library-location lib-name)))
 
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
@@ -64,7 +57,7 @@ If it is not compatible, offer to download the file for the user."
                    supported-version))
              (and
               (not (bound-and-true-p parinfer-rust--test-p))
-              (yes-or-no-p outdated-version)))
+              (yes-or-no-p parinfer-rust--outdated-version)))
     (parinfer-rust--download-from-github supported-version library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
@@ -94,7 +87,7 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
              :initial-value nil))
 
 (defun parinfer-rust--detect-troublesome-modes ()
-  "Check to see if a list of troublesome modes are enabled in `current-buffer'.
+  "Check to see if a list of troublesome modes are enabled in `current-buffer`.
 If the user does not disable these modes then it may cause bugs
 or crashes"
   (let ((warning-list))
@@ -109,8 +102,12 @@ or crashes"
         (dolist (mode warning-list)
           (apply mode '(-1))))))
 
-;; Helper functions for dealing with parinfer and emacs
-(defmacro local-bound-and-true (var)
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helper functions
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions to help to make working with Emacs and parinfer nicer
+
+(defmacro parinfer-rust--local-bound-and-true (var)
   "Return non-nil if VAR is locally bound and true."
   `(and (local-variable-if-set-p (quote ,var)) ,var))
 
@@ -122,12 +119,26 @@ or crashes"
   "Return the parinfer compatible line number of the cursor."
   (- (line-number-at-pos) 1))
 
+(defun parinfer-rust--reposition-cursor (point-x line-number)
+  "Move the cursor to the new line and column."
+  (let* ((new-line (- line-number (parinfer-rust--get-cursor-line)))
+         (new-x (- point-x (parinfer-rust--get-cursor-x))))
+    (when (not (= new-line 0))
+      (forward-line new-line))
+    (when (not (= new-x 0))
+      (forward-char new-x))))
+
 (defun parinfer-rust--bound-number (text num)
   "Bounds NUM to be within range of TEXT."
   (let ((max (length text)))
     (cond ((< num 0) 0)
           ((> num max) max)
           ('t num))))
+
+;; Local Variables:
+;; byte-compile-warnings: (not free-vars)
+;; package-lint-main-file: "parinfer-rust-mode.el"
+;; End:
 
 (provide 'parinfer-rust-helper)
 ;;; parinfer-rust-helper.el ends here

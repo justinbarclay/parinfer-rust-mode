@@ -24,10 +24,14 @@
 ;; same line, start-region and temporarily are next to each other that
 ;; they can be merged into one change.
 ;;
+
+;;; Commentary:
+;;
+
 ;;; Code:
 
 (require 'parinfer-rust parinfer-rust-library)
-(require 'parinfer-helper)
+(require 'parinfer-rust-helper)
 (defvar-local parinfer-rust--changes (list) "The current set of unprocessed changes")
 
 (defun parinfer-rust--merge-changes (change-a change-b)
@@ -40,8 +44,8 @@ two changes."
                    (plist-get change-a 'start)
                  (plist-get change-b 'start)))
         (end (if (> (plist-get change-a 'end)
-                      (plist-get change-b 'end))
-                   (plist-get change-a 'end)
+                    (plist-get change-b 'end))
+                 (plist-get change-a 'end)
                (plist-get change-b 'end)))
         (length (+ (plist-get change-a 'length)
                    (plist-get change-b 'length))))
@@ -52,7 +56,7 @@ two changes."
      'end end
      'length length
      'before-text (string-join (list (plist-get change-a 'before-text)
-                                    (plist-get change-b 'before-text)))
+                                     (plist-get change-b 'before-text)))
      'after-text (string-join (list (plist-get change-a 'after-text)
                                     (plist-get change-b 'after-text)))
      'group-p 't)))
@@ -96,8 +100,8 @@ texts."
 LENGTH on parinfer-rust--previous-buffer-text and
 current-buffer text."
   (let* ((previous-text parinfer-rust--previous-buffer-text)
-        (old-region-end (parinfer-rust--bound-number previous-text (+ start length -1)))
-        (old-region-start (parinfer-rust--bound-number previous-text (- start 1))))
+         (old-region-end (parinfer-rust--bound-number previous-text (+ start length -1)))
+         (old-region-start (parinfer-rust--bound-number previous-text (- start 1))))
     (list
      (if previous-text
          (substring-no-properties previous-text
@@ -107,21 +111,21 @@ current-buffer text."
      (buffer-substring-no-properties start end))))
 
 (defun parinfer-rust--build-changes (changes)
-  "Converts CHANGES to a list of change structs for parinfer-rust."
+  "Convert CHANGES to a list of change structs for parinfer-rust."
   (cl-loop for change in changes do
            (let* ((current-change (parinfer-rust-new-change (plist-get change 'lineNo)
                                                             (plist-get change 'x)
                                                             (plist-get change 'before-text)
                                                             (plist-get change 'after-text))))
-             (when (not (local-bound-and-true parinfer-rust--current-changes))
+             (when (not (parinfer-rust--local-bound-and-true parinfer-rust--current-changes))
                (setq-local parinfer-rust--current-changes (parinfer-rust-make-changes)))
              (parinfer-rust-add-change
               parinfer-rust--current-changes
               current-change))))
 
 (defun parinfer-rust--track-changes (start end length)
-  "Tracks current change in buffer using START, END, and LENGTH
-to capture the state from the previous buffer and current
+  "Tracks current change in buffer using START, END, and LENGTH.
+Uses START, END, and Length to capture the state from the previous buffer and current
 buffer."
   (if parinfer-rust--disable
       nil
@@ -147,4 +151,11 @@ buffer."
             (widen)
             (buffer-substring-no-properties (point-min) (point-max))))))
 
+
+;; Local Variables:
+;; byte-compile-warnings: (not free-vars)
+;; package-lint-main-file: "parinfer-rust-mode.el"
+;; End:
 (provide 'parinfer-rust-changes)
+
+;;; parinfer-rust-changes.el ends here
