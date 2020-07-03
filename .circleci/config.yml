@@ -8,7 +8,7 @@ default: &default-steps
     - checkout
     - run: apt-get update && apt-get install make -y
     - run: make version
-    # - run: make lint
+    - run: make lint
     - run: make test
 
 # Enumerated list of Emacs versions
