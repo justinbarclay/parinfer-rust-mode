@@ -149,7 +149,7 @@ mode to better emulate users."
   (let ((max (length text)))
     (cond ((< num 0) 0)
           ((> num max) max)
-          ('t num))))
+          (t num))))
 
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.

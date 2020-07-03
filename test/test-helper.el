@@ -36,7 +36,7 @@
 (defvar-local parinfer-rust--test-no-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
 (defvar-local parinfer-rust--test-has-no-prev-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
 (defvar-local parinfer-rust--test-line-no nil "The line change that the current change/replace is happening on")
-(defvar-local paringer-rust--in-debug 't "Tell parinfer-rust-mode to print out it's debug information to a file")
+(defvar-local paringer-rust--in-debug t "Tell parinfer-rust-mode to print out it's debug information to a file")
 (defvar-local remove-first-line nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
 (defvar parinfer-result-string nil "Result of running a test on parinfer")
 
@@ -77,17 +77,17 @@ it makes no sense to convert it to a string using
                (replace-buffer-contents tmp-buffer)))))))))
 
 (defun move-cursor-to-previous-position ()
-  (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
+  (setq-local inhibit-modification-hooks t) ;; we don't need to track this change
   (if (search-forward "@" nil t) ;; If we find a cursor replace our cursor with that one
       (delete-char -1)
-    (setq-local parinfer-rust--test-has-no-prev-cursor 't))
+    (setq-local parinfer-rust--test-has-no-prev-cursor t))
   (setq-local inhibit-modification-hooks nil))
 
 (defun move-cursor-to-current-position ()
-  (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
+  (setq-local inhibit-modification-hooks t) ;; we don't need to track this change
   (if (search-forward "|" nil t) ;; If we find a cursor replace our cursor with that one
       (delete-char -1)
-    (setq-local parinfer-rust--test-no-cursor 't))
+    (setq-local parinfer-rust--test-no-cursor t))
   (setq-local inhibit-modification-hooks nil))
 
 (defun reverse-changes-in-buffer (change)
@@ -141,7 +141,7 @@ it makes no sense to convert it to a string using
                                                 (parinfer-rust-make-option)
                                                 (parinfer-rust-make-changes)))
   (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
-  (setq-local parinfer-enabled-p 't)
+  (setq-local parinfer-enabled-p t)
   (setq-local parinfer-rust--current-changes nil)
   ;; (setq-local parinfer-rust--mode "indent") ;; Don't call these because these because they override what we want done in the tests.
   ;; (parinfer-rust--execute)                  ;; We don't want to override whatever is being set in parinfer-rust--mode and we don't want
@@ -161,7 +161,7 @@ it makes no sense to convert it to a string using
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
       (setq-local parinfer-rust--test-no-cursor nil)
-      (setq-local paringer-rust--in-debug 't)
+      (setq-local paringer-rust--in-debug t)
       (setq-local remove-first-line nil)
       (insert test-string)
       (goto-char 0)
@@ -190,7 +190,7 @@ it makes no sense to convert it to a string using
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
       (setq-local parinfer-rust--test-no-cursor nil)
-      (setq-local paringer-rust--in-debug 't)
+      (setq-local paringer-rust--in-debug t)
       (setq-local remove-first-line nil)
       (insert test-string)
       (when changes
@@ -211,7 +211,7 @@ it makes no sense to convert it to a string using
       (parinfer-rust-mode)
       (when remove-first-line
         (progn
-          (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
+          (setq-local inhibit-modification-hooks t) ;; we don't need to track this change
           (goto-char 0)
           (kill-line)
           (setq remove-first-line nil)

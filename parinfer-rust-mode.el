@@ -70,7 +70,7 @@
                 (const :tag "paren" "paren"))
   :group 'parinfer-rust-mode)
 
-(defcustom parinfer-rust-check-before-enable 't
+(defcustom parinfer-rust-check-before-enable t
   "Have parinfer-rust ask the user if it wants to be enable
 `parinfer-rust-mode' if it detects it needs to change the
 indentation in the buffer to run."
@@ -219,7 +219,7 @@ switching modes, after an undo, or when first starting parinfer."
 
 (defun parinfer-rust--track-undo (orig-func &rest args)
   "Wraps ORIG-FUNC and ARGS in some state tracking for `parinfer-rust-mode'."
-  (setq-local parinfer-rust--in-undo 't)
+  (setq-local parinfer-rust--in-undo t)
   (condition-case-unless-debug err
       (apply orig-func args)
     ;; We want to "Ignore" errors here otherwise the function exits
@@ -230,7 +230,7 @@ switching modes, after an undo, or when first starting parinfer."
      nil))
   (setq-local parinfer-rust--in-undo nil)
   ;; Always ignore the first post-command-hook run of parinfer after an undo
-  (setq-local parinfer-rust--ignore-post-command-hook 't)
+  (setq-local parinfer-rust--ignore-post-command-hook t)
   (parinfer-rust--set-default-state))
 
 (defun parinfer-rust--execute-change-buffer-p (mode)
@@ -309,7 +309,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
              (error-p (parinfer-rust-get-in-answer answer "error")))
         ;; We don't want other hooks to run while we're modifying the buffer
         ;; that could lead to weird and unwanted behavior
-        (setq-local inhibit-modification-hooks 't)
+        (setq-local inhibit-modification-hooks t)
         (when (and (local-variable-if-set-p 'parinfer-rust--in-debug)
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
@@ -343,7 +343,7 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
 
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
-  (setq-local parinfer-rust-enabled 't)
+  (setq-local parinfer-rust-enabled t)
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
   ;; As per spec, always run paren on a buffer before entering any mode
@@ -376,7 +376,7 @@ This includes stopping tracking of all changes."
   (interactive)
   (if parinfer-rust--disable
       (setq-local parinfer-rust--disable nil)
-    (setq-local parinfer-rust--disable 't)))
+    (setq-local parinfer-rust--disable t)))
 
 ;;;###autoload
 (defun parinfer-rust-switch-mode ()
@@ -423,11 +423,11 @@ This includes stopping tracking of all changes."
              (not changes-buffer-p))
         (parinfer-rust-mode-enable))
 
-       ('t (progn
-             ;; This needs to be on so that we can turn off the
-             ;; emacs' tracking of this mode
-             (setq parinfer-rust-enabled 't)
-             (parinfer-rust-mode -1)))))))
+       (t (progn
+            ;; This needs to be on so that we can turn off the
+            ;; emacs' tracking of this mode
+            (setq parinfer-rust-enabled t)
+            (parinfer-rust-mode -1)))))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here

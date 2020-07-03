@@ -59,7 +59,7 @@ two changes."
                                      (plist-get change-b 'before-text)))
      'after-text (string-join (list (plist-get change-a 'after-text)
                                     (plist-get change-b 'after-text)))
-     'group 't)))
+     'group t)))
 
 (defun parinfer-rust--combine-changes (change-list)
   "Iterates over CHANGE-LIST and looks for changes that operate

@@ -47,7 +47,7 @@ If you're curious, you can find the library files that parinfer-rust-mode downlo
 
 If you would always like parinfer-rust-mode to keep the library version in sync for you, automatically download it, then add the following line into your config:
 #+BEGIN_SRC emacs-lisp
-(setq parinfer-rust-auto-download 't)
+(setq parinfer-rust-auto-download t)
 #+END_SRC
 
 If you are using the `use-package` snippet from above, that would look like:
@@ -59,7 +59,7 @@ If you are using the `use-package` snippet from above, that would look like:
                 :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
                :upgrade nil)
       :init
-      (setq parinfer-rust-auto-download 't))
+      (setq parinfer-rust-auto-download t))
 #+END_SRC
 
 
@@ -130,7 +130,7 @@ parinfer-rust-mode is purposefully light on option, but it does give a few optio
 
   Have parinfer-rust prompt you if you wants to enable parinfer-rust-mode if it detects the buffer has incorrect indentation.
   #+BEGIN_QUOTE
-  default: 't
+  default: t
   #+END_QUOTE
 - ~parinfer-rust-auto-download~
 

@@ -99,7 +99,7 @@
         filename)
        (incf index))
      tests)
-    't))
+    t))
 
 (defun generate-all-tests ()
   "Generates all mode based tests for parinfer-smart-mode"
