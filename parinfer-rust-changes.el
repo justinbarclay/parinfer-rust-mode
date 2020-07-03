@@ -34,13 +34,15 @@
   (require 'parinfer-rust parinfer-rust-library))
 
 (require 'parinfer-rust-helper)
-(defvar-local parinfer-rust--changes (list) "The current set of unprocessed changes")
+(defvar-local parinfer-rust--changes '()
+  "The current set of unprocessed changes")
 
 (defun parinfer-rust--merge-changes (change-a change-b)
-  "Returns the set of changes from CHANGE-A and CHANGE-B that
-covers the greatest region. It will return the lowest start
-value, highest end value, and merge the before and after text for
-two changes."
+  "Return change list from CHANGE-A and CHANGE-B.
+
+Return the set of changes that covers the greatest region, the
+lowest start value, highest end value, and merge the before and
+after text for two changes."
   (let ((start (if (< (plist-get change-a 'start)
                       (plist-get change-b 'start))
                    (plist-get change-a 'start)
@@ -64,11 +66,12 @@ two changes."
      'group t)))
 
 (defun parinfer-rust--combine-changes (change-list)
-  "Iterates over CHANGE-LIST and looks for changes that operate
-beside each other sequentially in time and on similar regions of
-texts."
+  "Iterate over CHANGE-LIST and look for change.
+
+Changes that operate beside each other sequentially in time and
+on similar regions of texts."
   (let ((sorted-changes (reverse change-list))
-        (consolidated-changes (list))
+        (consolidated-changes '())
         (previous-line nil)
         (previous-start nil))
     (dolist (change sorted-changes consolidated-changes)
@@ -104,9 +107,10 @@ texts."
 ;;   '((lineNo 7 x 10 start 170 end 171 before-text "\n  " after-text " " length 3 group t))))
 
 (defun parinfer-rust--get-before-and-after-text (start end length)
-  "Builds before and after changes text using START, END, and LENGTH.
+  "Builds before and after change text using START, END, and LENGTH.
 
-Uses on parinfer-rust--previous-buffer-text and current-buffer text to generate info."
+Uses on `parinfer-rust--previous-buffer-text' and
+`current-buffer' text to generate info."
   (let* ((previous-text parinfer-rust--previous-buffer-text)
          (old-region-end (parinfer-rust--bound-number previous-text (+ start length -1)))
          (old-region-start (parinfer-rust--bound-number previous-text (- start 1))))
@@ -118,9 +122,9 @@ Uses on parinfer-rust--previous-buffer-text and current-buffer text to generate 
        "")
      (buffer-substring-no-properties start end))))
 
-(defun parinfer-rust--build-changes (changes)
-  "Convert CHANGES to a list of change structs for parinfer-rust."
-  (cl-loop for change in changes do
+(defun parinfer-rust--build-changes (change-list)
+  "Convert CHANGE-LIST to a list of change structs for parinfer-rust."
+  (cl-loop for change in change-list do
            (let* ((current-change (parinfer-rust-new-change (plist-get change 'lineNo)
                                                             (plist-get change 'x)
                                                             (plist-get change 'before-text)
@@ -132,10 +136,10 @@ Uses on parinfer-rust--previous-buffer-text and current-buffer text to generate 
               current-change))))
 
 (defun parinfer-rust--track-changes (start end length)
-  "Tracks current change in buffer using START, END, and LENGTH.
+  "Track  change in buffer using START, END, and LENGTH.
 
-Uses START, END, and Length to capture the state from the previous buffer and current
-buffer."
+Uses START, END, and Length to capture the state from the
+previous buffer and current buffer."
   (if parinfer-rust--disable
       nil
     ;; If we're in test-mode we want the absolute position otherwise relative is fine
@@ -161,11 +165,9 @@ buffer."
             (widen)
             (buffer-substring-no-properties (point-min) (point-max))))))
 
-
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars)
 ;; package-lint-main-file: "parinfer-rust-mode.el"
 ;; End:
 (provide 'parinfer-rust-changes)
-
 ;;; parinfer-rust-changes.el ends here

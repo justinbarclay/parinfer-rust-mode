@@ -26,9 +26,10 @@
 ;;; Code:
 ;; This is copy and pasted because we need this information before parinfer-rust-mode runs
 (defconst parinfer-rust--lib-name (cond
-                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
-                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
-  "System dependent library name for parinfer-rust-mode")
+                                   ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                                   ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
+  "System dependent library name for `parinfer-rust-mode'.")
+
 (defvar parinfer-rust-library (concat default-directory parinfer-rust--lib-name))
 
 (require 'parinfer-rust-mode)
@@ -74,7 +75,7 @@ it makes no sense to convert it to a string using
               (insert repl)
               (let ((tmp-buffer (current-buffer)))
                 (set-buffer source-buffer)
-               (replace-buffer-contents tmp-buffer)))))))))
+                (replace-buffer-contents tmp-buffer)))))))))
 
 (defun move-cursor-to-previous-position ()
   (setq-local inhibit-modification-hooks t) ;; we don't need to track this change
@@ -91,16 +92,16 @@ it makes no sense to convert it to a string using
   (setq-local inhibit-modification-hooks nil))
 
 (defun reverse-changes-in-buffer (change)
-  "Given a list of change it applies the before to the specified area of the buffer"
+  "Revert a list of CHANGE to the specified area of the buffer."
   (with-no-warnings
     (goto-line (+ 1 (cdr (assoc 'lineNo change))))) ;; This is normally bad, but because we're just doing this in a test
-  (forward-char (cdr (assoc 'x change)))           ;; and we need to go to the line specified by the current change
+  (forward-char (cdr (assoc 'x change)))            ;; and we need to go to the line specified by the current change
   (replace-region-contents (point)
                            (+ (point) (length (cdr (assoc 'newText change))))
                            (lambda (&rest _args) (cdr (assoc 'oldText change)))))
 
 (defun apply-changes-in-buffer (change)
-  "Given a list of change it applies the before to the specified area of the buffer"
+  "Given a list of CHANGE apply to the specified area of the buffer."
   (with-no-warnings
     (goto-line (+ 1 (cdr (assoc 'lineNo change)))))
   (forward-char (cdr (assoc 'x change)))
@@ -116,36 +117,36 @@ it makes no sense to convert it to a string using
   (if (not (and (parinfer-rust--test-p) ;; If we're in test mode and no cursor is present don't
                 parinfer-rust--test-no-cursor ;; capture this information because it causes tests to fail
                 parinfer-rust--test-has-no-prev-cursor))
-    (let* ((cursor-x (when (not parinfer-rust--test-no-cursor)
-                       (parinfer-rust--get-cursor-x)))
-           (cursor-line (when (not parinfer-rust--test-no-cursor)
-                          (parinfer-rust--get-cursor-line)))
-           (options (parinfer-rust-new-options
-                     cursor-x
-                     cursor-line
-                     nil
-                     old-options
-                     changes)))
-      (setq-local parinfer-rust--current-changes nil)
-      options)
+      (let* ((cursor-x (when (not parinfer-rust--test-no-cursor)
+                         (parinfer-rust--get-cursor-x)))
+             (cursor-line (when (not parinfer-rust--test-no-cursor)
+                            (parinfer-rust--get-cursor-line)))
+             (options (parinfer-rust-new-options
+                       cursor-x
+                       cursor-line
+                       nil
+                       old-options
+                       changes)))
+        (setq-local parinfer-rust--current-changes nil)
+        options)
     (parinfer-rust-new-options
-                     nil
-                     nil
-                     nil
-                     old-options
-                     changes)))
+     nil
+     nil
+     nil
+     old-options
+     changes)))
 ;; Shadow function form parinfer-rust-mode because it executes buffer before everything is set-up in some test cases
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer"
   (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
-                                                (parinfer-rust-make-option)
-                                                (parinfer-rust-make-changes)))
+                                               (parinfer-rust-make-option)
+                                               (parinfer-rust-make-changes)))
   (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
   (setq-local parinfer-enabled-p t)
   (setq-local parinfer-rust--current-changes nil)
   ;; (setq-local parinfer-rust--mode "indent") ;; Don't call these because these because they override what we want done in the tests.
   ;; (parinfer-rust--execute)                  ;; We don't want to override whatever is being set in parinfer-rust--mode and we don't want
-                                                ;; To run parinfer-rust--execute for a second time
+  ;; To run parinfer-rust--execute for a second time
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
   (advice-add 'undo :before 'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
@@ -154,7 +155,8 @@ it makes no sense to convert it to a string using
   (add-hook 'post-command-hook 'parinfer-rust--execute t t))
 
 (defun simulate-parinfer-in-another-buffer--without-changes (test-string mode)
-  "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
+  "Run parinfer on buffer using text and cursor position
+extracted from the json-alist."
   (when (get-buffer "*parinfer-tests*") (kill-buffer "*parinfer-tests*"))
   (save-mark-and-excursion ;; This way we automatically get our point saved
     (let ((current (current-buffer))
@@ -183,7 +185,8 @@ it makes no sense to convert it to a string using
   parinfer-result-string)
 
 (defun simulate-parinfer-in-another-buffer--with-changes (test-string mode &optional changes)
-  "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
+  "Run parinfer on buffer using text and cursor position
+extracted from the json-alist."
   (when (get-buffer "*parinfer-tests*") (kill-buffer "*parinfer-tests*"))
   (save-mark-and-excursion ;; This way we automatically get our point saved
     (let ((current (current-buffer))
@@ -228,7 +231,7 @@ it makes no sense to convert it to a string using
     (switch-to-buffer new-buf)
     (when setup
       (mapc (lambda (command)
-                (apply command nil))
+              (apply command nil))
             setup))
     (insert test-string)
     (setq parinfer-rust--mode mode)
@@ -248,7 +251,8 @@ it makes no sense to convert it to a string using
   parinfer-result-string)
 
 (defun simulate-parinfer-in-another-buffer (test-string mode &optional changes)
-  "Runs parinfer on buffer using text and cursor position extracted from the json-alist"
+  "Run parinfer on buffer using text and cursor position
+extracted from the json-alist."
   (if changes
       (simulate-parinfer-in-another-buffer--with-changes test-string mode changes)
     (simulate-parinfer-in-another-buffer--without-changes test-string mode)))

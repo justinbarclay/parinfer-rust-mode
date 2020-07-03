@@ -44,11 +44,11 @@
 
 ;; Need to define these before parinfer-rust and parinfer-helper are loaded
 
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; User customizations
-;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; User customization options
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defcustom parinfer-rust-auto-download nil
-  "Automatically download the latest version of parinfer-rust from github."
+  "Automatically download the latest version of parinfer-rust from GitHub."
   :type 'boolean
   :group 'parinfer-rust-mode)
 
@@ -66,16 +66,18 @@
     :group 'parinfer-rust-mode))
 
 (defcustom parinfer-rust-preferred-mode "smart"
-  "What mode you want parinfer-rust to start in."
+  "Preferred mode for parinfer-rust."
   :type '(radio (const :tag "indent" "indent")
                 (const :tag "smart" "smart")
                 (const :tag "paren" "paren"))
   :group 'parinfer-rust-mode)
 
 (defcustom parinfer-rust-check-before-enable t
-  "Have parinfer-rust ask the user if it wants to be enable
-`parinfer-rust-mode' if it detects it needs to change the
-indentation in the buffer to run."
+  "Perform indentation check before enabling `parinfer-rust-mode'.
+
+If Parinfer detects that it need to change the indentation in the
+buffer to run, it will prompt user whether it is OK to adjust
+indentation. If user disagrees Parinfer will disable itself."
   :type 'boolean
   :group 'parinfer-rust-mode)
 
@@ -87,10 +89,14 @@ indentation in the buffer to run."
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defconst parinfer-rust-supported-version "0.4.4-beta" "The version of the parinfer-rust library
-that `parinfer-rust-mode' was tested against.")
-(defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that
-parinfer can operate on.")
+(defconst parinfer-rust-supported-version "0.4.4-beta"
+  "Supported version of the parinfer-rust library.
+
+Version of the library that `parinfer-rust-mode' was tested
+against.")
+
+(defconst parinfer-rust--mode-types '("indent" "smart" "paren")
+  "The different modes that parinfer can operate on.")
 
 ;; Require helper so we can check for library
 (require 'parinfer-rust-helper)
@@ -125,8 +131,10 @@ parinfer can operate on.")
     (paredit-forward-slurp-sexp . "paren")
     (yank . "paren")
     (counsel-yank-pop . "paren"))
-  "A curated list of pairs consisting of a command and the mode the command should be run in.
-Ex: '((yank . \"paren\"))")
+  "Commands to run with certain Parinfer mode.
+
+A curated list of pairs consisting of a command and the mode the
+command should be run in.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
@@ -136,7 +144,7 @@ Ex: '((yank . \"paren\"))")
   "When enabled, outputs the response input and output of the parinfer response to a file")
 (defvar-local parinfer-rust--mode "paren"
   "The current mode that parinfer running under to managing your
-  paranthesis. Either 'paren', 'indent', or 'smart'")
+  parenthesis. Either 'paren', 'indent', or 'smart'")
 (defvar-local parinfer-rust--previous-options nil
   "The last set of record of changes and meta information of changes in the buffer")
 ;; TODO this might be not needed anymore
@@ -163,8 +171,9 @@ Ex: '((yank . \"paren\"))")
   :group 'parinfer-rust-mode)
 
 (defun parinfer-rust--dim-parens-fontify-search (limit)
-  "Search for closing parens at the end of lines. This search is
-bound to occur before LIMIT."
+  "Search for closing parens at the end of lines.
+
+This search is bound to occur before LIMIT."
   (let ((result nil)
         (finish nil)
         (bound (+ (point) limit)))
@@ -203,8 +212,10 @@ bound to occur before LIMIT."
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun parinfer-rust--set-default-state ()
-  "Set up parinfer for execution in a default context. Good for
-switching modes, after an undo, or when first starting parinfer."
+  "Set up parinfer for execution in a default context.
+
+Good for switching modes, after an undo, or when first starting
+parinfer."
   (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
                                                (parinfer-rust-make-option)
                                                (parinfer-rust-make-changes)))
@@ -251,8 +262,10 @@ switching modes, after an undo, or when first starting parinfer."
 ;; Interfaces for parinfer-rust
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun parinfer-rust--generate-options (old-options changes)
-  "Capture the current buffer state and it's associated meta information needed to execute parinfer.
-Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
+  "Capture the buffer state and associated metadata needed to execute parinfer.
+
+Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and
+CHANGES."
   (let ((options (parinfer-rust-new-options
                   (parinfer-rust--get-cursor-x)
                   (parinfer-rust--get-cursor-line)
@@ -337,7 +350,9 @@ Builds a parinfer-rust OPTION struct based on OLD-OPTIONS and CHANGES."
 
 ;; Interactive or functions meant to be called by user
 (defun parinfer-rust-toggle-debug ()
-  "Turn on debug for parinfer. This will create a text file in the current directory."
+  "Turn on debug for parinfer.
+
+This will create a text file in the current directory."
   (interactive)
   (if parinfer-rust--in-debug
       (setq parinfer-rust--in-debug nil)
@@ -382,7 +397,9 @@ This includes stopping tracking of all changes."
 
 ;;;###autoload
 (defun parinfer-rust-switch-mode ()
-  "Switch to a different Parinfer mode. Either: indent, smart, or paren."
+  "Switch to a different Parinfer mode.
+
+Either: indent, smart, or paren."
   (interactive)
   (setq-local parinfer-rust--mode
               (completing-read "Choose parinfer mode:"
@@ -400,6 +417,7 @@ This includes stopping tracking of all changes."
     (define-key m (kbd "C-c C-p d") 'parinfer-rust-toggle-disable)
     m)
   "Keymap for `parinfer-rust-mode'.")
+
 ;;;###autoload
 (define-minor-mode parinfer-rust-mode
   "A simpler way to write lisps"
@@ -417,7 +435,7 @@ This includes stopping tracking of all changes."
        ;; and it does change indentation
        ((and parinfer-rust-check-before-enable
              changes-buffer-p
-             (y-or-n-p "Parinfer needs to modify indentation in this buffer to work. Continue? "))
+             (y-or-n-p "Parinfer needs to modify indentation in this buffer to work.  Continue? "))
         (parinfer-rust-mode-enable))
        ;; Do we care about parinfer changing indentation
        ;; and does not change the current buffer
@@ -427,7 +445,7 @@ This includes stopping tracking of all changes."
 
        (t (progn
             ;; This needs to be on so that we can turn off the
-            ;; emacs' tracking of this mode
+            ;; Emacs' tracking of this mode
             (setq parinfer-rust-enabled t)
             (parinfer-rust-mode -1)))))))
 

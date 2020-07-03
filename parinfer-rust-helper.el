@@ -40,7 +40,10 @@
                                          auto-download)
   "Check for the existence of the parinfer-rust library.
 
-If it can't be found it offers to download it for the user."
+If SUPPORTED-VERSION can't be found in LIBRARY-LOCATION offers to
+download LIB-NAME for the user. Automatically downdloands if
+AUTO-DOWNLOAD is supplied or parinfer-rust runs in test mode,
+otherwise will promt user."
   (when (and (not (file-exists-p library-location))
              (or
               auto-download
@@ -53,7 +56,8 @@ If it can't be found it offers to download it for the user."
 (defun parinfer-rust--check-version (supported-version current-version library-location lib-name)
   "Check compatability between parinfer-rust-mode and the parinfer-rust library.
 
-If it is not compatible, offer to download the file for the user."
+If SUPPORTED-VERSION is not compatible with CURRENT-VERSION,
+offer to download the LIB-NAME to LIBRARY-LOCATION."
   (when (and current-version
              (not (string=
                    current-version
@@ -111,7 +115,7 @@ If the user does not disable these modes then it may cause bugs or crashes"
           (apply mode '(-1))))))
 
 (defun parinfer-rust--test-p ()
-  "Return true if running in a test environment.
+  "Return non-nil if running in a test environment.
 
 Parinfer needs to tweak some behavior of parinfer based on test
 mode to better emulate users."
@@ -136,7 +140,7 @@ mode to better emulate users."
   (- (line-number-at-pos) 1))
 
 (defun parinfer-rust--reposition-cursor (point-x line-number)
-  "Move the cursor to the new line and column."
+  "Move the cursor to the new LINE-NUMBER and POINT-X column."
   (let* ((new-line (- line-number (parinfer-rust--get-cursor-line)))
          (new-x (- point-x (parinfer-rust--get-cursor-x))))
     (when (not (= new-line 0))
