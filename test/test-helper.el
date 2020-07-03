@@ -25,12 +25,6 @@
 
 ;;; Code:
 ;; This is copy and pasted because we need this information before parinfer-rust-mode runs
-(defconst parinfer-rust--lib-name (cond
-                                   ((eq system-type 'darwin) "parinfer-rust-darwin.so")
-                                   ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"))
-  "System dependent library name for `parinfer-rust-mode'.")
-
-(defvar parinfer-rust-library (concat default-directory parinfer-rust--lib-name))
 
 (require 'parinfer-rust-mode)
 
