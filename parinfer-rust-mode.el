@@ -43,11 +43,6 @@
 ;;; Code:
 
 ;; Need to define these before parinfer-rust and parinfer-helper are loaded
-(defconst parinfer-rust--lib-name (cond
-                                   ((eq system-type 'darwin) "parinfer-rust-darwin.so")
-                                   ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-                                    "parinfer-rust-linux.so"))
-  "System dependent library name for parinfer-rust-mode.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User customizations
@@ -57,11 +52,18 @@
   :type 'boolean
   :group 'parinfer-rust-mode)
 
-(defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/"
-                                                                 parinfer-rust--lib-name))
-  "The location to store or to find the parinfer-rust library."
-  :type 'file
-  :group 'parinfer-rust-mode)
+(eval-when-compile
+  (defconst parinfer-rust--lib-name (cond
+                                     ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
+                                      "parinfer-rust-linux.so"))
+    "System dependent library name for parinfer-rust-mode.")
+
+  (defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/"
+                                                                   parinfer-rust--lib-name))
+    "The location to store or to find the parinfer-rust library."
+    :type 'file
+    :group 'parinfer-rust-mode))
 
 (defcustom parinfer-rust-preferred-mode "smart"
   "What mode you want parinfer-rust to start in."

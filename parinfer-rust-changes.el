@@ -30,7 +30,9 @@
 
 ;;; Code:
 
-(require 'parinfer-rust parinfer-rust-library)
+(eval-when-compile
+  (require 'parinfer-rust parinfer-rust-library))
+
 (require 'parinfer-rust-helper)
 (defvar-local parinfer-rust--changes (list) "The current set of unprocessed changes")
 
