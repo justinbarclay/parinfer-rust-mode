@@ -34,9 +34,6 @@ lint: version elpa
 	$(CASK) exec $(EMACS) -Q --batch \
 		--eval "(setq enable-local-variables :safe)" \
 		-l elisp-lint.el -f elisp-lint-files-batch \
-		--no-package-format \
-		--no-indent-character \
-                --no-fill-column \
 		$(ELS)
 
 test-all: lint test

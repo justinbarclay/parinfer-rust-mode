@@ -83,14 +83,20 @@ enable `parinfer-rust-mode' if it detects it needs to change the indentation in 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defconst parinfer-rust-supported-version "0.4.4-beta" "The version of the parinfer-rust library that `parinfer-rust-mode' was tested against.")
-(defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that parinfer can operate on.")
-(defvar-local parinfer-rust--test-p (not (not (getenv "PARINFER_RUST_TEST"))) "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer based on test mode to better emulate users.") ;; Hack for some versions of emacs
+(defconst parinfer-rust-supported-version "0.4.4-beta" "The version of the parinfer-rust library
+that `parinfer-rust-mode' was tested against.")
+(defconst parinfer-rust--mode-types (list "indent" "smart" "paren") "The different modes that
+parinfer can operate on.")
+(defvar-local parinfer-rust--test-p (and (getenv "PARINFER_RUST_TEST")
+                                         (string= (downcase (getenv "PARINFER_RUST_TEST"))
+                                                  "true"))
+  "Predicate to determine if we're in test mode or not. We need to tweak some behavior of parinfer
+ based on test mode to better emulate users.")
 
 ;; Require helper so we can check for library
 (require 'parinfer-rust-helper)
 
-;; Make sure the library is installed at the appropriate location or offer to download it for the user
+;; Make sure the library is installed at the appropriate location or offer to download it
 (parinfer-rust--check-for-library parinfer-rust-supported-version
                                   parinfer-rust-library
                                   parinfer-rust--lib-name
@@ -389,8 +395,8 @@ This includes stopping tracking of all changes."
 ;;;###autoload
 (defvar parinfer-rust-mode-map
   (let ((m (make-sparse-keymap)))
-    (define-key m (kbd "C-c p s") 'parinfer-rust-switch-mode)
-    (define-key m (kbd "C-c p d") 'parinfer-rust-toggle-disable)
+    (define-key m (kbd "C-c C-p s") 'parinfer-rust-switch-mode)
+    (define-key m (kbd "C-c C-p d") 'parinfer-rust-toggle-disable)
     m)
   "Keymap for `parinfer-rust-mode'.")
 ;;;###autoload
