@@ -59,7 +59,7 @@ two changes."
                                      (plist-get change-b 'before-text)))
      'after-text (string-join (list (plist-get change-a 'after-text)
                                     (plist-get change-b 'after-text)))
-     'group-p 't)))
+     'group 't)))
 
 (defun parinfer-rust--combine-changes (change-list)
   "Iterates over CHANGE-LIST and looks for changes that operate
@@ -85,21 +85,21 @@ texts."
 
 ;; Good for future tests
 ;; (setq some-changes
-;;       '((lineNo 7 x 10 start 170 end 171 length 0 before-text "" after-text " " group-p nil)
-;;         (lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group-p nil)
-;;         (lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group-p nil)))
+;;       '((lineNo 7 x 10 start 170 end 171 length 0 before-text "" after-text " " group nil)
+;;         (lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group nil)
+;;         (lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group nil)))
 
 ;; (assert
 ;;  (equal
-;;   '(lineNo 7 x 10 start 170 end 170 before-text "\n  " after-text "" length 3 group-p t)
+;;   '(lineNo 7 x 10 start 170 end 170 before-text "\n  " after-text "" length 3 group t)
 ;;   (parinfer-rust--merge-changes
-;;    '(lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group-p nil)
-;;    '(lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group-p nil))))
+;;    '(lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group nil)
+;;    '(lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group nil))))
 
 ;; (assert
 ;;  (equal
 ;;   (parinfer-rust--combine-changes some-changes)
-;;   '((lineNo 7 x 10 start 170 end 171 before-text "\n  " after-text " " length 3 group-p t))))
+;;   '((lineNo 7 x 10 start 170 end 171 before-text "\n  " after-text " " length 3 group t))))
 
 (defun parinfer-rust--get-before-and-after-text (start end length)
   "Builds before and after changes text using START, END, and LENGTH.
@@ -137,7 +137,7 @@ buffer."
   (if parinfer-rust--disable
       nil
     ;; If we're in test-mode we want the absolute position otherwise relative is fine
-    (let ((lineNo (- (line-number-at-pos start parinfer-rust--test-p)
+    (let ((lineNo (- (line-number-at-pos start (parinfer-rust--test-p))
                      1))
           (x (save-excursion
                (save-restriction
@@ -152,7 +152,7 @@ buffer."
                   'length length
                   'before-text (car changes)
                   'after-text (cadr changes)
-                  'group-p nil)
+                  'group nil)
             parinfer-rust--changes))
     (setq parinfer-rust--previous-buffer-text
           (save-restriction

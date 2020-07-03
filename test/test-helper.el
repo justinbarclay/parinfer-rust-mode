@@ -36,9 +36,8 @@
 (defvar-local parinfer-rust--test-no-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
 (defvar-local parinfer-rust--test-has-no-prev-cursor nil "A global variable for indicating that the current test doesn't have a cursor in it. Used in conjunction with parinfer-rust--capture-changes")
 (defvar-local parinfer-rust--test-line-no nil "The line change that the current change/replace is happening on")
-(defvar-local parinfer-rust--test-p 't "Boolean value for running tests in the current buffer")
-(defvar-local parinfer-rust--debug-p 't "Tell parinfer-rust-mode to print out it's debug information to a file")
-(defvar-local remove-first-line-p nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
+(defvar-local paringer-rust--in-debug 't "Tell parinfer-rust-mode to print out it's debug information to a file")
+(defvar-local remove-first-line nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
 (defvar parinfer-result-string nil "Result of running a test on parinfer")
 
 ;; Don't prompt for permission to modify buffer
@@ -114,7 +113,7 @@ it makes no sense to convert it to a string using
 ;; Shadow capture-changes for a test friendly version
 (defun parinfer-rust--generate-options (old-options changes)
   "Capture the current buffer state and it's associated meta information needed to execute parinfer"
-  (if (not (and parinfer-rust--test-p ;; If we're in test mode and no cursor is present don't
+  (if (not (and (parinfer-rust--test-p) ;; If we're in test mode and no cursor is present don't
                 parinfer-rust--test-no-cursor ;; capture this information because it causes tests to fail
                 parinfer-rust--test-has-no-prev-cursor))
     (let* ((cursor-x (when (not parinfer-rust--test-no-cursor)
@@ -162,8 +161,8 @@ it makes no sense to convert it to a string using
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
       (setq-local parinfer-rust--test-no-cursor nil)
-      (setq-local parinfer-rust--debug-p 't)
-      (setq-local remove-first-line-p nil)
+      (setq-local paringer-rust--in-debug 't)
+      (setq-local remove-first-line nil)
       (insert test-string)
       (goto-char 0)
       (setq-local parinfer-rust--mode mode)
@@ -173,11 +172,11 @@ it makes no sense to convert it to a string using
                                                                                (parinfer-rust-make-changes))))
       (move-cursor-to-current-position)
       (parinfer-rust--execute)
-      (when remove-first-line-p ;; if we created a new line in move-cursor-current-position
+      (when remove-first-line ;; if we created a new line in move-cursor-current-position
         (progn                 ;; remove it
           (goto-char 0)
           (kill-line)
-          (setq remove-first-line-p nil)))
+          (setq remove-first-line nil)))
       (setq parinfer-result-string (buffer-string)) ;; Save the string before we kill our current buffer
       (switch-to-buffer current)
       (kill-buffer new-buf)))
@@ -191,8 +190,8 @@ it makes no sense to convert it to a string using
           (new-buf (get-buffer-create "*parinfer-tests*"))) ;; We need this
       (switch-to-buffer new-buf)
       (setq-local parinfer-rust--test-no-cursor nil)
-      (setq-local parinfer-rust--debug-p 't)
-      (setq-local remove-first-line-p nil)
+      (setq-local paringer-rust--in-debug 't)
+      (setq-local remove-first-line nil)
       (insert test-string)
       (when changes
         (progn
@@ -210,12 +209,12 @@ it makes no sense to convert it to a string using
       (move-cursor-to-current-position)
       (parinfer-rust--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
       (parinfer-rust-mode)
-      (when remove-first-line-p
+      (when remove-first-line
         (progn
           (setq-local inhibit-modification-hooks 't) ;; we don't need to track this change
           (goto-char 0)
           (kill-line)
-          (setq remove-first-line-p nil)
+          (setq remove-first-line nil)
           (setq-local inhibit-modification-hooks nil)))
       (setq parinfer-result-string (buffer-string)) ;; Save the string before we kill our current buffer
       (switch-to-buffer current)

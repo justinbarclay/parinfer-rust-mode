@@ -47,7 +47,7 @@ If you're curious, you can find the library files that parinfer-rust-mode downlo
 
 If you would always like parinfer-rust-mode to keep the library version in sync for you, automatically download it, then add the following line into your config:
 #+BEGIN_SRC emacs-lisp
-(setq parinfer-rust-auto-download-p 't)
+(setq parinfer-rust-auto-download 't)
 #+END_SRC
 
 If you are using the `use-package` snippet from above, that would look like:
@@ -59,7 +59,7 @@ If you are using the `use-package` snippet from above, that would look like:
                 :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
                :upgrade nil)
       :init
-      (setq parinfer-rust-auto-download-p 't))
+      (setq parinfer-rust-auto-download 't))
 #+END_SRC
 
 
@@ -132,7 +132,7 @@ parinfer-rust-mode is purposefully light on option, but it does give a few optio
   #+BEGIN_QUOTE
   default: 't
   #+END_QUOTE
-- ~parinfer-rust-auto-download-p~
+- ~parinfer-rust-auto-download~
 
   Have parinfer-rust-mode download the latest version of the parinfer-rust library without prompting you. Generally used for automating your set-up.
   #+BEGIN_QUOTE

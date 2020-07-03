@@ -34,20 +34,17 @@
 (defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst parinfer-rust--outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
-(defvar parinfer-rust--test-p nil "Boolean value for running tests in the current buffer.")
-
 (defun parinfer-rust--check-for-library (supported-version
                                          library-location
                                          lib-name
-                                         auto-download-p)
+                                         auto-download)
   "Check for the existence of the parinfer-rust library.
 
 If it can't be found it offers to download it for the user."
   (when (and (not (file-exists-p library-location))
              (or
-              auto-download-p
-              (and (boundp parinfer-rust--test-p)
-                   parinfer-rust--test-p)
+              auto-download
+              (parinfer-rust--test-p)
               (yes-or-no-p parinfer-rust--ask-to-download)))
     (parinfer-rust--download-from-github supported-version library-location lib-name)))
 
@@ -62,7 +59,7 @@ If it is not compatible, offer to download the file for the user."
                    current-version
                    supported-version))
              (and
-              (not (bound-and-true-p parinfer-rust--test-p))
+              (not (bound-and-true-p (parinfer-rust--test-p)))
               (yes-or-no-p parinfer-rust--outdated-version)))
     (parinfer-rust--download-from-github supported-version library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
@@ -113,6 +110,14 @@ If the user does not disable these modes then it may cause bugs or crashes"
         (dolist (mode warning-list)
           (apply mode '(-1))))))
 
+(defun parinfer-rust--test-p ()
+  "Return true if running in a test environment.
+
+Parinfer needs to tweak some behavior of parinfer based on test
+mode to better emulate users."
+  (and (getenv "PARINFER_RUST_TEST")
+       (string= (downcase (getenv "PARINFER_RUST_TEST"))
+                "true")))
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;
