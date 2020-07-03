@@ -83,22 +83,28 @@ texts."
       (setq previous-start (plist-get change 'start))
       (setq previous-line (plist-get change 'lineNo)))))
 
-;; (setq some-changes '((lineNo 7 x 10 start 170 end 171 length 0 before-text "" after-text " " group-p nil)
-;;                      (lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group-p nil)
-;;                      (lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group-p nil)))
-;; (assert (equal
-;;          '(lineNo 7 x 10 start 170 end 170 before-text "\n  " after-text "" length 3 group-p t)
-;;          (parinfer-rust--merge-changes
-;;           '(lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group-p nil)
-;;           '(lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group-p nil))))
+;; Good for future tests
+;; (setq some-changes
+;;       '((lineNo 7 x 10 start 170 end 171 length 0 before-text "" after-text " " group-p nil)
+;;         (lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group-p nil)
+;;         (lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group-p nil)))
 
-;; (assert (equal (parinfer-rust--combine-changes some-changes)
-;;                '((lineNo 7 x 10 start 170 end 171 before-text "\n  " after-text " " length 3 group-p t))))
+;; (assert
+;;  (equal
+;;   '(lineNo 7 x 10 start 170 end 170 before-text "\n  " after-text "" length 3 group-p t)
+;;   (parinfer-rust--merge-changes
+;;    '(lineNo 7 x 10 start 170 end 170 length 1 before-text "\n" after-text ""  group-p nil)
+;;    '(lineNo 7 x 10 start 170 end 170 length 2 before-text "  " after-text "" group-p nil))))
+
+;; (assert
+;;  (equal
+;;   (parinfer-rust--combine-changes some-changes)
+;;   '((lineNo 7 x 10 start 170 end 171 before-text "\n  " after-text " " length 3 group-p t))))
 
 (defun parinfer-rust--get-before-and-after-text (start end length)
-  "Builds before and after change text using START, END, and
-LENGTH on parinfer-rust--previous-buffer-text and
-current-buffer text."
+  "Builds before and after changes text using START, END, and LENGTH.
+
+Uses on parinfer-rust--previous-buffer-text and current-buffer text to generate info."
   (let* ((previous-text parinfer-rust--previous-buffer-text)
          (old-region-end (parinfer-rust--bound-number previous-text (+ start length -1)))
          (old-region-start (parinfer-rust--bound-number previous-text (- start 1))))
@@ -125,12 +131,14 @@ current-buffer text."
 
 (defun parinfer-rust--track-changes (start end length)
   "Tracks current change in buffer using START, END, and LENGTH.
+
 Uses START, END, and Length to capture the state from the previous buffer and current
 buffer."
   (if parinfer-rust--disable
       nil
+    ;; If we're in test-mode we want the absolute position otherwise relative is fine
     (let ((lineNo (- (line-number-at-pos start parinfer-rust--test-p)
-                     1)) ;; If we're in test-mode we want the absolute position otherwise relative is fine
+                     1))
           (x (save-excursion
                (save-restriction
                  (widen)

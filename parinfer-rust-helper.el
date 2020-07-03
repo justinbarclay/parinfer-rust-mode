@@ -36,10 +36,14 @@
 
 (defvar parinfer-rust--test-p nil "Boolean value for running tests in the current buffer.")
 
-(defun parinfer-rust--check-for-library (supported-version library-location lib-name auto-download-p)
-  "Check for the existence of the parinfer-rust library. If it
-can't be found it offers to download it for the user."
-  (when (and (not (file-exists-p library-location)) ;; Using when here instead of unless so we can early exit this if file does exist
+(defun parinfer-rust--check-for-library (supported-version
+                                         library-location
+                                         lib-name
+                                         auto-download-p)
+  "Check for the existence of the parinfer-rust library.
+
+If it can't be found it offers to download it for the user."
+  (when (and (not (file-exists-p library-location))
              (or
               auto-download-p
               (and (boundp parinfer-rust--test-p)
@@ -47,9 +51,11 @@ can't be found it offers to download it for the user."
               (yes-or-no-p parinfer-rust--ask-to-download)))
     (parinfer-rust--download-from-github supported-version library-location lib-name)))
 
-;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download a new library the user has to restart Emacs.
+;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download
+;; a new library the user has to restart Emacs.
 (defun parinfer-rust--check-version (supported-version current-version library-location lib-name)
   "Check compatability between parinfer-rust-mode and the parinfer-rust library.
+
 If it is not compatible, offer to download the file for the user."
   (when (and current-version
              (not (string=
@@ -65,13 +71,18 @@ If it is not compatible, offer to download the file for the user."
                                             library-location
                                             lib-name)
   "Downloads parinfer-rust to LIBRARY-LOCATION and gives it the name LIB-NAME.
+
 Uses PARINFER-RUST-VERSION to download a compatible version of the library."
   (if (executable-find "curl")
       (progn
-        (unless (file-directory-p (file-name-directory library-location)) (make-directory (file-name-directory library-location)))
-        (shell-command (format "curl -L %s -o %s"
-                               (format "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s" parinfer-rust-version lib-name)
-                               library-location))
+        (unless (file-directory-p (file-name-directory library-location))
+          (make-directory (file-name-directory library-location)))
+        (shell-command
+         (format "curl -L %s -o %s"
+                 (format "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s"
+                         parinfer-rust-version
+                         lib-name)
+                 library-location))
         (message "Installing %s v%s to %s" lib-name parinfer-rust-version library-location))
     (message "Unable to download parinfer-rust library because curl is not on $PATH")))
 
@@ -88,8 +99,8 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
 
 (defun parinfer-rust--detect-troublesome-modes ()
   "Check to see if a list of troublesome modes are enabled in `current-buffer`.
-If the user does not disable these modes then it may cause bugs
-or crashes"
+
+If the user does not disable these modes then it may cause bugs or crashes"
   (let ((warning-list))
     (dolist (mode '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode))
       (when (parinfer-rust--is-active-minor-mode mode)
@@ -135,7 +146,10 @@ or crashes"
           ((> num max) max)
           ('t num))))
 
+;; Disable fill column warning only for this buffer to enable long strings of text without
+;; having to do a weird mapconcat.
 ;; Local Variables:
+;; elisp-lint-ignored-validators: ("byte-compile" "checkdoc" "fill-column")
 ;; byte-compile-warnings: (not free-vars)
 ;; package-lint-main-file: "parinfer-rust-mode.el"
 ;; End:
