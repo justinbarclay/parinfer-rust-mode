@@ -211,6 +211,8 @@ parinfer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interfaces for parinfer-rust
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The change interface and associated functions for change tracking
+;; can be found in parinfer-rust-changes.el
 (defun parinfer-rust--generate-options (old-options changes)
   "Capture the buffer state and associated metadata needed to execute parinfer.
 
@@ -227,7 +229,7 @@ CHANGES."
 
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer."
-  (if (or parinfer-rust--disable ;; Don't run if disabled by user or right after an undo
+  (if (or parinfer-rust--disable ; Don't run if disabled by user or right after an undo
           parinfer-rust--in-undo
           parinfer-rust--ignore-post-command-hook
           undo-in-progress)
@@ -254,7 +256,7 @@ CHANGES."
                     ;; knowing all the changes I just made. That's because by
                     ;; knowing all the state changes it made it might make the
                     ;; wrong choices for similar reasons it would under smart
-                    ;; mode, the changes Emacs reports may be different than
+                    ;; mode; the changes Emacs reports may be different than
                     ;; those parinfer expects.
                     (setq parinfer-rust--current-changes nil)
                     mode)
@@ -292,10 +294,10 @@ CHANGES."
                     (replace-buffer-contents new-buf)
                     (kill-buffer new-buf)))
                 ;; Adding an explicit undo boundary here to ensure that when chaining events
-                ;; together that the changes parinfer makes are explicitly recorded and can be undone
-                ;; by themselves. This is meant to help with issues like issue #10, where undo
-                ;; breaks structure and structure is never fully returned to the code during undo.
-                ;; It is left up to the user to realign code.
+                ;; together that the changes parinfer makes are explicitly recorded and can be
+                ;; undone by themselves. This is meant to help with issues like issue #10, where
+                ;; undo breaks structure and structure is never fully returned to the code during
+                ;; undo. It is left up to the user to realign code.
                 (undo-boundary))))
         (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))

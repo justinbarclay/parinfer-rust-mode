@@ -26,8 +26,26 @@
 ;;
 
 ;;; Commentary:
-;;
+;; Isolating change tracking to it's own file because it's still a volatile idea with room to grow
+;; and change.
 
+;; Change tracking works thusly:
+;; 1. parinfer-rust-mode tracks all changes reported by the after after-change-hook.
+
+;; 2. During each change it will capture the state of the current and previous regions of text,
+;; along with some meta state we use to determine if two changes should be merged.
+
+;; 3. After it has finished recording state it update the parinfer-rust--previous-buffer-text local
+;; variable to ensure the next time a change event is fired the state of previous text is always
+;; correct.
+
+;; 4. When parinfer-rust--execute is called it will merge change events that occur sequentially in
+;; time and at the same starting coordinates. This merges delete events together and helps create a
+;; more minimized change list that paringer-rust can understand.
+
+;; 5. Once changes have been merged, they get transformed into a parinfer-rust change struct.
+
+;; 6. Finally they get passed into parinfer-rust and may god have mercy on their souls.
 ;;; Code:
 
 (eval-when-compile
