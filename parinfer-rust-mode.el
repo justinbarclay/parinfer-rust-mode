@@ -333,14 +333,20 @@ CHANGES."
           ;; This stops Emacs from flickering when scrolling
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string))
               (progn
-                (save-mark-and-excursion ;; This way we automatically get our point saved
+                (save-mark-and-excursion
                   (let ((current (current-buffer))
                         (new-buf (get-buffer-create "*parinfer*")))
                     (switch-to-buffer new-buf)
                     (insert replacement-string)
                     (switch-to-buffer current)
                     (replace-buffer-contents new-buf)
-                    (kill-buffer new-buf))))))
+                    (kill-buffer new-buf)))
+                ;; Adding an explicit undo boundary here to ensure that when chaining events
+                ;; together that the changes parinfer makes are explicitly recorded and can be undone
+                ;; by themselves. This is meant to help with issues like issue #10, where undo
+                ;; breaks structure and structure is never fully returned to the code during undo.
+                ;; It is left up to the user to realign code.
+                (undo-boundary))))
         (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-rust--reposition-cursor new-x new-line))
