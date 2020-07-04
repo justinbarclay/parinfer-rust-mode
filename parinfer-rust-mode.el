@@ -1,10 +1,10 @@
-;;; parinfer-rust-mode.el --- Infer your parens away -*- lexical-binding: t; -*-
+;;; parinfer-rust-mode.el --- An interface for the parinfer-rust library -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019-2020  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.7.1
+;; Version: 0.7.3
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp tools
 
@@ -25,22 +25,30 @@
 
 ;;; Commentary:
 
-;; Manage your parenthesis automatically based on whitespace.
+;;  An intuitive editor mode to make paren management fun and easy without sacrificing power.
+
+;; To find out more about how parinfer work go to: https://shaunlebron.github.io/parinfer/
 
 ;; `parinfer-rust-mode` provides an interface between the `parinfer-rust` library
 ;; and Emacs.  As such it's primary role is to capture meta information about the
-;; buffer and transmit it to the parinfer-rust API.
+;; buffer and transfer it to the parinfer-rust API.
 ;;
-;; In broad strokes we must:
-;; 1. Monitor and record all changes and meta information about changes in the buffer
-;; 2. Keep a record of the buffer state before the last time parinfer-rust was run
-;; 3. Run parinfer-rust and update the state of the buffer accordingly
-;;
+;; As such parinfer-rust-mode requires that your version of Emacs supports modules.
+
+;;; Code:
+
 ;; For a complete list of state that needs to be tracked read:
 ;; https://github.com/shaunlebron/parinfer/tree/master/lib#api
 ;; https://github.com/shaunlebron/parinfer/blob/master/lib/doc/integrating.md
 
-;;; Code:
+;; In broad strokes we must:
+
+;; 1. Monitor and record all changes and meta information about changes in the buffer. More info can
+;; be found in parinfer-rust-changes.el
+
+;; 2. Keep a record of the buffer state before the last time parinfer-rust was run
+
+;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
 ;; Need to define these before parinfer-rust and parinfer-helper are loaded
 
