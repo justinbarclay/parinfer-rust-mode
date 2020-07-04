@@ -56,7 +56,9 @@
             (cond
              ((eq system-type 'darwin) "parinfer-rust-darwin.so")
              ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-              "parinfer-rust-linux.so")))))
+              "parinfer-rust-linux.so"))))
+  (unless (bound-and-true-p module-file-suffix)
+    (error "Emacs was not compiled with the '--with-modules'. Unable to load parinfer-rust-mode")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User customization options
