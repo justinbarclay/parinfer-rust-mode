@@ -49,7 +49,15 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'parinfer-rust parinfer-rust-library))
+  (defvar parinfer-rust-library
+    (or parinfer-rust-library
+        (concat user-emacs-directory "parinfer-rust/"
+                (cond
+                 ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                 ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
+                  "parinfer-rust-linux.so"))))))
+
+(require 'parinfer-rust parinfer-rust-library)
 
 (require 'parinfer-rust-helper)
 (defvar-local parinfer-rust--changes '()

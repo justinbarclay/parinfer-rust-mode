@@ -50,7 +50,13 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-;; Need to define these before parinfer-rust and parinfer-helper are loaded
+(eval-when-compile
+  (defvar parinfer-rust-library
+    (concat user-emacs-directory "parinfer-rust/"
+            (cond
+             ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+             ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
+              "parinfer-rust-linux.so")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User customization options
@@ -60,18 +66,21 @@
   :type 'boolean
   :group 'parinfer-rust-mode)
 
-(eval-when-compile
-  (defconst parinfer-rust--lib-name (cond
-                                     ((eq system-type 'darwin) "parinfer-rust-darwin.so")
-                                     ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-                                      "parinfer-rust-linux.so"))
-    "System dependent library name for parinfer-rust-mode.")
+;; We need to define parinfer-rust--lib-name and parinfer-rust-library early so we know where to
+;; find the parinfer-rust module.
 
-  (defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/"
-                                                                   parinfer-rust--lib-name))
-    "The location to store or to find the parinfer-rust library."
-    :type 'file
-    :group 'parinfer-rust-mode))
+(defconst parinfer-rust--lib-name (cond
+                                   ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                                   ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
+                                    "parinfer-rust-linux.so"))
+  "System dependent library name for `parinfer-rust-mode'.")
+
+
+(defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/"
+                                                                 parinfer-rust--lib-name))
+  "The location to store or to find the parinfer-rust library."
+  :type 'file
+  :group 'parinfer-rust-mode)
 
 (defcustom parinfer-rust-preferred-mode "smart"
   "Preferred mode for parinfer-rust."
