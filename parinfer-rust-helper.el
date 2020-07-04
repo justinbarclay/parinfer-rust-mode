@@ -54,7 +54,7 @@ otherwise will promt user."
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download
 ;; a new library the user has to restart Emacs.
 (defun parinfer-rust--check-version (supported-version current-version library-location lib-name)
-  "Check compatability between parinfer-rust-mode and the parinfer-rust library.
+  "Check compatability between `parinfer-rust-mode' and parinfer-rust library.
 
 If SUPPORTED-VERSION is not compatible with CURRENT-VERSION,
 offer to download the LIB-NAME to LIBRARY-LOCATION."
@@ -114,6 +114,61 @@ If the user does not disable these modes then it may cause bugs or crashes"
         (dolist (mode warning-list)
           (apply mode '(-1))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Paren Dimming
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Parinfer can make it apparent which parens are going to be inferred
+;; by dimming parens
+(defface parinfer-rust-dim-parens-face
+  '((((class color) (background dark))
+     (:foreground "grey40"))
+    (((class color) (background light))
+     (:foreground "grey60")))
+  "Parinfer dim paren face."
+  :group 'parinfer-rust-mode)
+
+(defun parinfer-rust--dim-parens-fontify-search (limit)
+  "Search for closing parens at the end of lines.
+
+This search is bound to occur before LIMIT."
+  (let ((result nil)
+        (finish nil)
+        (bound (+ (point) limit)))
+    (while (not finish)
+      (if (re-search-forward "\\s)" bound t)
+          (when (and (= 0 (string-match-p
+                           "\\s)*$"
+                           (buffer-substring-no-properties (point) (line-end-position))))
+                     (not (eq (char-before (1- (point))) 92)))
+            (setq result (match-data)
+                  finish t))
+        (setq finish t)))
+    result))
+
+(defun parinfer-rust--dim-parens-refresh ()
+  "If font-lock is available rerun to cover any change."
+  (if (fboundp 'font-lock-flush)
+      (font-lock-flush)
+    (when font-lock-mode
+      (with-no-warnings
+        (font-lock-fontify-buffer)))))
+
+(defun parinfer-rust--dim-parens ()
+  "Apply paren dimming if appropriate."
+  (if (and parinfer-rust-enabled
+           (not (string-equal parinfer-rust--mode "paren"))
+           parinfer-rust-dim-parens)
+      (font-lock-add-keywords
+       nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens-face)))
+    (font-lock-remove-keywords
+     nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens-face))))
+  (parinfer-rust--dim-parens-refresh))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helper functions
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions to make working with Emacs and parinfer nicer
+
 (defun parinfer-rust--test-p ()
   "Return non-nil if running in a test environment.
 
@@ -122,10 +177,6 @@ mode to better emulate users."
   (and (getenv "PARINFER_RUST_TEST")
        (string= (downcase (getenv "PARINFER_RUST_TEST"))
                 "true")))
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helper functions
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Functions to help to make working with Emacs and parinfer nicer
 
 (defmacro parinfer-rust--local-bound-and-true (var)
   "Return non-nil if VAR is locally bound and true."
@@ -158,7 +209,7 @@ mode to better emulate users."
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.
 ;; Local Variables:
-;; elisp-lint-ignored-validators: ("byte-compile" "checkdoc" "fill-column")
+;; elisp-lint-ignored-validators: ("fill-column")
 ;; byte-compile-warnings: (not free-vars)
 ;; package-lint-main-file: "parinfer-rust-mode.el"
 ;; End:

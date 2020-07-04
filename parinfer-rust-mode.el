@@ -158,56 +158,6 @@ command should be run in.")
   "A hack to not run parinfer-execute after an undo has finished processing")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Paren Dimming
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Parinfer can make it apparent which parens are going to be inferred
-;; by dimming parens
-(defface parinfer-rust-dim-parens-face
-  '((((class color) (background dark))
-     (:foreground "grey40"))
-    (((class color) (background light))
-     (:foreground "grey60")))
-  "Parinfer dim paren face."
-  :group 'parinfer-rust-mode)
-
-(defun parinfer-rust--dim-parens-fontify-search (limit)
-  "Search for closing parens at the end of lines.
-
-This search is bound to occur before LIMIT."
-  (let ((result nil)
-        (finish nil)
-        (bound (+ (point) limit)))
-    (while (not finish)
-      (if (re-search-forward "\\s)" bound t)
-          (when (and (= 0 (string-match-p
-                           "\\s)*$"
-                           (buffer-substring-no-properties (point) (line-end-position))))
-                     (not (eq (char-before (1- (point))) 92)))
-            (setq result (match-data)
-                  finish t))
-        (setq finish t)))
-    result))
-
-(defun parinfer-rust--dim-parens-refresh ()
-  "If font-lock is available rerun to cover any change."
-  (if (fboundp 'font-lock-flush)
-      (font-lock-flush)
-    (when font-lock-mode
-      (with-no-warnings
-        (font-lock-fontify-buffer)))))
-
-(defun parinfer-rust--dim-parens ()
-  "Apply paren dimming if appropriate."
-  (if (and parinfer-rust-enabled
-           (not (string-equal parinfer-rust--mode "paren"))
-           parinfer-rust-dim-parens)
-      (font-lock-add-keywords
-       nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens-face)))
-    (font-lock-remove-keywords
-     nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens-face))))
-  (parinfer-rust--dim-parens-refresh))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
