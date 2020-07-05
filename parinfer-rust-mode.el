@@ -19,15 +19,15 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;; This file is not part of GNU Emacs.
 
 ;;; Commentary:
 
-;;  An intuitive editor mode to make paren management fun and easy without sacrificing power.
+;; An intuitive editor mode to make paren management fun and easy without sacrificing power.
 
-;; To find out more about how parinfer work go to: https://shaunlebron.github.io/parinfer/
+;; To find out more about how parinfer works go to: https://shaunlebron.github.io/parinfer/
 
 ;; `parinfer-rust-mode` provides an interface between the `parinfer-rust` library
 ;; and Emacs.  As such it's primary role is to capture meta information about the
@@ -120,12 +120,6 @@ against.")
 ;; Require helper so we can check for library
 (require 'parinfer-rust-helper)
 
-;; Make sure the library is installed at the appropriate location or offer to download it
-(parinfer-rust--check-for-library parinfer-rust-supported-version
-                                  parinfer-rust-library
-                                  parinfer-rust--lib-name
-                                  parinfer-rust-auto-download)
-
 (require 'subr-x)
 (require 'font-lock)
 (require 'parinfer-rust parinfer-rust-library)
@@ -134,10 +128,10 @@ against.")
 ;; Check version and prompt to download latest version if out of date
 ;; Problem: Emacs can't reload dynamic libraries, which means that if we
 ;; download a new library the user has to restart Emacs for changes to take effect.
-(parinfer-rust--check-version parinfer-rust-supported-version
-                              (parinfer-rust-version)
-                              parinfer-rust-library
-                              parinfer-rust--lib-name)
+;; (parinfer-rust--check-version parinfer-rust-supported-version
+;;                               (parinfer-rust-version)
+;;                               parinfer-rust-library
+;;                               parinfer-rust--lib-name)
 
 ;; This is a hack around Emacs complex command and scripting system. In some cases
 ;; parinfer-rust-mode sucks at picking up the correct changes in the buffer, so the
@@ -256,7 +250,7 @@ CHANGES."
       (when parinfer-rust--ignore-post-command-hook
         (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
-      (when (not (= 0 (length parinfer-rust--changes)))
+      (unless (= 0 (length parinfer-rust--changes))
         (parinfer-rust--build-changes (parinfer-rust--combine-changes parinfer-rust--changes))
         (setq-local parinfer-rust--changes '()))
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min)
@@ -300,7 +294,7 @@ CHANGES."
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
         (if error-p
-            (message (format "%s" (parinfer-rust-print-error error-p))) ;; TODO handle errors
+            (message "%s" (parinfer-rust-print-error error-p)) ;; TODO handle errors
           ;; This stops Emacs from flickering when scrolling
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string))
               (progn
@@ -346,20 +340,20 @@ This will create a text file in the current directory."
   (setq-local parinfer-rust--mode "paren")
   (parinfer-rust--execute)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
-  (advice-add 'undo :around 'parinfer-rust--track-undo)
+  (advice-add 'undo :around #'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
-    (advice-add 'undo-tree-undo :around 'parinfer-rust--track-undo))
-  (add-hook 'after-change-functions 'parinfer-rust--track-changes t t)
-  (add-hook 'post-command-hook 'parinfer-rust--execute t t)
+    (advice-add 'undo-tree-undo :around #'parinfer-rust--track-undo))
+  (add-hook 'after-change-functions #'parinfer-rust--track-changes t t)
+  (add-hook 'post-command-hook #'parinfer-rust--execute t t)
   (parinfer-rust--dim-parens))
 
 (defun parinfer-rust-mode-disable ()
   "Disable Parinfer."
-  (advice-remove 'undo 'parinfer-rust--track-undo)
+  (advice-remove 'undo #'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
-    (advice-remove 'undo-tree-undo 'parinfer-rust--track-undo))
-  (remove-hook 'after-change-functions 'parinfer-rust--track-changes t)
-  (remove-hook 'post-command-hook 'parinfer-rust--execute t)
+    (advice-remove 'undo-tree-undo #'parinfer-rust--track-undo))
+  (remove-hook 'after-change-functions #'parinfer-rust--track-changes t)
+  (remove-hook 'post-command-hook #'parinfer-rust--execute t)
   (setq-local parinfer-rust-enabled nil)
   (parinfer-rust--dim-parens))
 
@@ -403,28 +397,44 @@ Either: indent, smart, or paren."
   :keymap parinfer-rust-mode-map
   (if parinfer-rust-enabled
       (parinfer-rust-mode-disable)
-    (let ((changes-buffer-p (parinfer-rust--execute-change-buffer-p "paren")))
-      (cond
-       ;; We don't care about changing indentation
-       ((not parinfer-rust-check-before-enable)
-        (parinfer-rust-mode-enable))
-       ;; We care about parinfer changing indentation
-       ;; and it does change indentation
-       ((and parinfer-rust-check-before-enable
-             changes-buffer-p
-             (y-or-n-p "Parinfer needs to modify indentation in this buffer to work.  Continue? "))
-        (parinfer-rust-mode-enable))
-       ;; Do we care about parinfer changing indentation
-       ;; and does not change the current buffer
-       ((and parinfer-rust-check-before-enable
-             (not changes-buffer-p))
-        (parinfer-rust-mode-enable))
+    (progn
+      ;; Make sure the library is installed at the appropriate location or offer to download it
+      (parinfer-rust--check-for-library parinfer-rust-supported-version
+                                        parinfer-rust-library
+                                        parinfer-rust--lib-name
+                                        parinfer-rust-auto-download)
 
-       (t (progn
-            ;; This needs to be on so that we can turn off the
-            ;; Emacs' tracking of this mode
-            (setq parinfer-rust-enabled t)
-            (parinfer-rust-mode -1)))))))
+      ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
+      ;; reload dynamic libraries, which means that if we download a new library the user has to
+      ;; restart Emacs for changes to take effect.
+      (parinfer-rust--check-version parinfer-rust-supported-version
+                                    (parinfer-rust-version)
+                                    parinfer-rust-library
+                                    parinfer-rust--lib-name)
+
+      (let ((changes-buffer-p (parinfer-rust--execute-change-buffer-p "paren")))
+        (cond
+         ;; We don't care about changing indentation
+         ((not parinfer-rust-check-before-enable)
+          (parinfer-rust-mode-enable))
+         ;; We care about parinfer changing indentation
+         ;; and it does change indentation
+         ((and parinfer-rust-check-before-enable
+               changes-buffer-p
+               (y-or-n-p
+                "Parinfer needs to modify indentation in this buffer to work.  Continue? "))
+          (parinfer-rust-mode-enable))
+         ;; Do we care about parinfer changing indentation
+         ;; and does not change the current buffer
+         ((and parinfer-rust-check-before-enable
+               (not changes-buffer-p))
+          (parinfer-rust-mode-enable))
+
+         (t (progn
+              ;; This needs to be on so that we can turn off the
+              ;; Emacs' tracking of this mode
+              (setq parinfer-rust-enabled t)
+              (parinfer-rust-mode -1))))))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here

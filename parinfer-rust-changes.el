@@ -2,11 +2,12 @@
 
 ;; Copyright (C) 2019  Justin Barclay
 
-;; Author: Justin Barclay <justinbarclay@gmail.com> This program is
-;; free software: you can redistribute it and/or modify it under the
-;; terms of the GNU General Public License as published by the Free
-;; Software Foundation, either version 3 of the License, or (at your
-;; option) any later version.
+;; Author: Justin Barclay <justinbarclay@gmail.com>
+
+;; This program is free software: you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
 
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,7 +15,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;; This file is not part of GNU Emacs.
 
@@ -55,7 +56,10 @@
                 (cond
                  ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                  ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-                  "parinfer-rust-linux.so"))))))
+                  "parinfer-rust-linux.so")))))
+  (defvar parinfer-rust--current-changes)
+  (defvar parinfer-rust--previous-buffer-text)
+  (defvar parinfer-rust--disable))
 
 (require 'parinfer-rust parinfer-rust-library)
 
@@ -155,7 +159,7 @@ Uses on `parinfer-rust--previous-buffer-text' and
                                                             (plist-get change 'x)
                                                             (plist-get change 'before-text)
                                                             (plist-get change 'after-text))))
-             (when (not (parinfer-rust--local-bound-and-true parinfer-rust--current-changes))
+             (unless (parinfer-rust--local-bound-and-true parinfer-rust--current-changes)
                (setq-local parinfer-rust--current-changes (parinfer-rust-make-changes)))
              (parinfer-rust-add-change
               parinfer-rust--current-changes
@@ -192,7 +196,6 @@ previous buffer and current buffer."
             (buffer-substring-no-properties (point-min) (point-max))))))
 
 ;; Local Variables:
-;; byte-compile-warnings: (not free-vars)
 ;; package-lint-main-file: "parinfer-rust-mode.el"
 ;; End:
 (provide 'parinfer-rust-changes)

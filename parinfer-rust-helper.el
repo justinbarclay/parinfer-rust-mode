@@ -15,7 +15,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;; This file is not part of GNU Emacs.
 
@@ -29,6 +29,10 @@
 ;; 27+ to support older versions of Emacs
 
 ;;; Code:
+(eval-when-compile
+  (defvar parinfer-rust-enabled)
+  (defvar parinfer-rust--mode)
+  (defvar parinfer-rust-dim-parens))
 (require 'url)
 
 (defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
@@ -194,9 +198,9 @@ mode to better emulate users."
   "Move the cursor to the new LINE-NUMBER and POINT-X column."
   (let* ((new-line (- line-number (parinfer-rust--get-cursor-line)))
          (new-x (- point-x (parinfer-rust--get-cursor-x))))
-    (when (not (= new-line 0))
+    (unless (= new-line 0)
       (forward-line new-line))
-    (when (not (= new-x 0))
+    (unless (= new-x 0)
       (forward-char new-x))))
 
 (defun parinfer-rust--bound-number (text num)
@@ -210,7 +214,6 @@ mode to better emulate users."
 ;; having to do a weird mapconcat.
 ;; Local Variables:
 ;; elisp-lint-ignored-validators: ("fill-column")
-;; byte-compile-warnings: (not free-vars)
 ;; package-lint-main-file: "parinfer-rust-mode.el"
 ;; End:
 
