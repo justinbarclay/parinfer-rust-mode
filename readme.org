@@ -9,7 +9,7 @@
    - Maintaining indentation when expressions shift
    - Allowing Paredit-like features without hot keys
 ** Requirements
-   1. Emacs (25+) compiled with Dynamic Module support.
+   1. Emacs (26+) compiled with Dynamic Module support.
    2. Running on MacOS/Linux, with Windows support coming soon.
    3. (Optional) Curl - to download the library for you
 ** Installation
@@ -196,3 +196,4 @@ Ran 143 tests in 0.061 seconds
    - Shaun Lebron for creating Parinfer
    - Jason Felice for creating and maintaining the parinfer-rust project
    - tianshu for helping me fall in love with parinfer-mode in Emacs.
+   - Andre Yorst for his contributions to this project
