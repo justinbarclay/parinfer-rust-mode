@@ -51,12 +51,11 @@
 
 (eval-when-compile
   (defvar parinfer-rust-library
-    (or parinfer-rust-library
-        (concat user-emacs-directory "parinfer-rust/"
-                (cond
-                 ((eq system-type 'darwin) "parinfer-rust-darwin.so")
-                 ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-                  "parinfer-rust-linux.so")))))
+    (concat user-emacs-directory "parinfer-rust/"
+            (cond
+             ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+             ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
+              "parinfer-rust-linux.so"))))
   (defvar parinfer-rust--current-changes)
   (defvar parinfer-rust--previous-buffer-text)
   (defvar parinfer-rust--disable))

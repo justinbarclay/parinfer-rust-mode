@@ -120,10 +120,18 @@ against.")
 ;; Require helper so we can check for library
 (require 'parinfer-rust-helper)
 
-(require 'subr-x)
-(require 'font-lock)
+
+;; Make sure the library is installed at the appropriate location or offer to download it
+(parinfer-rust--check-for-library parinfer-rust-supported-version
+                                  parinfer-rust-library
+                                  parinfer-rust--lib-name
+                                  parinfer-rust-auto-download)
+
 (require 'parinfer-rust parinfer-rust-library)
 (require 'parinfer-rust-changes)
+
+(require 'subr-x)
+(require 'font-lock)
 
 ;; Check version and prompt to download latest version if out of date
 ;; Problem: Emacs can't reload dynamic libraries, which means that if we
@@ -398,12 +406,6 @@ Either: indent, smart, or paren."
   (if parinfer-rust-enabled
       (parinfer-rust-mode-disable)
     (progn
-      ;; Make sure the library is installed at the appropriate location or offer to download it
-      (parinfer-rust--check-for-library parinfer-rust-supported-version
-                                        parinfer-rust-library
-                                        parinfer-rust--lib-name
-                                        parinfer-rust-auto-download)
-
       ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
       ;; reload dynamic libraries, which means that if we download a new library the user has to
       ;; restart Emacs for changes to take effect.
