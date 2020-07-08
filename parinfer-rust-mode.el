@@ -253,6 +253,7 @@ CHANGES."
           parinfer-rust--ignore-post-command-hook)
       ;; Do nothing and disable flags
       (when parinfer-rust--ignore-post-command-hook
+        (setq-local parinfer-rust--changes nil)
         (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min)
@@ -302,21 +303,16 @@ CHANGES."
             (message "%s" (parinfer-rust-print-error error-p)) ;; TODO handle errors
           ;; This stops Emacs from flickering when scrolling
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string))
-              (progn
-                (save-mark-and-excursion
-                  (let ((current (current-buffer))
-                        (new-buf (get-buffer-create "*parinfer*")))
-                    (switch-to-buffer new-buf)
-                    (insert replacement-string)
-                    (switch-to-buffer current)
-                    (replace-buffer-contents new-buf)
-                    (kill-buffer new-buf)))
-                ;; Adding an explicit undo boundary here to ensure that when chaining events
-                ;; together that the changes parinfer makes are explicitly recorded and can be
-                ;; undone by themselves. This is meant to help with issues like issue #10, where
-                ;; undo breaks structure and structure is never fully returned to the code during
-                ;; undo. It is left up to the user to realign code.
-                (undo-boundary))))
+              (save-mark-and-excursion
+                (let ((change-group (prepare-change-group))
+                      (current (current-buffer))
+                      (new-buf (get-buffer-create "*parinfer*")))
+                  (switch-to-buffer new-buf)
+                  (insert replacement-string)
+                  (switch-to-buffer current)
+                  (replace-buffer-contents new-buf)
+                  (kill-buffer new-buf)
+                  (undo-amalgamate-change-group change-group)))))
         (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-rust--reposition-cursor new-x new-line))

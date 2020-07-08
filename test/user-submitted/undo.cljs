@@ -4,9 +4,9 @@
 ;; 2. Press space 5 times
 ;; 3. Run undo once
 ;; Expected state:
-;;     (defvar a
-;;       '(:a 1
-;;         :c 2))
-(defvar a
-  '(:a 1
-    :c 2))
+;;     (def a
+;;       {:a 1
+;;        :c 2})
+(def a
+  {:a 1
+   :c 2})
