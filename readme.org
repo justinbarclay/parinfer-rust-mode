@@ -138,6 +138,12 @@ parinfer-rust-mode is purposefully light on option, but it does give a few optio
   #+BEGIN_QUOTE
   default: nil
   #+END_QUOTE
+- ~parinfer-rust-dim-parens~
+
+  Dim parentheses that are inferred by Parinfer in ~indent~ and ~smart~ modes. Color can be configured via ~parinfer-rust-dim-parens-face~.
+  #+BEGIN_QUOTE
+  default: t
+  #+END_QUOTE
 ** parinfer-mode
    There is an alternate implementation of Parinfer for Emacs called [[https://github.com/DogLooksGood/parinfer-mode][parinfer-mode]]. It currently has support for Parinfer's "paren" and "indent". Additionally, it has had experimental support for "smart" mode, however, this has remained hidden on a branch and not accessible from MELPA for over a year.
    parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
@@ -196,4 +202,4 @@ Ran 143 tests in 0.061 seconds
    - Shaun Lebron for creating Parinfer
    - Jason Felice for creating and maintaining the parinfer-rust project
    - tianshu for helping me fall in love with parinfer-mode in Emacs.
-   - Andre Yorst for his contributions to this project
+   - Andrey Orst for his contributions to this project
