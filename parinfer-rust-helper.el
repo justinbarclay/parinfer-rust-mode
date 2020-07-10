@@ -123,7 +123,7 @@ If the user does not disable these modes then it may cause bugs or crashes"
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parinfer can make it apparent which parens are going to be inferred
 ;; by dimming parens
-(defface parinfer-rust-dim-parens-face
+(defface parinfer-rust-dim-parens
   '((((class color) (background dark))
      (:foreground "grey40"))
     (((class color) (background light))
@@ -163,9 +163,9 @@ This search is bound to occur before LIMIT."
            (not (string-equal parinfer-rust--mode "paren"))
            parinfer-rust-dim-parens)
       (font-lock-add-keywords
-       nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens-face)))
+       nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens)))
     (font-lock-remove-keywords
-     nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens-face))))
+     nil '((parinfer-rust--dim-parens-fontify-search . 'parinfer-rust-dim-parens))))
   (parinfer-rust--dim-parens-refresh))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
