@@ -169,8 +169,6 @@ command should be run in.")
 (defvar-local parinfer-rust--previous-options nil
   "The last set of record of changes and meta information of changes in the buffer")
 ;; TODO this might be not needed anymore
-(defvar-local parinfer-rust--current-changes nil
-  "The set of currently tracked changes since parinfer-rust--execute was ran")
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
 (defvar-local parinfer-rust--in-undo nil "Tracks if parinfer-rust-mode is within an undo command")
 (defvar-local parinfer-rust--previous-buffer-text ""
@@ -193,7 +191,7 @@ parinfer."
   (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties
                                                    (point-min)
                                                    (point-max)))
-  (setq-local parinfer-rust--current-changes nil))
+  (setq-local parinfer-rust--changes nil))
 
 
 ;; The idea for this function: 1. is to never run during an undo operation 2. Set a flag to ignore
@@ -245,22 +243,18 @@ CHANGES."
                   nil
                   old-options
                   changes)))
-    (setq-local parinfer-rust--current-changes nil)
+    (setq-local parinfer-rust--changes nil)
     options))
 
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer."
-  (if (or parinfer-rust--disable ; Don't run if disabled by user or right after an undo
-          parinfer-rust--in-undo
-          parinfer-rust--ignore-post-command-hook
-          undo-in-progress)
+  (if (or parinfer-rust--disable
+          undo-in-progress
+          parinfer-rust--ignore-post-command-hook)
       ;; Do nothing and disable flags
       (when parinfer-rust--ignore-post-command-hook
         (setq-local parinfer-rust--ignore-post-command-hook nil))
     (progn
-      (unless (= 0 (length parinfer-rust--changes))
-        (parinfer-rust--build-changes (parinfer-rust--combine-changes parinfer-rust--changes))
-        (setq-local parinfer-rust--changes '()))
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min)
                                                                                       (point-max)))
       (let* ((parinfer-rust--mode
@@ -279,13 +273,16 @@ CHANGES."
                     ;; wrong choices for similar reasons it would under smart
                     ;; mode; the changes Emacs reports may be different than
                     ;; those parinfer expects.
-                    (setq parinfer-rust--current-changes nil)
+                    (setq parinfer-rust--changes nil)
                     mode)
                 parinfer-rust--mode))
              (old-options (or (parinfer-rust--local-bound-and-true parinfer-rust--previous-options)
                               (parinfer-rust-make-option)))
-             (changes (or (parinfer-rust--local-bound-and-true parinfer-rust--current-changes)
-                          (parinfer-rust-make-changes)))
+             (changes (if (> (length parinfer-rust--changes) 0)
+                          (parinfer-rust--build-changes
+                           (parinfer-rust--combine-changes
+                            parinfer-rust--changes))
+                        (parinfer-rust-make-changes)))
              (options (parinfer-rust--generate-options old-options
                                                        changes))
              (request (parinfer-rust-make-request parinfer-rust--mode

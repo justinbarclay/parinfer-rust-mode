@@ -56,7 +56,6 @@
              ((eq system-type 'darwin) "parinfer-rust-darwin.so")
              ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
               "parinfer-rust-linux.so"))))
-  (defvar parinfer-rust--current-changes)
   (defvar parinfer-rust--previous-buffer-text)
   (defvar parinfer-rust--disable))
 
@@ -153,16 +152,17 @@ Uses on `parinfer-rust--previous-buffer-text' and
 
 (defun parinfer-rust--build-changes (change-list)
   "Convert CHANGE-LIST to a list of change structs for parinfer-rust."
-  (cl-loop for change in change-list do
-           (let* ((current-change (parinfer-rust-new-change (plist-get change 'lineNo)
-                                                            (plist-get change 'x)
-                                                            (plist-get change 'before-text)
-                                                            (plist-get change 'after-text))))
-             (unless (parinfer-rust--local-bound-and-true parinfer-rust--current-changes)
-               (setq-local parinfer-rust--current-changes (parinfer-rust-make-changes)))
-             (parinfer-rust-add-change
-              parinfer-rust--current-changes
-              current-change))))
+  (let ((changes (parinfer-rust-make-changes)))
+    (cl-loop for change in change-list do
+             (let* ((current-change (parinfer-rust-new-change (plist-get change 'lineNo)
+                                                              (plist-get change 'x)
+                                                              (plist-get change 'before-text)
+                                                              (plist-get change 'after-text))))
+               (parinfer-rust-add-change
+                changes
+                current-change)))
+    (setq-local parinfer-rust--changes '())
+    changes))
 
 (defun parinfer-rust--track-changes (start end length)
   "Track  change in buffer using START, END, and LENGTH.

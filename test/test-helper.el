@@ -121,7 +121,7 @@ it makes no sense to convert it to a string using
                        nil
                        old-options
                        changes)))
-        (setq-local parinfer-rust--current-changes nil)
+        (setq-local parinfer-rust--changes nil)
         options)
     (parinfer-rust-new-options
      nil
@@ -137,7 +137,7 @@ it makes no sense to convert it to a string using
                                                (parinfer-rust-make-changes)))
   (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
   (setq-local parinfer-enabled-p t)
-  (setq-local parinfer-rust--current-changes nil)
+  (setq-local parinfer-rust--changes nil)
   ;; (setq-local parinfer-rust--mode "indent") ;; Don't call these because these because they override what we want done in the tests.
   ;; (parinfer-rust--execute)                  ;; We don't want to override whatever is being set in parinfer-rust--mode and we don't want
   ;; To run parinfer-rust--execute for a second time
