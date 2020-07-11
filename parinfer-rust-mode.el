@@ -170,7 +170,6 @@ command should be run in.")
   "The last set of record of changes and meta information of changes in the buffer")
 ;; TODO this might be not needed anymore
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
-(defvar-local parinfer-rust--in-undo nil "Tracks if parinfer-rust-mode is within an undo command")
 (defvar-local parinfer-rust--previous-buffer-text ""
   "The text in the buffer previous to when parinfer-rust ran last")
 (defvar-local parinfer-rust--ignore-post-command-hook nil
@@ -201,7 +200,6 @@ parinfer."
 
 (defun parinfer-rust--track-undo (orig-func &rest args)
   "Wraps ORIG-FUNC and ARGS in some state tracking for `parinfer-rust-mode'."
-  (setq-local parinfer-rust--in-undo t)
   (condition-case-unless-debug err
       (apply orig-func args)
     ;; We want to "Ignore" errors here otherwise the function exits
@@ -210,7 +208,6 @@ parinfer."
     (error
      (message "%s" (cadr err))
      nil))
-  (setq-local parinfer-rust--in-undo nil)
   ;; Always ignore the first post-command-hook run of parinfer after an undo
   (setq-local parinfer-rust--ignore-post-command-hook t)
   (parinfer-rust--set-default-state))
