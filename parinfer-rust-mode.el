@@ -190,7 +190,8 @@ parinfer."
   (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties
                                                    (point-min)
                                                    (point-max)))
-  (setq-local parinfer-rust--changes nil))
+  (setq-local parinfer-rust--changes nil)
+  (setq-local parinfer-rust--disable nil))
 
 
 ;; The idea for this function: 1. is to never run during an undo operation 2. Set a flag to ignore
@@ -327,16 +328,28 @@ This will create a text file in the current directory."
       (setq parinfer-rust--in-debug nil)
     (setq parinfer-rust--in-debug t)))
 
+(defun parinfer-rust--check-for-indentation (&rest _)
+  "Check to see if running in paren mode will cause a change in the buffer.
+
+If a change is detected in the buffer, prompt the user to see if they still want
+`parinfer-rust-mode' enabled."
+  (when (parinfer-rust--execute-change-buffer-p "paren")
+    (if (y-or-n-p
+         "Parinfer needs to modify indentation in this buffer to work.  Continue? ")
+        (let ((parinfer-rust--mode "paren"))
+          (parinfer-rust--execute))
+      (parinfer-rust-mode -1)))
+  (parinfer-rust-toggle-disable)
+  (remove-hook 'before-change-functions #'parinfer-rust--check-for-indentation t))
+
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
   (setq-local parinfer-rust-enabled t)
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
-  ;; As per spec, always run paren on a buffer before entering any mode
-  ;; this ensure that all functions are aligned to a point parinfer won't
-  ;; change the meaning of code
-  (setq-local parinfer-rust--mode "paren")
-  (parinfer-rust--execute)
+  (when (not parinfer-rust-check-before-enable)
+    (setq-local parinfer-rust--mode "paren")
+    (parinfer-rust--execute))
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
   (advice-add 'undo :around #'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
@@ -403,30 +416,11 @@ Either: indent, smart, or paren."
                                     (parinfer-rust-version)
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)
-
-      (let ((changes-buffer-p (parinfer-rust--execute-change-buffer-p "paren")))
-        (cond
-         ;; We don't care about changing indentation
-         ((not parinfer-rust-check-before-enable)
-          (parinfer-rust-mode-enable))
-         ;; We care about parinfer changing indentation
-         ;; and it does change indentation
-         ((and parinfer-rust-check-before-enable
-               changes-buffer-p
-               (y-or-n-p
-                "Parinfer needs to modify indentation in this buffer to work.  Continue? "))
-          (parinfer-rust-mode-enable))
-         ;; Do we care about parinfer changing indentation
-         ;; and does not change the current buffer
-         ((and parinfer-rust-check-before-enable
-               (not changes-buffer-p))
-          (parinfer-rust-mode-enable))
-
-         (t (progn
-              ;; This needs to be on so that we can turn off the
-              ;; Emacs' tracking of this mode
-              (setq parinfer-rust-enabled t)
-              (parinfer-rust-mode -1))))))))
+      (parinfer-rust-mode-enable)
+      (when parinfer-rust-check-before-enable
+        ;; Defer checking for changes until a user changes the buffer
+        (parinfer-rust-toggle-disable)
+        (add-hook 'before-change-functions #'parinfer-rust--check-for-indentation t t)))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here
