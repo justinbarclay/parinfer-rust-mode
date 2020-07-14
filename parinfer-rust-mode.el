@@ -91,13 +91,20 @@
                 (const :tag "paren" "paren"))
   :group 'parinfer-rust-mode)
 
-(defcustom parinfer-rust-check-before-enable t
+(defcustom parinfer-rust-check-before-enable 'defer
   "Perform indentation check before enabling `parinfer-rust-mode'.
 
 If Parinfer detects that it need to change the indentation in the
 buffer to run, it will prompt user whether it is OK to adjust
-indentation. If user disagrees Parinfer will disable itself."
-  :type 'boolean
+indentation. If user disagrees Parinfer will disable itself. The
+user may choose to get the prompt immediately whenever
+`parinfer-rust-mode' is enabled, defer it until the first change in
+the buffer, or disable it and never receive a prompt. When
+disabled `parinfer-rust-mode' will run automatically balance
+indentation for the user."
+  :type '(radio (const :tag "Immediate" immediate)
+                (const :tag "Defer" defer)
+                (const :tag "Disabled" nil))
   :group 'parinfer-rust-mode)
 
 (defcustom parinfer-rust-dim-parens t
@@ -334,12 +341,12 @@ This will create a text file in the current directory."
 If a change is detected in the buffer, prompt the user to see if they still want
 `parinfer-rust-mode' enabled."
   (when (parinfer-rust--execute-change-buffer-p "paren")
+    (setq-local parinfer-rust--disable nil)
     (if (y-or-n-p
          "Parinfer needs to modify indentation in this buffer to work.  Continue? ")
         (let ((parinfer-rust--mode "paren"))
           (parinfer-rust--execute))
       (parinfer-rust-mode -1)))
-  (parinfer-rust-toggle-disable)
   (remove-hook 'before-change-functions #'parinfer-rust--check-for-indentation t))
 
 (defun parinfer-rust-mode-enable ()
@@ -417,10 +424,16 @@ Either: indent, smart, or paren."
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)
       (parinfer-rust-mode-enable)
-      (when parinfer-rust-check-before-enable
-        ;; Defer checking for changes until a user changes the buffer
-        (parinfer-rust-toggle-disable)
-        (add-hook 'before-change-functions #'parinfer-rust--check-for-indentation t t)))))
+      (cond ((eq 'defer parinfer-rust-check-before-enable)
+             ;; Defer checking for changes until a user changes the buffer
+             (setq-local parinfer-rust--disable t)
+             (add-hook 'before-change-functions #'parinfer-rust--check-for-indentation t t))
+
+            ((eq 'immediate parinfer-rust-check-before-enable)
+             (setq-local parinfer-rust--disable t)
+             (parinfer-rust--check-for-indentation))
+
+            (t nil)))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here
