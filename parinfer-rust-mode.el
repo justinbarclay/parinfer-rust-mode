@@ -92,16 +92,16 @@
   :group 'parinfer-rust-mode)
 
 (defcustom parinfer-rust-check-before-enable 'defer
-  "Perform indentation check before enabling `parinfer-rust-mode'.
+  "Perform check on indentation before enabling `parinfer-rust-mode'.
 
-If Parinfer detects that it need to change the indentation in the
-buffer to run, it will prompt user whether it is OK to adjust
-indentation. If user disagrees Parinfer will disable itself. The
-user may choose to get the prompt immediately whenever
-`parinfer-rust-mode' is enabled, defer it until the first change in
-the buffer, or disable it and never receive a prompt. When
-disabled `parinfer-rust-mode' will run automatically balance
-indentation for the user."
+  If Parinfer detects that it needs to change the indentation in
+  the before first running, it will prompt the user whether it is
+  OK to adjust the indentation. If the user disagrees Parinfer
+  will disable itself. The user may choose to get the prompt
+  immediately whenever `parinfer-rust-mode' is enabled, defer it
+  until the first change in the buffer, or disable it and never
+  receive a prompt. When disabled, `parinfer-rust-mode' will run
+  automatically balance the indentation for the user."
   :type '(radio (const :tag "Immediate" immediate)
                 (const :tag "Defer" defer)
                 (const :tag "Disabled" nil))
