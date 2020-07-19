@@ -50,6 +50,9 @@
 ;;; Code:
 
 (eval-when-compile
+  (declare-function parinfer-rust-new-change "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-make-changes "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-add-change "ext:parinfer-rust" t t)
   (defvar parinfer-rust-library
     (concat user-emacs-directory "parinfer-rust/"
             (cond
@@ -59,7 +62,7 @@
   (defvar parinfer-rust--previous-buffer-text)
   (defvar parinfer-rust--disable))
 
-(require 'parinfer-rust parinfer-rust-library)
+(require 'parinfer-rust parinfer-rust-library t)
 
 (require 'parinfer-rust-helper)
 (defvar-local parinfer-rust--changes '()

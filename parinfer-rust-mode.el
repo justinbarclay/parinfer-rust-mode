@@ -51,6 +51,15 @@
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
 (eval-when-compile
+  (declare-function parinfer-rust-make-option "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-make-changes "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-new-options "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-make-request "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-execute "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-get-in-answer "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-debug "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-print-error "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-version "ext:parinfer-rust" t t)
   (defvar parinfer-rust-library
     (concat user-emacs-directory "parinfer-rust/"
             (cond
@@ -134,7 +143,7 @@ against.")
                                   parinfer-rust--lib-name
                                   parinfer-rust-auto-download)
 
-(require 'parinfer-rust parinfer-rust-library)
+(require 'parinfer-rust parinfer-rust-library t)
 (require 'parinfer-rust-changes)
 
 (require 'subr-x)
