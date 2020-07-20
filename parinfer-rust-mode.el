@@ -50,6 +50,15 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
+(defconst parinfer-rust-supported-version "0.4.4-beta"
+  "Supported version of the parinfer-rust library.
+
+Version of the library that `parinfer-rust-mode' was tested
+against.")
+
+;; Require helper so we can check for library
+(require 'parinfer-rust-helper)
+
 (eval-when-compile
   (declare-function parinfer-rust-make-option "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-make-changes "ext:parinfer-rust" t t)
@@ -60,14 +69,18 @@
   (declare-function parinfer-rust-debug "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-print-error "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-version "ext:parinfer-rust" t t)
+  (defvar parinfer-rust--lib-name (cond
+                                   ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                                   ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
+                                    "parinfer-rust-linux.so")))
   (defvar parinfer-rust-library
-    (concat user-emacs-directory "parinfer-rust/"
-            (cond
-             ((eq system-type 'darwin) "parinfer-rust-darwin.so")
-             ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-              "parinfer-rust-linux.so"))))
+    (concat user-emacs-directory "parinfer-rust/" parinfer-rust--lib-name))
   (unless (bound-and-true-p module-file-suffix)
-    (error "Emacs was not compiled with the '--with-modules'. Unable to load parinfer-rust-mode")))
+    (error "Emacs was not compiled with the '--with-modules'. Unable to load parinfer-rust-mode"))
+  (parinfer-rust--check-for-library "0.4.4-beta" ;; This is going to be a problem
+                                    parinfer-rust-library
+                                    parinfer-rust--lib-name
+                                    nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User customization options
@@ -124,18 +137,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defconst parinfer-rust-supported-version "0.4.4-beta"
-  "Supported version of the parinfer-rust library.
-
-Version of the library that `parinfer-rust-mode' was tested
-against.")
 
 (defconst parinfer-rust--mode-types '("indent" "smart" "paren")
   "The different modes that parinfer can operate on.")
-
-;; Require helper so we can check for library
-(require 'parinfer-rust-helper)
-
 
 ;; Make sure the library is installed at the appropriate location or offer to download it
 (parinfer-rust--check-for-library parinfer-rust-supported-version
