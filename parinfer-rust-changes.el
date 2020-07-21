@@ -175,7 +175,7 @@ previous buffer and current buffer."
   (if parinfer-rust--disable
       nil
     ;; If we're in test-mode we want the absolute position otherwise relative is fine
-    (let ((lineNo (- (line-number-at-pos start (parinfer-rust--test-p))
+    (let ((lineNo (- (line-number-at-pos start t)
                      1))
           (x (save-excursion
                (save-restriction
