@@ -349,8 +349,8 @@ This will create a text file in the current directory."
 
 If a change is detected in the buffer, prompt the user to see if they still want
 `parinfer-rust-mode' enabled."
+  (setq-local parinfer-rust--disable nil)
   (when (parinfer-rust--execute-change-buffer-p "paren")
-    (setq-local parinfer-rust--disable nil)
     (if (y-or-n-p
          "Parinfer needs to modify indentation in this buffer to work.  Continue? ")
         (let ((parinfer-rust--mode "paren"))
