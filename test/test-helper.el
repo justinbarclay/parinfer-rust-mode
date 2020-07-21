@@ -239,7 +239,7 @@ extracted from the json-alist."
                (forward-char column)
                (apply command nil)
                (parinfer-rust--execute)))
-    (setq parinfer-result-string (buffer-string)) ;; Save the string before we kill our current buffer
+    (setq parinfer-result-string (buffer-substring-no-properties (point-min) (point-max))) ;; Save the string before we kill our current buffer
     (switch-to-buffer current)
     (kill-buffer new-buf))
   parinfer-result-string)
