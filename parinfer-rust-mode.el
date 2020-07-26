@@ -72,7 +72,9 @@ against.")
   (defvar parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-                                    "parinfer-rust-linux.so")))
+                                    "parinfer-rust-linux.so")
+                                   ((eq system-type 'windows-nt) "parinfer-rust-windows.dll"
+                                    "parinfer-rust-windows.dll")))
   (defvar parinfer-rust-library
     (concat user-emacs-directory "parinfer-rust/" parinfer-rust--lib-name))
   (unless (bound-and-true-p module-file-suffix)
@@ -96,7 +98,9 @@ against.")
 (defconst parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so"
-                                    "parinfer-rust-linux.so"))
+                                    "parinfer-rust-linux.so")
+                                   ((eq system-type 'windows-nt) "parinfer-rust-windows.dll"
+                                    "parinfer-rust-windows.dll"))
   "System dependent library name for `parinfer-rust-mode'.")
 
 

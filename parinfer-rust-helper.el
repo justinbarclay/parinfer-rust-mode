@@ -88,7 +88,7 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
                  (format "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s"
                          parinfer-rust-version
                          lib-name)
-                 library-location))
+                 (expand-file-name library-location)))
         (message "Installing %s v%s to %s" lib-name parinfer-rust-version library-location))
     (message "Unable to download parinfer-rust library because curl is not on $PATH")))
 
