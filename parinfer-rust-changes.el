@@ -65,6 +65,8 @@
 (require 'parinfer-rust parinfer-rust-library t)
 
 (require 'parinfer-rust-helper)
+(require 'subr-x)
+
 (defvar-local parinfer-rust--changes '()
   "The current set of unprocessed changes")
 
