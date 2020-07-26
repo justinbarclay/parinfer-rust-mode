@@ -367,9 +367,6 @@ If a change is detected in the buffer, prompt the user to see if they still want
   (setq-local parinfer-rust-enabled t)
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
-  (when (not parinfer-rust-check-before-enable)
-    (setq-local parinfer-rust--mode "paren")
-    (parinfer-rust--execute))
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
   (advice-add 'undo :around #'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
@@ -437,7 +434,8 @@ Either: indent, smart, or paren."
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)
       (parinfer-rust-mode-enable)
-      (cond ((eq 'defer parinfer-rust-check-before-enable)
+      (cond ((or (eq 'defer parinfer-rust-check-before-enable)
+                 buffer-read-only)
              ;; Defer checking for changes until a user changes the buffer
              (setq-local parinfer-rust--disable t)
              (add-hook 'before-change-functions #'parinfer-rust--check-for-indentation t t))
@@ -446,7 +444,8 @@ Either: indent, smart, or paren."
              (setq-local parinfer-rust--disable t)
              (parinfer-rust--check-for-indentation))
 
-            (t nil)))))
+            (t (let ((parinfer-rust--mode "paren"))
+                 (parinfer-rust--execute)))))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here

@@ -130,23 +130,22 @@ it makes no sense to convert it to a string using
      old-options
      changes)))
 ;; Shadow function form parinfer-rust-mode because it executes buffer before everything is set-up in some test cases
-(defun parinfer-rust-mode-enable ()
-  "Enable Parinfer"
-  (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
-                                               (parinfer-rust-make-option)
-                                               (parinfer-rust-make-changes)))
-  (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min) (point-max)))
-  (setq-local parinfer-enabled-p t)
-  (setq-local parinfer-rust--changes nil)
-  ;; (setq-local parinfer-rust--mode "indent") ;; Don't call these because these because they override what we want done in the tests.
-  ;; (parinfer-rust--execute)                  ;; We don't want to override whatever is being set in parinfer-rust--mode and we don't want
-  ;; To run parinfer-rust--execute for a second time
-  (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
-  (advice-add 'undo :before 'parinfer-rust--track-undo)
-  (when (fboundp 'undo-tree-undo)
-    (advice-add 'undo-tree-undo :before 'parinfer-rust--track-undo))
-  (add-hook 'after-change-functions 'parinfer-rust--track-changes t t)
-  (add-hook 'post-command-hook 'parinfer-rust--execute t t))
+(define-minor-mode parinfer-rust-mode
+  "A simpler way to write lisps"
+  :lighter " parinfer"
+  :init-value nil
+  :keymap parinfer-rust-mode-map
+  (if parinfer-rust-enabled
+      (parinfer-rust-mode-disable)
+    (progn
+      (parinfer-rust--check-version parinfer-rust-supported-version
+                                    (parinfer-rust-version)
+                                    parinfer-rust-library
+                                    parinfer-rust--lib-name)
+      (parinfer-rust-mode-enable)
+      ;; Disable checks for deferral and do not run --execute on initialization
+      ;; this breaks a lot of test because they expect the buffer to be in a specific state
+      )))
 
 (defun simulate-parinfer-in-another-buffer--without-changes (test-string mode)
   "Run parinfer on buffer using text and cursor position
