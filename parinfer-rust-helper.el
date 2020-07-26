@@ -47,14 +47,15 @@
 If SUPPORTED-VERSION can't be found in LIBRARY-LOCATION offers to
 download LIB-NAME for the user. Automatically downdloands if
 AUTO-DOWNLOAD is supplied or parinfer-rust runs in test mode,
-otherwise will promt user."
+otherwise will promt user. Return non-nil if the parinfer-rust
+library was downloaded."
   (when (and (not (file-exists-p library-location))
              (or
               auto-download
               (parinfer-rust--test-p)
               (yes-or-no-p parinfer-rust--ask-to-download)))
-    (parinfer-rust--download-from-github supported-version library-location lib-name)))
-
+    (parinfer-rust--download-from-github supported-version library-location lib-name)
+    t))
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download
 ;; a new library the user has to restart Emacs.
 (defun parinfer-rust--check-version (supported-version current-version library-location lib-name)

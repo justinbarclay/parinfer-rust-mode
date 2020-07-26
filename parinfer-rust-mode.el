@@ -141,12 +141,6 @@ against.")
 (defconst parinfer-rust--mode-types '("indent" "smart" "paren")
   "The different modes that parinfer can operate on.")
 
-;; Make sure the library is installed at the appropriate location or offer to download it
-(parinfer-rust--check-for-library parinfer-rust-supported-version
-                                  parinfer-rust-library
-                                  parinfer-rust--lib-name
-                                  parinfer-rust-auto-download)
-
 (require 'parinfer-rust parinfer-rust-library t)
 (require 'parinfer-rust-changes)
 
@@ -426,6 +420,12 @@ Either: indent, smart, or paren."
   (if parinfer-rust-enabled
       (parinfer-rust-mode-disable)
     (progn
+      ;; Make sure the library is installed at the appropriate location or offer to download it
+      (when (parinfer-rust--check-for-library parinfer-rust-supported-version
+                                              parinfer-rust-library
+                                              parinfer-rust--lib-name
+                                              parinfer-rust-auto-download)
+        (require 'parinfer-rust parinfer-rust-library t))
       ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
       ;; reload dynamic libraries, which means that if we download a new library the user has to
       ;; restart Emacs for changes to take effect.
