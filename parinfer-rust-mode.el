@@ -193,6 +193,9 @@ command should be run in.")
 (defvar-local parinfer-rust--ignore-post-command-hook nil
   "A hack to not run parinfer-execute after an undo has finished processing")
 
+(defvar parinfer-rust--last-mode nil
+  "Last active Parinfer mode.
+Used for toggling between paren mode and last active mode.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -360,6 +363,21 @@ If a change is detected in the buffer, prompt the user to see if they still want
       (parinfer-rust-mode -1)))
   (remove-hook 'before-change-functions #'parinfer-rust--check-for-indentation t))
 
+(defun parinfer-rust--switch-mode (&optional mode)
+  "Switch to a different Parinfer MODE.
+
+Checks if MODE is a valid Parinfer mode, and uses
+`parinfer-rust-preferred-mode' otherwise. Sets
+`parinfer-rust--last-mode' variable to current MODE."
+  (setq-local parinfer-rust--mode
+              (if (member mode parinfer-rust--mode-types)
+                  mode
+                parinfer-rust-preferred-mode))
+  (unless (string= parinfer-rust--mode "paren")
+    (setq-local parinfer-rust--last-mode parinfer-rust--mode))
+  (parinfer-rust--set-default-state)
+  (parinfer-rust--dim-parens))
+
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
   (setq-local parinfer-rust-enabled t)
@@ -404,25 +422,6 @@ Either: indent, smart, or paren."
                             parinfer-rust--mode-types)
                     nil
                     t)))
-
-(defvar parinfer-rust--last-mode nil
-  "Last active Parinfer mode.
-Used for toggling between paren mode and last active mode.")
-
-(defun parinfer-rust--switch-mode (&optional mode)
-  "Switch to a different Parinfer MODE.
-
-Checks if MODE is a valid Parinfer mode, and uses
-`parinfer-rust-preferred-mode' otherwise. Sets
-`parinfer-rust--last-mode' variable to current MODE."
-  (setq-local parinfer-rust--mode
-              (if (member mode parinfer-rust--mode-types)
-                  mode
-                parinfer-rust-preferred-mode))
-  (unless (string= parinfer-rust--mode "paren")
-    (setq-local parinfer-rust--last-mode parinfer-rust--mode))
-  (parinfer-rust--set-default-state)
-  (parinfer-rust--dim-parens))
 
 ;;;###autoload
 (defun parinfer-rust-toggle-paren-mode ()
