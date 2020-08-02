@@ -398,20 +398,49 @@ This includes stopping tracking of all changes."
 
 Either: indent, smart, or paren."
   (interactive)
+  (parinfer-rust--switch-mode
+   (completing-read "Choose parinfer mode:"
+                    (remove parinfer-rust--mode
+                            parinfer-rust--mode-types)
+                    nil
+                    t)))
+
+(defvar parinfer-rust--last-mode nil
+  "Last active Parinfer mode.
+Used for toggling between paren mode and last active mode.")
+
+(defun parinfer-rust--switch-mode (&optional mode)
+  "Switch to a different Parinfer MODE.
+
+Checks if MODE is a valid Parinfer mode, and uses
+`parinfer-rust-preferred-mode' otherwise. Sets
+`parinfer-rust--last-mode' variable to current MODE."
   (setq-local parinfer-rust--mode
-              (completing-read "Choose parinfer mode:"
-                               (remove parinfer-rust--mode
-                                       parinfer-rust--mode-types)
-                               nil
-                               t))
+              (if (member mode parinfer-rust--mode-types)
+                  mode
+                parinfer-rust-preferred-mode))
+  (unless (string= parinfer-rust--mode "paren")
+    (setq-local parinfer-rust--last-mode parinfer-rust--mode))
   (parinfer-rust--set-default-state)
   (parinfer-rust--dim-parens))
 
 ;;;###autoload
+(defun parinfer-rust-toggle-paren-mode ()
+  "Switch to paren mode if current mode is either smart or indent.
+Switch back to previous mode if current mode is paren mode. Uses
+`parinfer-rust-preferred-mode' as a fallback if previous mode is
+not available."
+  (interactive)
+  (if (string= parinfer-rust--mode "paren")
+      (parinfer-rust--switch-mode parinfer-rust--last-mode)
+    (parinfer-rust--switch-mode "paren")))
+
+;;;###autoload
 (defvar parinfer-rust-mode-map
   (let ((m (make-sparse-keymap)))
-    (define-key m (kbd "C-c C-p s") 'parinfer-rust-switch-mode)
-    (define-key m (kbd "C-c C-p d") 'parinfer-rust-toggle-disable)
+    (define-key m (kbd "C-c C-p t") #'parinfer-rust-toggle-paren-mode)
+    (define-key m (kbd "C-c C-p s") #'parinfer-rust-switch-mode)
+    (define-key m (kbd "C-c C-p d") #'parinfer-rust-toggle-disable)
     m)
   "Keymap for `parinfer-rust-mode'.")
 
