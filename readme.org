@@ -4,7 +4,7 @@
 [[https://stable.melpa.org/#/parinfer-rust-mode][file:https://stable.melpa.org/packages/parinfer-rust-mode-badge.svg]]
 
 * Parinfer
-  [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library wraps [[https://github.com/eraserhd/parinfer-rust][eraserhd/parinfer-rust]] to provide an Emacs minor mode. parinfer-rust-mode aims to be a simpler adaptation of Parinfer that only offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
+  [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library is a minimalistic wrapper around [[https://github.com/eraserhd/parinfer-rust][eraserhd/parinfer-rust]] to provide an Emacs minor mode. parinfer-rust-mode aims to be a simpler adaptation of Parinfer that only offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
 ** Capabilities:
    - Making code auto-adhere to formatting conventions
    - Influencing expression-nesting with indentation
@@ -29,15 +29,11 @@ After that add it to your load path and go wild.
   (add-hook 'emacs-lisp-mode 'parinfer-rust-mode)
 #+END_SRC
 
-**** Use Package and Quelpa
-Alternatively, you can tell something like [[https://github.com/quelpa/quelpa-use-package][quelpa-use-package]] to manage it for you.
+**** Use Package
+Alternatively, you can tell something like [[https://github.com/quelpa/quelpa-use-package][use-package]] to manage it for you.
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-    :hook emacs-lisp-mode
-    :quelpa ((parinfer-rust-mode
-              :fetcher git
-              :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-             :upgrade nil))
+    :hook emacs-lisp-mode)    
 #+END_SRC
 
 *** parinfer-rust library
@@ -56,10 +52,6 @@ If you are using the `use-package` snippet from above, that would look like:
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
       :hook emacs-list-mode
-      :quelpa ((parinfer-rust-mode
-                :fetcher git
-                :url "https://github.com/justinbarclay/parinfer-rust-mode.git")
-               :upgrade nil)
       :init
       (setq parinfer-rust-auto-download t))
 #+END_SRC
@@ -93,6 +85,7 @@ For the more adventurous of you, you can also download the ~parinfer-rust~ libra
    |-----------+----------------------------+-------------------------------------------------------|
    | C-c C-p s | parinfer-switch-mode       | Quickly switch between paren, indent, and smart modes |
    | C-c C-p d | parinfer-rust-mode-disable | Toggle parinfe-rust-mode mode on or off               |
+   | C-c C-p t | parinfer-rust-toggle-paren | Toggle between paren mode and current mode            |
 
 ** Modes
    Parinfer can operate under three different modes when writing lisp.
