@@ -138,6 +138,11 @@ against.")
   :type 'boolean
   :group 'parinfer-rust-mode)
 
+(defcustom parinfer-rust-check-troublesome-modes t
+  "Whether to check for troublesome modes after enabling `parinfer-rust-mode'."
+  :type 'boolean
+  :group 'parinfer-rust-mode)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -381,7 +386,8 @@ Checks if MODE is a valid Parinfer mode, and uses
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
   (setq-local parinfer-rust-enabled t)
-  (parinfer-rust--detect-troublesome-modes)
+  (when parinfer-rust-check-troublesome-modes
+    (parinfer-rust--detect-troublesome-modes))
   (parinfer-rust--set-default-state)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
   (advice-add 'undo :around #'parinfer-rust--track-undo)
