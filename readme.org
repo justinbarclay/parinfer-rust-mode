@@ -84,7 +84,7 @@ For the more adventurous of you, you can also download the ~parinfer-rust~ libra
    | Key       | Command                    | Description                                           |
    |-----------+----------------------------+-------------------------------------------------------|
    | C-c C-p s | parinfer-switch-mode       | Quickly switch between paren, indent, and smart modes |
-   | C-c C-p d | parinfer-rust-mode-disable | Toggle parinfe-rust-mode mode on or off               |
+   | C-c C-p d | parinfer-rust-mode-disable | Toggle parinfer-rust-mode mode on or off              |
    | C-c C-p t | parinfer-rust-toggle-paren | Toggle between paren mode and current mode            |
 
 ** Modes
