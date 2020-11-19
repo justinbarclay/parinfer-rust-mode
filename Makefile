@@ -27,7 +27,7 @@ build: version elpa
 version:
 	$(EMACS) --version
 
-test: clean version build
+test: clean elpa version build
 	$(CASK) exec ert-runner test/**.el --quiet
 
 lint: version elpa
