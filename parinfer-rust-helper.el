@@ -35,6 +35,15 @@
   (defvar parinfer-rust-dim-parens))
 (require 'url)
 
+(defcustom parinfer-rust-troublesome-modes
+  '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode)
+  "Modes that may conflict when run alongside parinfer-rust-mode.
+
+To disable checking for troublesome modes set this to an empty
+list."
+  :type '(repeat symbol)
+  :group 'parinfer-rust-mode)
+
 (defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst parinfer-rust--outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
@@ -108,7 +117,7 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
 
 If the user does not disable these modes then it may cause bugs or crashes"
   (let ((warning-list))
-    (dolist (mode '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode))
+    (dolist (mode parinfer-rust-troublesome-modes)
       (when (parinfer-rust--is-active-minor-mode mode)
         (push mode warning-list)))
     (if (and
