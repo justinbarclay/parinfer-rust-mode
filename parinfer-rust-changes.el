@@ -42,7 +42,7 @@
 
 ;; 4. When parinfer-rust--execute is called it will merge change events that occur sequentially in
 ;; time and at the same starting coordinates. This merges delete events together and helps create a
-;; more minimized change list that paringer-rust can understand.
+;; more minimized change list that parinfer-rust can understand.
 
 ;; 5. Once changes have been merged, they get transformed into a parinfer-rust change struct.
 

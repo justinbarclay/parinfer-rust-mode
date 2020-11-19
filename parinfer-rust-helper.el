@@ -45,7 +45,7 @@
   "Check for the existence of the parinfer-rust library.
 
 If SUPPORTED-VERSION can't be found in LIBRARY-LOCATION offers to
-download LIB-NAME for the user. Automatically downdloands if
+download LIB-NAME for the user. Automatically downloads if
 AUTO-DOWNLOAD is supplied or parinfer-rust runs in test mode,
 otherwise will promt user. Return non-nil if the parinfer-rust
 library was downloaded."
@@ -59,7 +59,7 @@ library was downloaded."
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download
 ;; a new library the user has to restart Emacs.
 (defun parinfer-rust--check-version (supported-version current-version library-location lib-name)
-  "Check compatability between `parinfer-rust-mode' and parinfer-rust library.
+  "Check compatibility between `parinfer-rust-mode' and parinfer-rust library.
 
 If SUPPORTED-VERSION is not compatible with CURRENT-VERSION,
 offer to download the LIB-NAME to LIBRARY-LOCATION."
