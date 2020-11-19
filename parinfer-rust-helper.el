@@ -19,11 +19,6 @@
 
 ;; This file is not part of GNU Emacs.
 
-;;; Commentary: A file for functions not strictly related to making parinfer work
-
-;; A helper library to download a precompiled library for you
-
-
 ;;; Commentary:
 ;; An assortment of helper functions and ports of functions from Emacs
 ;; 27+ to support older versions of Emacs
@@ -37,7 +32,7 @@
 
 (defcustom parinfer-rust-troublesome-modes
   '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode)
-  "Modes that may conflict when run alongside parinfer-rust-mode.
+  "Modes that may conflict when run alongside `parinfer-rust-mode'.
 
 To disable checking for troublesome modes set this to an empty
 list."
