@@ -23,7 +23,6 @@
 ;; Tests for indent-mode
 
 ;;; Code:
-(require 'test-helper)
 
 (ert-deftest parinfer-indent-0 ()
  (let ((before

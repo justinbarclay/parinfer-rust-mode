@@ -23,8 +23,6 @@
 ;; Tests user submitted cases
 
 ;;; Code:
-
-(require 'test-helper)
 (require 'paredit)
 (require 'clojure-mode)
 ;; This covers issue #8
