@@ -250,6 +250,4 @@ extracted from the json-alist."
       (simulate-parinfer-in-another-buffer--with-changes test-string mode changes)
     (simulate-parinfer-in-another-buffer--without-changes test-string mode)))
 
-
-(provide 'test-helper)
 ;;; test-helper.el ends here

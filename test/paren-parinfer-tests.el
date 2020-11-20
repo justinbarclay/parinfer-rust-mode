@@ -23,8 +23,6 @@
 ;; Tests for paren-mode
 
 ;;; Code:
-(require 'test-helper)
-
 (ert-deftest parinfer-paren-0 ()
  (let ((before
 "(let [foo 1]

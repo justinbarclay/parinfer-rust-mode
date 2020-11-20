@@ -23,9 +23,6 @@
 ;; Tests for smart-mode
 
 ;;; Code:
-
-(require 'test-helper)
-
 (ert-deftest parinfer-smart-0 ()
  (let ((before
 "(let [a 1
