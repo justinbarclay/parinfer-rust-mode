@@ -1,4 +1,4 @@
-;;; indent-parinfer-tests.el --- Auto generates tests based on a json file  -*- lexical-binding: t; -*-
+;;; indent-parinfer-tests.el --- Auto generates tests based on a json file  -*- lexical-binding: nil; -*-
 ;; Copyright (C) 2019  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
@@ -50,8 +50,8 @@
 (ert-deftest user-fill-paragraph ()
   (let ((test
          '(:setup (clojure-mode)
-           :before
-"(ns some-namespace.core
+                  :before
+                  "(ns some-namespace.core
   (:import [java.util.concurrent Executors])
   (:require [clojure.string :as string]))
 
@@ -59,8 +59,8 @@
   \"pretty long docsting that will be affected by `fill-paragraph` function\"
   [x]
   x)"
-           :after
-"(ns some-namespace.core
+                  :after
+                  "(ns some-namespace.core
   (:import [java.util.concurrent Executors])
   (:require [clojure.string :as string]))
 
@@ -69,7 +69,7 @@
   function\"
   [x]
   x)"
-           :commands (((:lineNo 6 :column 4) fill-paragraph)))))
+                  :commands (((:lineNo 6 :column 4) fill-paragraph)))))
     (should
      (string=
       (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
@@ -84,7 +84,7 @@
   (let ((test
          '(:setup
            (clojure-mode paredit-mode
-            )
+                         )
            :before
            "(foo- _foo [foo foo]
       (foo/foo foo {:foo foo-foo
@@ -147,21 +147,21 @@
     (add-to-list 'parinfer-rust-treat-command-as '(indent-buffer . "paren")))
   (let ((test
          '(:setup (clojure-mode add-func-to-treat-command-as)
-           :before
-           "               (defn vaiv []
+                  :before
+                  "               (defn vaiv []
         \"I am incorrect\"
    (let
  [a 1
          b 2]
                       (+ a b)))"
-           :after
-           "(defn vaiv []
+                  :after
+                  "(defn vaiv []
   \"I am incorrect\"
   (let
       [a 1
        b 2]
     (+ a b)))"
-           :commands (((:lineNo 0 :column 0) indent-buffer)))))
+                  :commands (((:lineNo 0 :column 0) indent-buffer)))))
     (should
      (string=
       (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
@@ -169,3 +169,71 @@
                                                           (plist-get test :commands)
                                                           (plist-get test :setup))
       (plist-get test :after)))))
+
+(ert-deftest indent-buffer ()
+  (defun indent-buffer ()
+    (interactive)
+    (setq-local this-command 'indent-buffer)
+    (indent-region (point-min) (point-max)))
+  (defun add-func-to-treat-command-as ()
+    (add-to-list 'parinfer-rust-treat-command-as '(indent-buffer . "paren")))
+  (let ((test
+         '(:setup (clojure-mode add-func-to-treat-command-as)
+                  :before
+                  "               (defn vaiv []
+        \"I am incorrect\"
+   (let
+ [a 1
+         b 2]
+                      (+ a b)))"
+                  :after
+                  "(defn vaiv []
+  \"I am incorrect\"
+  (let
+      [a 1
+       b 2]
+    (+ a b)))"
+                  :commands (((:lineNo 0 :column 0) indent-buffer)))))
+    (should
+     (string=
+      (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
+                                                          "smart"
+                                                          (plist-get test :commands)
+                                                          (plist-get test :setup))
+      (plist-get test :after)))))
+
+(ert-deftest check-for-tabs--with-issues ()
+  (should
+   (let ((buffer-state "	(defun hello () \"world\")"))
+     (with-temp-buffer
+       (insert buffer-state)
+       (parinfer-rust--check-for-tabs)))))
+
+(ert-deftest check-for-tabs--without-issues ()
+  (should-not
+   (let ((buffer-state "(defun hello () \"world\")"))
+     (with-temp-buffer
+       (insert buffer-state)
+       (parinfer-rust--check-for-tabs)))))
+
+(ert-deftest check-for-indentation--with-issues ()
+  (let ((buffer-state
+         "(defun hello []
+  (+ 1 2)
+(- 3 4))"))
+    (should
+     (with-temp-buffer
+       ;; Override prompt to simulate user saying no.
+       (cl-letf (((symbol-function 'y-or-n-p) (lambda (prompt) (progn nil))))
+         (insert buffer-state)
+         (parinfer-rust--check-for-indentation))))))
+
+(ert-deftest check-for-indentation--without-issues ()
+  (let ((buffer-state
+         "(defun hello []
+  (+ 1 2)
+  (- 3 4))"))
+    (should-not
+     (with-temp-buffer
+       (insert buffer-state)
+       (parinfer-rust--check-for-indentation)))))

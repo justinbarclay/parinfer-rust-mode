@@ -159,7 +159,7 @@ Options:
 ** Known Issues
    - Multiple cursors do not work as intended
    - Does not play well with other modes that insert parens or manage whitespace. If you have modes like electric-pair-mode or hungry-delete-mode enabled, you may want to disable them for any mode that has parinfer-rust-mode enabled. To help users work around this we offer to disable known troublesome modes if we detect them.
-*** Out of Memory 
+*** Out of Memory
 This is still alpha software and parinfer-rust has been known to get ~Out of Memory~ warnings and cause Emacs to crash, so use at your own risk.
 + I'm maintaining a [[https://github.com/justinbarclay/parinfer-rust][fork]] of parinfer-rust, that patches the libraries ability to cause an ~Out of Memory~ error.
 + In fairness to the maintainer of parinfer-rust, the reason that the library is crashing is due to the changes I am passing to the library. Which admittedly, can be non-sensical from parinfer's perspective.
