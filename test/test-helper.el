@@ -249,5 +249,4 @@ extracted from the json-alist."
   (if changes
       (simulate-parinfer-in-another-buffer--with-changes test-string mode changes)
     (simulate-parinfer-in-another-buffer--without-changes test-string mode)))
-
 ;;; test-helper.el ends here

@@ -436,19 +436,37 @@ This will create a text file in the current directory."
       (setq parinfer-rust--in-debug nil)
     (setq parinfer-rust--in-debug t)))
 
+(defun parinfer-rust--check-for-tabs ()
+  "Return t current buffer has a `\t'."
+  (when (> (how-many "\t" (point-min) (point-max))
+           0)
+    (message (concat "Disabling parinfer-rust-mode because parinfer-rust "
+                     "does not work on files with the tab character."))
+    t))
+
 (defun parinfer-rust--check-for-indentation (&rest _)
   "Check to see if running in paren mode will cause a change in the buffer.
 
 If a change is detected in the buffer, prompt the user to see if they still want
 `parinfer-rust-mode' enabled."
-  (setq-local parinfer-rust--disable nil)
   (when (parinfer-rust--execute-change-buffer-p "paren")
     (if (y-or-n-p
          "Parinfer needs to modify indentation in this buffer to work.  Continue? ")
         (let ((parinfer-rust--mode "paren"))
           (parinfer-rust--execute))
-      (parinfer-rust-mode -1)))
-  (remove-hook 'before-change-functions #'parinfer-rust--check-for-indentation t))
+      t)))
+
+(defun parinfer-rust--check-for-issues (&rest _)
+  "Check for issues that can cause unwanted behaviors.
+
+Disable `parinfer-rust-mode' if the user does not want to have
+parinfer autofix them, or if there is no reasonable way for
+`parinfer-rust-mode' to automatically fix them."
+  (setq-local parinfer-rust--disable nil)
+  (if-let (issue (or (parinfer-rust--check-for-tabs)
+                     (parinfer-rust--check-for-indentation)))
+      (parinfer-rust-mode -1))
+  (remove-hook 'before-change-functions #'parinfer-rust--check-for-issues t))
 
 (defun parinfer-rust--switch-mode (&optional mode)
   "Switch to a different Parinfer MODE.
@@ -557,11 +575,11 @@ not available."
                  buffer-read-only)
              ;; Defer checking for changes until a user changes the buffer
              (setq-local parinfer-rust--disable t)
-             (add-hook 'before-change-functions #'parinfer-rust--check-for-indentation t t))
+             (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
 
             ((eq 'immediate parinfer-rust-check-before-enable)
              (setq-local parinfer-rust--disable t)
-             (parinfer-rust--check-for-indentation))
+             (parinfer-rust--check-for-issues))
 
             (t (let ((parinfer-rust--mode "paren"))
                  (parinfer-rust--execute)))))))
