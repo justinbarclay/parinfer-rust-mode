@@ -51,7 +51,7 @@ If you would always like parinfer-rust-mode to keep the library version in sync 
 If you are using the `use-package` snippet from above, that would look like:
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-      :hook emacs-list-mode
+      :hook emacs-lisp-mode
       :init
       (setq parinfer-rust-auto-download t))
 #+END_SRC
