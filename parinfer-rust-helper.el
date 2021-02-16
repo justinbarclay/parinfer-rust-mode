@@ -86,7 +86,7 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
   (if (executable-find "curl")
       (progn
         (unless (file-directory-p (file-name-directory library-location))
-          (make-directory (file-name-directory library-location)))
+          (make-directory (file-name-directory library-location) t))
         (shell-command
          (format "curl -L %s -o %s"
                  (format "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s"

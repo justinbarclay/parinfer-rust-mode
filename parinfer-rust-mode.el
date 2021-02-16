@@ -165,11 +165,7 @@ against.")
   (defvar parinfer-rust-library
     (concat user-emacs-directory "parinfer-rust/" parinfer-rust--lib-name))
   (unless (bound-and-true-p module-file-suffix)
-    (error "Emacs was not compiled with the '--with-modules'. Unable to load parinfer-rust-mode"))
-  (parinfer-rust--check-for-library "0.4.4-beta" ;; This is going to be a problem
-                                    parinfer-rust-library
-                                    parinfer-rust--lib-name
-                                    nil))
+    (error "Emacs was not compiled with the '--with-modules'. Unable to load parinfer-rust-mode")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User customization options
