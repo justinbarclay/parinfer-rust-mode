@@ -27,7 +27,13 @@ build: version elpa
 version:
 	$(EMACS) --version
 
-test: clean elpa version build
+download:
+ifeq (,$(wildcard $(HOME)/.emacs.d/parinfer-rust/parinfer-rust.so))
+	mkdir $(HOME)/.emacs.d/parinfer-rust
+	curl -L "https://github.com/justinbarclay/parinfer-rust/releases/download/v0.4.4-beta/parinfer-rust-linux.so" -o "$(HOME)/.emacs.d/parinfer-rust/parinfer-rust-linux.so"
+endif
+
+test: clean elpa version download build
 	$(CASK) exec ert-runner test/**.el --quiet
 
 lint: version elpa
