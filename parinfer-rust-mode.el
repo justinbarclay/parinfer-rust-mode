@@ -160,8 +160,10 @@ against.")
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so")
                                    ((eq system-type 'windows-nt) "parinfer-rust-windows.dll")))
+  (defvar parinfer-rust-library-dir
+    (concat user-emacs-directory "parinfer-rust/"))
   (defvar parinfer-rust-library
-    (concat user-emacs-directory "parinfer-rust/" parinfer-rust--lib-name))
+    (concat parinfer-rust-library-dir parinfer-rust--lib-name))
   (unless (bound-and-true-p module-file-suffix)
     (error "Emacs was not compiled with the '--with-modules'. Unable to load parinfer-rust-mode")))
 
@@ -182,9 +184,14 @@ against.")
                                    ((eq system-type 'windows-nt) "parinfer-rust-windows.dll"))
   "System dependent library name for `parinfer-rust-mode'.")
 
+(defcustom parinfer-rust-library-directory (locate-user-emacs-file (concat user-emacs-directory
+                                                                           "parinfer-rust/"))
+  "The directory to store or to find the parinfer-rust library in."
+  :type 'directory
+  :group 'parinfer-rust-mode)
 
-(defcustom parinfer-rust-library (locate-user-emacs-file (concat "parinfer-rust/"
-                                                                 parinfer-rust--lib-name))
+(defcustom parinfer-rust-library (concat parinfer-rust-library-directory
+                                         parinfer-rust--lib-name)
   "The location to store or to find the parinfer-rust library."
   :type 'file
   :group 'parinfer-rust-mode)
