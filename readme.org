@@ -110,13 +110,21 @@ parinfer-rust-mode is purposefully light on option, but it does give a few optio
   #+BEGIN_QUOTE
    default: ~/.emacs.d/parinfer-rust/parinfer-rust-*.so
   #+END_QUOTE
+
+- ~parinfer-rust-library-dir~
+
+  The directory to store or to find the parinfer-rust library in. This allows a more fine grained approach to installing the parinfer library, if you don't want to rename the library itself.
+  #+BEGIN_QUOTE
+   default: ~/.emacs.d/parinfer-rust/parinfer-rust-*.so
+  #+END_QUOTE
+  
 - ~parinfer-rust-preferred-mode~
 
   The mode you want parinfer-rust-mode to start in.
   Options:
-    + smart
-    + indent
-    + paren
+     + smart
+     + indent
+     + paren
 
   #+BEGIN_QUOTE
   default: smart
