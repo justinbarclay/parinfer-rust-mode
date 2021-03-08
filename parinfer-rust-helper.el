@@ -72,7 +72,7 @@ offer to download the LIB-NAME to LIBRARY-LOCATION."
                    current-version
                    supported-version))
              (and
-              (not (bound-and-true-p (parinfer-rust--test-p)))
+              (not (parinfer-rust--test-p))
               (yes-or-no-p parinfer-rust--outdated-version)))
     (parinfer-rust--download-from-github supported-version library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
