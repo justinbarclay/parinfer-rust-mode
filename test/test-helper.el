@@ -138,7 +138,7 @@ it makes no sense to convert it to a string using
   (if parinfer-rust-enabled
       (parinfer-rust-mode-disable)
     (progn
-      (parinfer-rust--check-version parinfer-rust-supported-version
+      (parinfer-rust--check-version parinfer-rust-supported-versions
                                     (parinfer-rust-version)
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)

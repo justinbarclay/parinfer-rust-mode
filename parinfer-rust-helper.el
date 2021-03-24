@@ -42,7 +42,7 @@ list."
 (defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst parinfer-rust--outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
-(defun parinfer-rust--check-for-library (supported-version
+(defun parinfer-rust--check-for-library (supported-versions
                                          library-location
                                          lib-name
                                          auto-download)
@@ -58,23 +58,25 @@ library was downloaded."
               auto-download
               (parinfer-rust--test-p)
               (yes-or-no-p parinfer-rust--ask-to-download)))
-    (parinfer-rust--download-from-github supported-version library-location lib-name)
+    (parinfer-rust--download-from-github (car supported-versions) ;; This is a hold over because I am lazy. I've stuctured this data such that
+                                                                 ;; my version is the first one in the list
+                                         library-location lib-name)
     t))
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download
 ;; a new library the user has to restart Emacs.
-(defun parinfer-rust--check-version (supported-version current-version library-location lib-name)
+(defun parinfer-rust--check-version (supported-versions current-version library-location lib-name)
   "Check compatibility between `parinfer-rust-mode' and parinfer-rust library.
 
 If SUPPORTED-VERSION is not compatible with CURRENT-VERSION,
 offer to download the LIB-NAME to LIBRARY-LOCATION."
   (when (and current-version
-             (not (string=
+             (not (member-ignore-case
                    current-version
-                   supported-version))
+                   supported-versions))
              (and
               (not (parinfer-rust--test-p))
               (yes-or-no-p parinfer-rust--outdated-version)))
-    (parinfer-rust--download-from-github supported-version library-location lib-name)
+    (parinfer-rust--download-from-github supported-versions library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
 (defun parinfer-rust--download-from-github (parinfer-rust-version
