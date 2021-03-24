@@ -48,7 +48,7 @@ list."
                                          auto-download)
   "Check for the existence of the parinfer-rust library.
 
-If SUPPORTED-VERSION can't be found in LIBRARY-LOCATION offers to
+If SUPPORTED-VERSIONS can't be found in LIBRARY-LOCATION offers to
 download LIB-NAME for the user. Automatically downloads if
 AUTO-DOWNLOAD is supplied or parinfer-rust runs in test mode,
 otherwise will promt user. Return non-nil if the parinfer-rust
@@ -58,8 +58,10 @@ library was downloaded."
               auto-download
               (parinfer-rust--test-p)
               (yes-or-no-p parinfer-rust--ask-to-download)))
-    (parinfer-rust--download-from-github (car supported-versions) ;; This is a hold over because I am lazy. I've stuctured this data such that
-                                                                 ;; my version is the first one in the list
+    (parinfer-rust--download-from-github (car supported-versions)
+                                         ;; This is a hold over because I am lazy. I've stuctured
+                                         ;; this data such that my version is the first one in the
+                                         ;; list
                                          library-location lib-name)
     t))
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download
@@ -67,7 +69,7 @@ library was downloaded."
 (defun parinfer-rust--check-version (supported-versions current-version library-location lib-name)
   "Check compatibility between `parinfer-rust-mode' and parinfer-rust library.
 
-If SUPPORTED-VERSION is not compatible with CURRENT-VERSION,
+If SUPPORTED-VERSIONS is not compatible with CURRENT-VERSION,
 offer to download the LIB-NAME to LIBRARY-LOCATION."
   (when (and current-version
              (not (member-ignore-case

@@ -264,20 +264,21 @@ command should be run in.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar-local parinfer-rust-enabled nil "Tracks if parinfer has been enabled")
+(defvar-local parinfer-rust-enabled nil "Tracks if parinfer has been enabled.")
 (defvar-local parinfer-rust--in-debug nil
-  "When enabled, outputs the response input and output of the parinfer response to a file")
+  "When enabled, outputs the response input and output of the parinfer response to a file.")
 (defvar-local parinfer-rust--mode "paren"
-  "The current mode that parinfer running under to managing your
-  parenthesis. Either 'paren', 'indent', or 'smart'")
+  "The current mode that parinfer running under to managing your parenthesis.
+
+Either 'paren', 'indent', or 'smart'.")
 (defvar-local parinfer-rust--previous-options nil
-  "The last set of record of changes and meta information of changes in the buffer")
+  "The last set of record of changes and meta information of changes in the buffer.")
 ;; TODO this might be not needed anymore
-(defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
+(defvar-local parinfer-rust--disable nil "Temporarily disable parinfer.")
 (defvar-local parinfer-rust--previous-buffer-text ""
-  "The text in the buffer previous to when parinfer-rust ran last")
+  "The text in the buffer previous to when parinfer-rust ran last.")
 (defvar-local parinfer-rust--ignore-post-command-hook nil
-  "A hack to not run parinfer-execute after an undo has finished processing")
+  "A hack to not run parinfer-execute after an undo has finished processing.")
 
 (defvar parinfer-rust--last-mode nil
   "Last active Parinfer mode.
@@ -549,7 +550,7 @@ not available."
 
 ;;;###autoload
 (define-minor-mode parinfer-rust-mode
-  "A simpler way to write lisps"
+  "A simpler way to write lisps."
   :lighter " parinfer"
   :init-value nil
   :keymap parinfer-rust-mode-map
