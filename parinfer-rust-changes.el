@@ -68,7 +68,7 @@
 (require 'subr-x)
 
 (defvar-local parinfer-rust--changes '()
-  "The current set of unprocessed changes")
+  "The current set of unprocessed changes.")
 
 (defun parinfer-rust--merge-changes (change-a change-b)
   "Return change list from CHANGE-A and CHANGE-B.

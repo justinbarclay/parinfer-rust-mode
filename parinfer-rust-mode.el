@@ -137,11 +137,11 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-version "0.4.4-beta"
-  "Supported version of the parinfer-rust library.
+(defconst parinfer-rust-supported-versions '("0.4.4-beta" "0.4.3")
+  "The Supported versions of the parinfer-rust library.
 
-Version of the library that `parinfer-rust-mode' was tested
-against.")
+Versions of the library that `parinfer-rust-mode' was tested
+against and is known to be api compatible.")
 
 ;; Require helper so we can check for library
 (require 'parinfer-rust-helper)
@@ -264,20 +264,21 @@ command should be run in.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar-local parinfer-rust-enabled nil "Tracks if parinfer has been enabled")
+(defvar-local parinfer-rust-enabled nil "Tracks if parinfer has been enabled.")
 (defvar-local parinfer-rust--in-debug nil
-  "When enabled, outputs the response input and output of the parinfer response to a file")
+  "When enabled, outputs the response input and output of the parinfer response to a file.")
 (defvar-local parinfer-rust--mode "paren"
-  "The current mode that parinfer running under to managing your
-  parenthesis. Either 'paren', 'indent', or 'smart'")
+  "The current mode that parinfer running under to managing your parenthesis.
+
+Either 'paren', 'indent', or 'smart'.")
 (defvar-local parinfer-rust--previous-options nil
-  "The last set of record of changes and meta information of changes in the buffer")
+  "The last set of record of changes and meta information of changes in the buffer.")
 ;; TODO this might be not needed anymore
-(defvar-local parinfer-rust--disable nil "Temporarily disable parinfer")
+(defvar-local parinfer-rust--disable nil "Temporarily disable parinfer.")
 (defvar-local parinfer-rust--previous-buffer-text ""
-  "The text in the buffer previous to when parinfer-rust ran last")
+  "The text in the buffer previous to when parinfer-rust ran last.")
 (defvar-local parinfer-rust--ignore-post-command-hook nil
-  "A hack to not run parinfer-execute after an undo has finished processing")
+  "A hack to not run parinfer-execute after an undo has finished processing.")
 
 (defvar parinfer-rust--last-mode nil
   "Last active Parinfer mode.
@@ -549,7 +550,7 @@ not available."
 
 ;;;###autoload
 (define-minor-mode parinfer-rust-mode
-  "A simpler way to write lisps"
+  "A simpler way to write lisps."
   :lighter " parinfer"
   :init-value nil
   :keymap parinfer-rust-mode-map
@@ -557,7 +558,7 @@ not available."
       (parinfer-rust-mode-disable)
     (progn
       ;; Make sure the library is installed at the appropriate location or offer to download it
-      (when (parinfer-rust--check-for-library parinfer-rust-supported-version
+      (when (parinfer-rust--check-for-library parinfer-rust-supported-versions
                                               parinfer-rust-library
                                               parinfer-rust--lib-name
                                               parinfer-rust-auto-download)
@@ -565,7 +566,7 @@ not available."
       ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
       ;; reload dynamic libraries, which means that if we download a new library the user has to
       ;; restart Emacs for changes to take effect.
-      (parinfer-rust--check-version parinfer-rust-supported-version
+      (parinfer-rust--check-version parinfer-rust-supported-versions
                                     (parinfer-rust-version)
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)
