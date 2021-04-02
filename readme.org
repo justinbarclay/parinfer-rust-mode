@@ -150,7 +150,7 @@ Options:
   #+END_QUOTE
 - ~parinfer-rust-dim-parens~
 
-  Dim parentheses that are inferred by Parinfer in ~indent~ and ~smart~ modes. Color can be configured via ~parinfer-rust-dim-parens-face~.
+  Dim parentheses that are inferred by Parinfer in ~indent~ and ~smart~ modes. Color can be configured via the ~parinfer-rust-dim-parens~ face.
   #+BEGIN_QUOTE
   default: t
   #+END_QUOTE
