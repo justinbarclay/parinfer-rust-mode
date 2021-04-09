@@ -551,7 +551,7 @@ not available."
 ;;;###autoload
 (define-minor-mode parinfer-rust-mode
   "A simpler way to write lisps."
-  :lighter " parinfer"
+  :lighter (:eval (concat " parinfer:" parinfer-rust--mode))
   :init-value nil
   :keymap parinfer-rust-mode-map
   (if parinfer-rust-enabled
