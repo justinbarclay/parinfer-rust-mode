@@ -21,7 +21,7 @@ jobs:
 
   test-emacs-27:
     docker:
-      - image: silex/emacs:27.1-ci-cask
+      - image: silex/emacs:27.2-ci-cask
         entrypoint: bash
     <<: *default-steps
 
