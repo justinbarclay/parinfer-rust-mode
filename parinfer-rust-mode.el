@@ -257,11 +257,12 @@ against and is known to be api compatible.")
     (yank . "paren")
     (counsel-yank-pop . "paren")
     (evil-open-above . "paren")
-    (evil-change-whole-line . "paren"))
+    (evil-change-whole-line . "paren")
+    (quoted-insert . "paren")
   "Commands to run with certain Parinfer mode.
 
 A curated list of pairs consisting of a command and the mode the
-command should be run in.")
+command should be run in."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
