@@ -454,7 +454,7 @@ If a change is detected in the buffer, prompt the user to see if they still want
 `parinfer-rust-mode' enabled."
   (when (parinfer-rust--execute-change-buffer-p "paren")
     (if (y-or-n-p
-         "Parinfer needs to modify indentation in this buffer to work.  Continue? ")
+         (format "Parinfer needs to modify indentation in the buffer %s to work.  Continue? " (current-buffer)))
         (let ((parinfer-rust--mode "paren"))
           (parinfer-rust--execute))
       t)))
