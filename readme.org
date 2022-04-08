@@ -161,6 +161,16 @@ Options:
   #+BEGIN_QUOTE
   default: (electric-pair-mode hungry-delete-mode global-hungry-delete-mode)
   #+END_QUOTE
+  
+- ~parinfer-rust-disable-troublesome-modes~
+
+  Disables troublesome modes without prompting the user.
+  
+  Troublesome modes are listed in `parinfer-rust-disable-troublesome-modes'.
+  Set this to non-nil to disable troublesome modes without prompting.
+  #+BEGIN_QUOTE
+  default: nil
+  #+END_QUOTE
 ** parinfer-mode
    There is an alternate implementation of Parinfer for Emacs called [[https://github.com/DogLooksGood/parinfer-mode][parinfer-mode]]. It currently has support for Parinfer's "paren" and "indent". Additionally, it has had experimental support for "smart" mode, however, this has remained hidden on a branch and not accessible from MELPA for over a year.
    parinfer-smart-mode aims to be a simpler adaptation of Parinfer that just offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.

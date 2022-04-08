@@ -39,6 +39,14 @@ list."
   :type '(repeat symbol)
   :group 'parinfer-rust-mode)
 
+(defcustom  parinfer-rust-disable-troublesome-modes nil
+  "Disables troublesome modes without prompting the user.
+
+Troublesome modes are listed in `parinfer-rust-disable-troublesome-modes'.
+Set this to non-nil to disable troublesome modes without prompting."
+  :type 'boolean
+  :group 'parinfer-rust-mode)
+
 (defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst parinfer-rust--outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
@@ -121,9 +129,10 @@ If the user does not disable these modes then it may cause bugs or crashes"
         (push mode warning-list)))
     (if (and
          warning-list
-         (yes-or-no-p
-          (format "The following modes may cause issues with parinfer-rust, do you want to disable them? Mode(s): %s"
-                  (mapconcat (lambda (sym) (symbol-name sym)) warning-list ", "))))
+         (or parinfer-rust-disable-troublesome-modes
+          (yes-or-no-p
+           (format "The following modes may cause issues with parinfer-rust, do you want to disable them? Mode(s): %s?"
+                   (mapconcat (lambda (sym) (symbol-name sym)) warning-list ", ")))))
         (dolist (mode warning-list)
           (apply mode '(-1))))))
 
