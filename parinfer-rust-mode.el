@@ -540,12 +540,7 @@ not available."
     (parinfer-rust--switch-mode "paren")))
 
 ;;;###autoload
-(defvar parinfer-rust-mode-map
-  (let ((m (make-sparse-keymap)))
-    (define-key m (kbd "C-c C-p t") #'parinfer-rust-toggle-paren-mode)
-    (define-key m (kbd "C-c C-p s") #'parinfer-rust-switch-mode)
-    (define-key m (kbd "C-c C-p d") #'parinfer-rust-toggle-disable)
-    m)
+(defvar parinfer-rust-mode-map (make-sparse-keymap)
   "Keymap for `parinfer-rust-mode'.")
 
 ;;;###autoload
