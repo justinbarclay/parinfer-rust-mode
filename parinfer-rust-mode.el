@@ -255,7 +255,9 @@ against and is known to be api compatible.")
   '((paredit-forward-barf-sexp . "paren")
     (paredit-forward-slurp-sexp . "paren")
     (yank . "paren")
-    (counsel-yank-pop . "paren"))
+    (counsel-yank-pop . "paren")
+    (evil-open-above . "paren")
+    (evil-change-whole-line . "paren"))
   "Commands to run with certain Parinfer mode.
 
 A curated list of pairs consisting of a command and the mode the
