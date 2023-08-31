@@ -81,11 +81,20 @@ For the more adventurous of you, you can also download the ~parinfer-rust~ libra
      #+END_SRC
 
 ** Commands
-   | Key       | Command                    | Description                                           |
-   |-----------+----------------------------+-------------------------------------------------------|
-   | C-c C-p s | parinfer-switch-mode       | Quickly switch between paren, indent, and smart modes |
-   | C-c C-p d | parinfer-rust-mode-disable | Toggle parinfer-rust-mode mode on or off              |
-   | C-c C-p t | parinfer-rust-toggle-paren | Toggle between paren mode and current mode            |
+   | Command                    | Description                                           |
+   |----------------------------+-------------------------------------------------------|
+   | parinfer-switch-mode       | Quickly switch between paren, indent, and smart modes |
+   | parinfer-rust-mode-disable | Toggle parinfer-rust-mode mode on or off              |
+   | parinfer-rust-toggle-paren | Toggle between paren mode and current mode            |
+
+   These commands are no longer bound to the ~C-c C-p~ prefix keys by default.
+   If you prefer to use the old bindings, add this to your configuration (keep in mind it may clash with some major mode bindings):
+
+   #+begin_src elisp
+     (define-key parinfer-rust-mode-map (kbd "C-c C-p t") #'parinfer-rust-toggle-paren-mode)
+     (define-key parinfer-rust-mode-map (kbd "C-c C-p s") #'parinfer-rust-switch-mode)
+     (define-key parinfer-rust-mode-map (kbd "C-c C-p d") #'parinfer-rust-toggle-disable)
+   #+end_src
 
 ** Modes
    Parinfer can operate under three different modes when writing lisp.

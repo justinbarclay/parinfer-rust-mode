@@ -255,7 +255,9 @@ against and is known to be api compatible.")
   '((paredit-forward-barf-sexp . "paren")
     (paredit-forward-slurp-sexp . "paren")
     (yank . "paren")
-    (counsel-yank-pop . "paren"))
+    (counsel-yank-pop . "paren")
+    (evil-open-above . "paren")
+    (evil-change-whole-line . "paren"))
   "Commands to run with certain Parinfer mode.
 
 A curated list of pairs consisting of a command and the mode the
@@ -270,7 +272,7 @@ command should be run in.")
 (defvar-local parinfer-rust--mode "paren"
   "The current mode that parinfer running under to managing your parenthesis.
 
-Either 'paren', 'indent', or 'smart'.")
+Either `paren', `indent', or `smart'.")
 (defvar-local parinfer-rust--previous-options nil
   "The last set of record of changes and meta information of changes in the buffer.")
 ;; TODO this might be not needed anymore
@@ -540,12 +542,7 @@ not available."
     (parinfer-rust--switch-mode "paren")))
 
 ;;;###autoload
-(defvar parinfer-rust-mode-map
-  (let ((m (make-sparse-keymap)))
-    (define-key m (kbd "C-c C-p t") #'parinfer-rust-toggle-paren-mode)
-    (define-key m (kbd "C-c C-p s") #'parinfer-rust-switch-mode)
-    (define-key m (kbd "C-c C-p d") #'parinfer-rust-toggle-disable)
-    m)
+(defvar parinfer-rust-mode-map (make-sparse-keymap)
   "Keymap for `parinfer-rust-mode'.")
 
 ;;;###autoload
