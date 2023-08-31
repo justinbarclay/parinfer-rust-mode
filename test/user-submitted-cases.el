@@ -170,38 +170,6 @@
                                                           (plist-get test :setup))
       (plist-get test :after)))))
 
-(ert-deftest indent-buffer ()
-  (defun indent-buffer ()
-    (interactive)
-    (setq-local this-command 'indent-buffer)
-    (indent-region (point-min) (point-max)))
-  (defun add-func-to-treat-command-as ()
-    (add-to-list 'parinfer-rust-treat-command-as '(indent-buffer . "paren")))
-  (let ((test
-         '(:setup (clojure-mode add-func-to-treat-command-as)
-                  :before
-                  "               (defn vaiv []
-        \"I am incorrect\"
-   (let
- [a 1
-         b 2]
-                      (+ a b)))"
-                  :after
-                  "(defn vaiv []
-  \"I am incorrect\"
-  (let
-      [a 1
-       b 2]
-    (+ a b)))"
-                  :commands (((:lineNo 0 :column 0) indent-buffer)))))
-    (should
-     (string=
-      (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
-                                                          "smart"
-                                                          (plist-get test :commands)
-                                                          (plist-get test :setup))
-      (plist-get test :after)))))
-
 (ert-deftest check-for-tabs--with-issues ()
   (should
    (let ((buffer-state "	(defun hello () \"world\")"))

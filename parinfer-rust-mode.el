@@ -272,7 +272,7 @@ command should be run in.")
 (defvar-local parinfer-rust--mode "paren"
   "The current mode that parinfer running under to managing your parenthesis.
 
-Either 'paren', 'indent', or 'smart'.")
+Either `paren', `indent', or `smart'.")
 (defvar-local parinfer-rust--previous-options nil
   "The last set of record of changes and meta information of changes in the buffer.")
 ;; TODO this might be not needed anymore
