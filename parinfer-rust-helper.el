@@ -197,7 +197,7 @@ mode to better emulate users."
 
 (defun parinfer-rust--get-cursor-x ()
   "Return the current x coordinate of the cursor."
-  (- (point) (point-at-bol)))
+  (- (point) (line-beginning-position)))
 
 (defun parinfer-rust--get-cursor-line ()
   "Return the parinfer compatible line number of the cursor."
