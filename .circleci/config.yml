@@ -25,6 +25,18 @@ jobs:
         entrypoint: bash
     <<: *default-steps
 
+  test-emacs-28:
+    docker:
+      - image: silex/emacs:28.2-ci-cask
+        entrypoint: bash
+    <<: *default-steps
+
+  test-emacs-29:
+    docker:
+      - image: silex/emacs:29.1-ci-cask
+        entrypoint: bash
+    <<: *default-steps
+
   test-emacs-master:
     docker:
       - image: silex/emacs:master-ci-cask
@@ -38,4 +50,6 @@ workflows:
     jobs:
       - test-emacs-26
       - test-emacs-27
+      - test-emacs-28
+      - test-emacs-29
       - test-emacs-master
