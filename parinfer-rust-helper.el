@@ -222,7 +222,7 @@ mode to better emulate users."
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.
 ;; Local Variables:
-;; elisp-lint-ignored-validators: ("fill-column")
+;; elisp-lint-ignored-validators: ("fill-column" "checkdoc")
 ;; package-lint-main-file: "parinfer-rust-mode.el"
 ;; End:
 
