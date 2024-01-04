@@ -74,6 +74,10 @@ For the more adventurous of you, you can also download the ~parinfer-rust~ libra
        cargo build --release
        cp ./target/release/${library-name} ~/.emacs.d/parinfer-rust/${lib-name}
      #+END_SRC
+    For M1 Mac users compile like so 
+    #+BEGIN_SRC shell
+    cargo build --release --features emacs
+    #+END_SRC
 ***** Step 2: Configure parinfer-rust-mode
      Once you have compiled the libraries from source code you'll need to tell ~parinfer-rust-mode~ how to find these libraries
      #+BEGIN_SRC elisp
