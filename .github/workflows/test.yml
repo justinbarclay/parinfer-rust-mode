@@ -1,0 +1,23 @@
+name: "Build and Test"
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        emacs_version: [ 26.3, 27.2, 28.2, 29.1, 29.2, release-snapshot ]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Emacs
+      uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+    - name: Check emacs version
+      run: emacs --version
+    - name: Check
+      continue-on-error: true
+      run: nix develop -c make test

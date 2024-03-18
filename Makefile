@@ -7,7 +7,7 @@ FILTER_FILES =  $(PKG)-autoloads.el test-helper.el run-tests.el generate-tests.e
 ELS_ALL = $(wildcard *.el)
 ELS = $(filter-out $(FILTER_FILES),$(ELS_ALL))
 OBJECTS = $(ELS:.el=.elc)
-
+OS = $(shell uname | tr '[:upper:]' '[:lower:]')
 .PHONY: elpa build version test lint clean elpaclean run-$(PKG)
 
 all: build
@@ -28,9 +28,9 @@ version:
 	$(EMACS) --version
 
 download:
-ifeq (,$(wildcard $(HOME)/.emacs.d/parinfer-rust/parinfer-rust-linux.so))
+ifeq (,$(wildcard $(HOME)/.emacs.d/parinfer-rust/parinfer-rust-$(OS).so))
 	mkdir -p $(HOME)/.emacs.d/parinfer-rust
-	curl -L "https://github.com/justinbarclay/parinfer-rust/releases/download/v0.4.4/parinfer-rust-darwin.so" -o "$(HOME)/.emacs.d/parinfer-rust/parinfer-rust-darwin.so"
+	curl -L "https://github.com/justinbarclay/parinfer-rust/releases/download/v0.4.4/parinfer-rust-$(OS).so" -o "$(HOME)/.emacs.d/parinfer-rust/parinfer-rust-$(OS).so"
 endif
 
 test: clean elpa version download build
