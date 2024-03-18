@@ -28,9 +28,9 @@ version:
 	$(EMACS) --version
 
 download:
-ifeq (,$(wildcard $(HOME)/.emacs.d/parinfer-rust/parinfer-rust.so))
+ifeq (,$(wildcard $(HOME)/.emacs.d/parinfer-rust/parinfer-rust-linux.so))
 	mkdir -p $(HOME)/.emacs.d/parinfer-rust
-	curl -L "https://github.com/justinbarclay/parinfer-rust/releases/download/v0.4.4-beta/parinfer-rust-linux.so" -o "$(HOME)/.emacs.d/parinfer-rust/parinfer-rust-linux.so"
+	curl -L "https://github.com/justinbarclay/parinfer-rust/releases/download/v0.4.4/parinfer-rust-darwin.so" -o "$(HOME)/.emacs.d/parinfer-rust/parinfer-rust-darwin.so"
 endif
 
 test: clean elpa version download build

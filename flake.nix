@@ -20,7 +20,7 @@
         parinfer-rust-mode = pkgs.emacsPackages.trivialBuild
           {
             pname = "parinfer-rust-mode";
-            version = "0.1.0";
+            version = "0.8.4";
             src = ./.;
             nativeBuildInputs = with pkgs; [ emacsPackages.cask python3 which ];
             checkPhase = ''
