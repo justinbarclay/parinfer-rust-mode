@@ -1,10 +1,10 @@
 ;;; parinfer-rust-mode.el --- An interface for the parinfer-rust library -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2020  Justin Barclay
+;; Copyright (C) 2019-2023  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.8.3
+;; Version: 0.8.4
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp tools
 
@@ -137,7 +137,7 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-versions '("0.4.4-beta" "0.4.3")
+(defconst parinfer-rust-supported-versions '("0.4.4" "0.4.3")
   "The Supported versions of the parinfer-rust library.
 
 Versions of the library that `parinfer-rust-mode' was tested

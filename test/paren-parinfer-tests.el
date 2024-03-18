@@ -25,7 +25,7 @@
 ;;; Code:
 (ert-deftest parinfer-paren-0 ()
  (let ((before
-"(let [foo 1]
+        "(let [foo 1]
 foo)")
        (changes
 nil)
