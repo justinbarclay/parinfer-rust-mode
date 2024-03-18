@@ -42,7 +42,7 @@ list."
 (defcustom  parinfer-rust-disable-troublesome-modes nil
   "Disables troublesome modes without prompting the user.
 
-Troublesome modes are listed in `parinfer-rust-disable-troublesome-modes'.
+Troublesome modes are listed in `parinfer-rust-troublesome-modes'.
 Set this to non-nil to disable troublesome modes without prompting."
   :type 'boolean
   :group 'parinfer-rust-mode)
