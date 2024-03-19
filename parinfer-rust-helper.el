@@ -86,7 +86,7 @@ offer to download the LIB-NAME to LIBRARY-LOCATION."
              (and
               (not (parinfer-rust--test-p))
               (yes-or-no-p parinfer-rust--outdated-version)))
-    (parinfer-rust--download-from-github supported-versions library-location lib-name)
+    (parinfer-rust--download-from-github (car supported-versions) library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
 (defun parinfer-rust--download-from-github (parinfer-rust-version
