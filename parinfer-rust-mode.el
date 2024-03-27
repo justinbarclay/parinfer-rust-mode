@@ -296,6 +296,7 @@ command should be run in.")
 Either `paren', `indent', or `smart'.")
 (defvar-local parinfer-rust--previous-options nil
   "The last set of record of changes and meta information of changes in the buffer.")
+
 ;; TODO this might be not needed anymore
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer.")
 (defvar-local parinfer-rust--previous-buffer-text ""
