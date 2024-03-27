@@ -363,6 +363,29 @@ parinfer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interfaces for parinfer-rust
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun parinfer-rust--set-options (previous-options new-options)
+  "Update the `PREVIOUS-OPTIONS' with values in the plist `NEW-OPTIONS'.
+
+This mutates the current reference to `PREVIOUS-OPTIONS'
+Ex:
+  (parinfer-rust--set-options parinfer-rust--previous-options ;; '((cursor-x . 1) (cursor-line . 1))
+                               '(cursor-x 2 cursor-line 2))
+;;=> '((cursor-x . 2) (cursor-line . 2))"
+  (mapcar (lambda (options)
+            ;; Note to self set-option might need to clone in order to keep old option immutable
+            (parinfer-rust-set-option previous-options
+                                      (car options)
+                                      (cadr options)))
+             ;; partition plist into key-value pairs
+          (seq-partition new-options 2)))
+
+;; Uncomment for example:
+;; (let ((options (parinfer-rust-make-option)))
+;;   (parinfer-rust--set-options
+;;    options
+;;    '(force-balance t comment-char "\\"))
+;;   (parinfer-rust-print-options options))
+
 ;; The change interface and associated functions for change tracking
 ;; can be found in parinfer-rust-changes.el
 (defun parinfer-rust--generate-options (old-options changes)
