@@ -4,7 +4,7 @@
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.8.4
+;; Version: 0.8.5
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp tools
 
