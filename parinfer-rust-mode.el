@@ -275,6 +275,7 @@ command should be run in.")
 Either `paren', `indent', or `smart'.")
 (defvar-local parinfer-rust--previous-options nil
   "The last set of record of changes and meta information of changes in the buffer.")
+
 ;; TODO this might be not needed anymore
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer.")
 (defvar-local parinfer-rust--previous-buffer-text ""
@@ -304,10 +305,12 @@ parinfer."
   (setq-local parinfer-rust--disable nil))
 
 
-;; The idea for this function: 1. is to never run during an undo operation 2. Set a flag to ignore
-;; the first post command execution after an undo operation 2 is important because if we undo our
-;; last key press and that causes parinfer to modify the buffer we get stuck in a loop of trying to
-;; undo things and parinfer redoing them
+;; The idea for this function:
+;; 1. is to never run during an undo operation
+;; 2. Set a flag to ignore the first post command execution after an undo operation.
+;;
+;; 2 is important because if we undo our last key press and that causes parinfer to modify the
+;; buffer we get stuck in a loop of trying to undo things and parinfer redoing them
 
 (defun parinfer-rust--track-undo (orig-func &rest args)
   "Wraps ORIG-FUNC and ARGS in some state tracking for `parinfer-rust-mode'."
