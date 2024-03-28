@@ -257,11 +257,12 @@ against and is known to be api compatible.")
     (yank . "paren")
     (counsel-yank-pop . "paren")
     (evil-open-above . "paren")
-    (evil-change-whole-line . "paren"))
+    (evil-change-whole-line . "paren")
+    (quoted-insert . "paren")
   "Commands to run with certain Parinfer mode.
 
 A curated list of pairs consisting of a command and the mode the
-command should be run in.")
+command should be run in."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
@@ -453,7 +454,7 @@ If a change is detected in the buffer, prompt the user to see if they still want
 `parinfer-rust-mode' enabled."
   (when (parinfer-rust--execute-change-buffer-p "paren")
     (if (y-or-n-p
-         "Parinfer needs to modify indentation in this buffer to work.  Continue? ")
+         (format "Parinfer needs to modify indentation in the buffer %s to work.  Continue? " (current-buffer)))
         (let ((parinfer-rust--mode "paren"))
           (parinfer-rust--execute))
       t)))
