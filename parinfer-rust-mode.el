@@ -137,7 +137,7 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-versions '("0.4.6" "0.4.3")
+(defconst parinfer-rust-supported-versions '("0.4.6-beta" "0.4.3")
   "The Supported versions of the parinfer-rust library.
 
 Versions of the library that `parinfer-rust-mode' was tested
@@ -246,67 +246,53 @@ node `(elisp)Replacing'"
 (define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
 
 
-(defvar parinfer-rust--default-options '(lisp-vline-symbols nil
-                                         lisp-block-comments nil
-                                         guile-block-comments nil
-                                         scheme-sexp-comments nil
-                                         janet-long-strings nil
-                                         hy-bracket-strings nil))
+(defvar parinfer-rust--default-options '(:lisp-vline-symbols nil
+                                         :lisp-block-comments nil
+                                         :guile-block-comments nil
+                                         :scheme-sexp-comments nil
+                                         :janet-long-strings nil))
 ;; TODO: Make into a defcustom
 (defcustom parinfer-rust-major-mode-options
   (list
    'clojure-mode parinfer-rust--default-options
 
-   'janet-mode '(lisp-vline-symbols nil
-                 lisp-block-comments nil
-                 guile-block-comments nil
-                 scheme-sexp-comments nil
-                 janet-long-strings nil
-                 hy-bracket-strings nil)
+   'janet-mode '(:lisp-vline-symbols nil
+                 :lisp-block-comments nil
+                 :guile-block-comments nil
+                 :scheme-sexp-comments nil
+                 :janet-long-strings nil)
 
+   'lisp-mode '(:lisp-vline-symbols t
+                :lisp-block-comments t
+                :guile-block-comments nil
+                :scheme-sexp-comments nil
+                :janet-long-strings nil)
 
-   'lisp-mode '(lisp-vline-symbols t
-                lisp-block-comments t
-                guile-block-comments nil
-                scheme-sexp-comments nil
-                janet-long-strings nil
-                hy-bracket-strings nil)
+   'racket-mode '(:lisp-vline-symbols t
+                  :lisp-block-comments t
+                  :guile-block-comments nil
+                  :scheme-sexp-comments t
+                  :janet-long-strings nil)
 
-   'racket-mode '(lisp-vline-symbols t
-                  lisp-block-comments t
-                  guile-block-comments nil
-                  scheme-sexp-comments t
-                  janet-long-strings nil
-                  hy-bracket-strings nil)
+   'guile-mode '(:lisp-vline-symbols t
+                 :lisp-block-comments t
+                 :guile-block-comments t
+                 :scheme-sexp-comments t
+                 :janet-long-strings nil)
 
-   'guile-mode '(lisp-vline-symbols t
-                 lisp-block-comments t
-                 guile-block-comments t
-                 scheme-sexp-comments t
-                 janet-long-strings nil
-                 hy-bracket-strings nil)
-
-   'scheme-mode '(lisp-vline-symbols t
-                  lisp-block-comments t
-                  guile-block-comments nil
-                  scheme-sexp-comments t
-                  janet-long-strings nil
-                  hy-bracket-strings nil)
-   'hy-mode  '(lisp-vline-symbols nil
-               lisp-block-comments nil
-               guile-block-comments nil
-               scheme-sexp-comments nil
-               janet-long-strings nil
-               hy-bracket-strings t))
+   'scheme-mode '(:lisp-vline-symbols t
+                  :lisp-block-comments t
+                  :guile-block-comments nil
+                  :scheme-sexp-comments t
+                  :janet-long-strings nil))
   "Major mode specific options for `parinfer-rust-mode'."
   :type '(plist :value-type (plist
                              :key-type symbol
-                             :options (lisp-vline-symbols
-                                       lisp-block-comments
-                                       guile-block-comments
-                                       scheme-sexp-comments
-                                       janet-long-strings
-                                       hy-bracket-strings)
+                             :options (:lisp-vline-symbols
+                                       :lisp-block-comments
+                                       :guile-block-comments
+                                       :scheme-sexp-comments
+                                       :janet-long-strings)
                              :value-type boolean))
   :group 'parinfer-rust-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -430,7 +416,7 @@ parinfer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interfaces for parinfer-rust
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun parinfer-rust--set-options (previous-options new-options)
+(defun parinfer-rust--set-options (options new-options)
   "Update the `PREVIOUS-OPTIONS' with values in the plist `NEW-OPTIONS'.
 
 This mutates the current reference to `PREVIOUS-OPTIONS'
@@ -438,19 +424,24 @@ Ex:
   (parinfer-rust--set-options parinfer-rust--previous-options ;; '((cursor-x . 1) (cursor-line . 1))
                                '(cursor-x 2 cursor-line 2))
 ;;=> '((cursor-x . 2) (cursor-line . 2))"
-  (mapcar (lambda (options)
+  (mapcar (lambda (option)
             ;; Note to self set-option might need to clone in order to keep old option immutable
-            (parinfer-rust-set-option previous-options
-                                      (car options)
-                                      (cadr options)))
+            (parinfer-rust-set-option options
+                                      ;; Try using this intern if parinfer-rust complains about
+                                      ;; missing symbols
+                                      ;;
+                                      ;; (intern (substring (symbol-name (car options)) 1))
+                                      (car option)
+                                      (cadr option)))
              ;; partition plist into key-value pairs
-          (seq-partition new-options 2)))
+          (seq-partition new-options 2))
+  options)
 
 ;; Uncomment for example:
 ;; (let ((options (parinfer-rust-make-option)))
 ;;   (parinfer-rust--set-options
 ;;    options
-;;    '(force-balance t comment-char "\\"))
+;;    '(:force-balance t :comment-char "\\"))
 ;;   (parinfer-rust-print-options options))
 
 ;; The change interface and associated functions for change tracking
