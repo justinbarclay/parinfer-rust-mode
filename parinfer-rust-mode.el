@@ -137,7 +137,7 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-versions '("0.4.5" "0.4.3")
+(defconst parinfer-rust-supported-versions '("0.4.6" "0.4.3")
   "The Supported versions of the parinfer-rust library.
 
 Versions of the library that `parinfer-rust-mode' was tested
@@ -245,6 +245,70 @@ node `(elisp)Replacing'"
 
 (define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
 
+
+(defvar parinfer-rust--default-options '(lisp-vline-symbols nil
+                                         lisp-block-comments nil
+                                         guile-block-comments nil
+                                         scheme-sexp-comments nil
+                                         janet-long-strings nil
+                                         hy-bracket-strings nil))
+;; TODO: Make into a defcustom
+(defcustom parinfer-rust-major-mode-options
+  (list
+   'clojure-mode parinfer-rust--default-options
+
+   'janet-mode '(lisp-vline-symbols nil
+                 lisp-block-comments nil
+                 guile-block-comments nil
+                 scheme-sexp-comments nil
+                 janet-long-strings nil
+                 hy-bracket-strings nil)
+
+
+   'lisp-mode '(lisp-vline-symbols t
+                lisp-block-comments t
+                guile-block-comments nil
+                scheme-sexp-comments nil
+                janet-long-strings nil
+                hy-bracket-strings nil)
+
+   'racket-mode '(lisp-vline-symbols t
+                  lisp-block-comments t
+                  guile-block-comments nil
+                  scheme-sexp-comments t
+                  janet-long-strings nil
+                  hy-bracket-strings nil)
+
+   'guile-mode '(lisp-vline-symbols t
+                 lisp-block-comments t
+                 guile-block-comments t
+                 scheme-sexp-comments t
+                 janet-long-strings nil
+                 hy-bracket-strings nil)
+
+   'scheme-mode '(lisp-vline-symbols t
+                  lisp-block-comments t
+                  guile-block-comments nil
+                  scheme-sexp-comments t
+                  janet-long-strings nil
+                  hy-bracket-strings nil)
+   'hy-mode  '(lisp-vline-symbols nil
+               lisp-block-comments nil
+               guile-block-comments nil
+               scheme-sexp-comments nil
+               janet-long-strings nil
+               hy-bracket-strings t))
+  "Major mode specific options for `parinfer-rust-mode'."
+  :type '(plist :value-type (plist
+                             :key-type symbol
+                             :options (lisp-vline-symbols
+                                       lisp-block-comments
+                                       guile-block-comments
+                                       scheme-sexp-comments
+                                       janet-long-strings
+                                       hy-bracket-strings)
+                             :value-type boolean))
+  :group 'parinfer-rust-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -318,15 +382,18 @@ Used for toggling between paren mode and last active mode.")
 
 Good for switching modes, after an undo, or when first starting
 parinfer."
-  (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
-                                               (parinfer-rust-make-option)
-                                               (parinfer-rust-make-changes)))
-  (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties
-                                                   (point-min)
-                                                   (point-max)))
-  (setq-local parinfer-rust--changes nil)
-  (setq-local parinfer-rust--disable nil))
-
+  (let ((major-mode-defaults (or (plist-get parinfer-rust-major-mode-options major-mode)
+                                 parinfer-rust--default-options)))
+    (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
+                                                 (parinfer-rust--set-options
+                                                   (parinfer-rust-make-option)
+                                                   major-mode-defaults)
+                                                 (parinfer-rust-make-changes)))
+    (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties
+                                                     (point-min)
+                                                     (point-max)))
+    (setq-local parinfer-rust--changes nil)
+    (setq-local parinfer-rust--disable nil)))
 
 ;; The idea for this function:
 ;;
@@ -659,4 +726,7 @@ not available."
     (parinfer-rust-mode-enable))))
 
 (provide 'parinfer-rust-mode)
+;;; Local Variables:
+;;; lisp-indent-function: common-lisp-indent-function
+;;; End:
 ;;; parinfer-rust-mode.el ends here
