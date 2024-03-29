@@ -1,6 +1,6 @@
 ;;; parinfer-rust-helper.el --- Helper functions for parinfer-rust-mode   -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2020  Justin Barclay
+;; Copyright (C) 2019-2024  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 
