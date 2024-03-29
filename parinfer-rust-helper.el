@@ -119,7 +119,7 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
                          lib-name)
                  (expand-file-name library-location)))
         (message "Installing %s v%s to %s" lib-name parinfer-rust-version library-location))
-    (message "Unable to download parinfer-rust library because curl is not on $PATH")))
+    (warn "Unable to download parinfer-rust library because curl is not on $PATH")))
 
 (defun parinfer-rust--is-active-minor-mode (minor-mode-maybe)
   "Return non-nil if MINOR-MODE-MAYBE is active in the current buffer."
