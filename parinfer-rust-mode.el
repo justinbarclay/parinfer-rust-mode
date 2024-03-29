@@ -247,6 +247,71 @@ node `(elisp)Replacing'"
 
 (define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
 
+(defvar parinfer-rust--option-type '(plist
+                                     :key-type symbol
+                                     :options ((:force-balance boolean)
+                                               (:return-parens boolean)
+                                               (:partial-result boolean)
+                                               (:lisp-vline-symbols boolean)
+                                               (:lisp-block-comments boolean)
+                                               (:guile-block-comments boolean)
+                                               (:scheme-sexp-comments boolean)
+                                               (:janet-long-strings boolean)
+                                               (:comment-char string)
+                                               (:string-delimiters (repeat string)))
+                                     :value-type (choice boolean string (vector string)))
+  "The available options to pass to the parinfer-rust library.
+
+These options are used to configure the behavior of the
+parinfer-rust library to handle special cases in different lisps
+and schemes.
+
+The available options are:
+
+  - `:force-balance': employ the aggressive paren-balancing rules
+    from v1.
+    - Type: boolean
+    - Default: nil
+
+  - `:return-parens': return the parens in the result text.
+    - Type: boolean
+    - Default: nil
+
+  - `:partial-result': return partially processed text/cursor if
+    an error occurs
+
+    - Type: boolean
+    - Default: nil
+
+  - `:lisp-vline-symbols': recognize |lisp-style vline symbol|s.
+    - Type: boolean
+    - Default: nil
+
+  - `:lisp-block-comments': recognize |lisp-style vline symbol|s.
+    - Type: boolean
+    - Default: nil
+
+  - `:guile-block-comments': recognize #!/guile/block/comments \\n!#
+    - Type: boolean
+    - Default: nil
+
+  - `:scheme-sexp-comments': recognize #;( scheme sexp comments )
+    - Type: boolean
+    - Default: nil
+
+  - `:janet-long-strings': recognize ``` janet-style long strings ```
+    - Type: boolean
+    - Default: nil
+
+  - `:comment-char': a character (ie: string of length 1) that
+    should be considered comments in the code
+    - Type: string
+    - Default: \";\"
+
+  - `:string-delimiters' - the delimiters used for strings.
+    - Type: (vector string)
+    - Default: [\"\\\"\"]")
+
 
 (defvar parinfer-rust--default-options '(:force-balance nil
                                          :return-parens nil
@@ -257,44 +322,77 @@ node `(elisp)Replacing'"
                                          :scheme-sexp-comments nil
                                          :janet-long-strings nil
                                          :comment-char ";"
-                                         :string-delimiters ("\"")))
-;; TODO: Make into a defcustom
-(defcustom parinfer-rust-major-mode-options
-  (list
-   'clojure-mode parinfer-rust--default-options
+                                         :string-delimiters ["\""])
+  "The set of options parinfer-rust considers default.
 
-   'janet-mode '(:comment-char "#")
+This is here mainly as reference for what is available to pass to
+the library and what needs to be changed for major mode specific
+implementations.")
 
-   'lisp-mode '(:lisp-vline-symbols t
-                :lisp-block-comments t)
+(defcustom parinfer-rust-clojure-options '()
+  "Options to configure parinfer-rust for clojure mode.
 
-   'racket-mode '(:lisp-vline-symbols t
-                  :lisp-block-comments t
-                  :scheme-sexp-comments t)
-
-   'guile-mode '(:lisp-vline-symbols t
-                 :lisp-block-comments t
-                 :guile-block-comments t
-                 :scheme-sexp-comments t)
-
-   'scheme-mode '(:lisp-vline-symbols t
-                  :lisp-block-comments t
-                  :scheme-sexp-comments t))
-  "Major mode specific options for `parinfer-rust-mode'."
-  :type '(plist :value-type (plist
-                             :key-type symbol
-                             :options ((:force-balance boolean)
-                                       (:return-parens boolean)
-                                       (:partial-result boolean)
-                                       (:lisp-vline-symbols boolean)
-                                       (:lisp-block-comments boolean)
-                                       (:guile-block-comments boolean)
-                                       (:scheme-sexp-comments boolean)
-                                       (:janet-long-strings boolean)
-                                       (:comment-char string)
-                                       (:string-delimiters (repeat string)))
-                             :value-type (choice boolean string (repeat string))))
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
   :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-janet-options '(:comment-char "#")
+  "Options to configure parinfer-rust for janet.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-lisp-options '(:lisp-vline-symbols t
+                                        :lisp-block-comments t)
+  "Options to configure parinfer-rust for LISP.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-racket-options '(:lisp-vline-symbols t
+                                          :lisp-block-comments t
+                                          :scheme-sexp-comments t)
+  "Options to configure parinfer-rust for racket.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-guile-options '(:lisp-vline-symbols t
+                                         :lisp-block-comments t
+                                         :guile-block-comments t
+                                         :scheme-sexp-comments t)
+  "Options to configure parinfer-rust for guile.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-scheme-options '(:lisp-vline-symbols t
+                                          :lisp-block-comments t
+                                          :scheme-sexp-comments t)
+  "Options to configure parinfer-rust for scheme.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defvar parinfer-rust-major-mode-options
+  (list
+   'clojure-mode parinfer-rust-clojure-options
+
+   'janet-mode parinfer-rust-janet-options
+
+   'lisp-mode parinfer-rust-lisp-options
+
+   'racket-mode parinfer-rust-racket-options
+
+   'guile-mode parinfer-rust-guile-options
+
+   'scheme-mode parinfer-rust-scheme-options)
+  "Major mode specific options for that controls how the parinfer-rust library behaves.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -417,9 +515,9 @@ parinfer."
 ;; Interfaces for parinfer-rust
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun parinfer-rust--set-options (options new-options)
-  "Update the `PREVIOUS-OPTIONS' with values in the plist `NEW-OPTIONS'.
+  "Update the `OPTIONS' with values in the plist `NEW-OPTIONS'.
 
-This mutates the current reference to `PREVIOUS-OPTIONS'
+This mutates the current reference to `OPTIONS'
 Ex:
   (parinfer-rust--set-options parinfer-rust--previous-options ;; '((:cursor-x . 1) (:cursor-line . 1))
                                '(:cursor-x 2 :cursor-line 2))
@@ -706,7 +804,5 @@ not available."
     (parinfer-rust-mode-enable))))
 
 (provide 'parinfer-rust-mode)
-;;; Local Variables:
-;;; lisp-indent-function: common-lisp-indent-function
-;;; End:
+
 ;;; parinfer-rust-mode.el ends here
