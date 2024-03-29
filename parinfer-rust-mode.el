@@ -157,6 +157,8 @@ against and is known to be api compatible.")
   (declare-function parinfer-rust-debug "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-print-error "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-version "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-set-option "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-get-option "ext:parinfer-rust" t t)
   (defvar parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so")
@@ -246,54 +248,52 @@ node `(elisp)Replacing'"
 (define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
 
 
-(defvar parinfer-rust--default-options '(:lisp-vline-symbols nil
+(defvar parinfer-rust--default-options '(:force-balance nil
+                                         :return-parens nil
+                                         :partial-result nil
+                                         :lisp-vline-symbols nil
                                          :lisp-block-comments nil
                                          :guile-block-comments nil
                                          :scheme-sexp-comments nil
-                                         :janet-long-strings nil))
+                                         :janet-long-strings nil
+                                         :comment-char ";"
+                                         :string-delimiters ("\"")))
 ;; TODO: Make into a defcustom
 (defcustom parinfer-rust-major-mode-options
   (list
    'clojure-mode parinfer-rust--default-options
 
-   'janet-mode '(:lisp-vline-symbols nil
-                 :lisp-block-comments nil
-                 :guile-block-comments nil
-                 :scheme-sexp-comments nil
-                 :janet-long-strings nil)
+   'janet-mode '(:comment-char "#")
 
    'lisp-mode '(:lisp-vline-symbols t
-                :lisp-block-comments t
-                :guile-block-comments nil
-                :scheme-sexp-comments nil
-                :janet-long-strings nil)
+                :lisp-block-comments t)
 
    'racket-mode '(:lisp-vline-symbols t
                   :lisp-block-comments t
-                  :guile-block-comments nil
-                  :scheme-sexp-comments t
-                  :janet-long-strings nil)
+                  :scheme-sexp-comments t)
 
    'guile-mode '(:lisp-vline-symbols t
                  :lisp-block-comments t
                  :guile-block-comments t
-                 :scheme-sexp-comments t
-                 :janet-long-strings nil)
+                 :scheme-sexp-comments t)
 
    'scheme-mode '(:lisp-vline-symbols t
                   :lisp-block-comments t
-                  :guile-block-comments nil
-                  :scheme-sexp-comments t
-                  :janet-long-strings nil))
+                  :scheme-sexp-comments t))
   "Major mode specific options for `parinfer-rust-mode'."
   :type '(plist :value-type (plist
                              :key-type symbol
-                             :options (:lisp-vline-symbols
-                                       :lisp-block-comments
-                                       :guile-block-comments
-                                       :scheme-sexp-comments
-                                       :janet-long-strings)
-                             :value-type boolean))
+                             :options ((:force-balance boolean)
+                                       (:return-parens boolean)
+                                       (:partial-result boolean)
+                                       (:lisp-vline-symbols boolean)
+                                       (:lisp-block-comments boolean)
+                                       (:guile-block-comments boolean)
+                                       (:scheme-sexp-comments boolean)
+                                       (:janet-long-strings boolean)
+                                       (:comment-char string)
+                                       (:string-delimiters (repeat string)))
+                             :value-type (choice boolean string (repeat string))))
   :group 'parinfer-rust-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
@@ -421,28 +421,17 @@ parinfer."
 
 This mutates the current reference to `PREVIOUS-OPTIONS'
 Ex:
-  (parinfer-rust--set-options parinfer-rust--previous-options ;; '((cursor-x . 1) (cursor-line . 1))
-                               '(cursor-x 2 cursor-line 2))
-;;=> '((cursor-x . 2) (cursor-line . 2))"
+  (parinfer-rust--set-options parinfer-rust--previous-options ;; '((:cursor-x . 1) (:cursor-line . 1))
+                               '(:cursor-x 2 :cursor-line 2))
+;;=> '((:cursor-x . 2) (:cursor-line . 2))"
   (mapcar (lambda (option)
             ;; Note to self set-option might need to clone in order to keep old option immutable
             (parinfer-rust-set-option options
-                                      ;; Try using this intern if parinfer-rust complains about
-                                      ;; missing symbols
-                                      ;;
-                                      ;; (intern (substring (symbol-name (car options)) 1))
                                       (car option)
                                       (cadr option)))
              ;; partition plist into key-value pairs
           (seq-partition new-options 2))
   options)
-
-;; Uncomment for example:
-;; (let ((options (parinfer-rust-make-option)))
-;;   (parinfer-rust--set-options
-;;    options
-;;    '(:force-balance t :comment-char "\\"))
-;;   (parinfer-rust-print-options options))
 
 ;; The change interface and associated functions for change tracking
 ;; can be found in parinfer-rust-changes.el
