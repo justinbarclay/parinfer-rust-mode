@@ -159,9 +159,8 @@ against and is known to be api compatible.")
   (declare-function parinfer-rust-new-options "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-make-request "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-execute "ext:parinfer-rust" t t)
-  (declare-function parinfer-rust-get-in-answer "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-get-answer "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-debug "ext:parinfer-rust" t t)
-  (declare-function parinfer-rust-print-error "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-version "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-set-option "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-get-option "ext:parinfer-rust" t t)
@@ -596,13 +595,13 @@ CHANGES."
                                                                                   (point-max))
                                                   options))
              (answer (parinfer-rust-execute request))
-             (replacement-string (parinfer-rust-get-in-answer answer "text"))
-             (error-p (parinfer-rust-get-in-answer answer "error")))
+             (replacement-string (parinfer-rust-get-answer answer :text))
+             (error-p (parinfer-rust-get-answer answer :error)))
         (when (and (local-variable-if-set-p 'parinfer-rust--in-debug)
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
         (if error-p
-            (message "%s" (parinfer-rust-print-error error-p)) ;; TODO handle errors
+            (message "%s" error-p) ;; TODO handle errors
           ;; This stops Emacs from flickering when scrolling
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string))
               (save-mark-and-excursion
@@ -621,8 +620,8 @@ CHANGES."
                     (replace-buffer-contents new-buf 1))
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
-        (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
-                   (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
+        (when-let ((new-x (parinfer-rust-get-answer answer :cursor-x))
+                   (new-line (parinfer-rust-get-answer answer :cursor-line)))
           (parinfer-rust--reposition-cursor new-x new-line))
         (setq parinfer-rust--previous-options options)
         (when parinfer-rust--change-tracker
