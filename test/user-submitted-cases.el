@@ -44,6 +44,25 @@
                                                           (plist-get test :commands))
       (plist-get test :after)))))
 
+(ert-deftest setting-options-works ()
+  (let* ((settings (list :lisp-vline-symbols t
+                     :lisp-block-comments t
+                     :guile-block-comments nil
+                     :scheme-sexp-comments t
+                     :janet-long-strings nil
+                     :comment-char "#"
+                     :string-delimiters (vector "\"")))
+         (keys (mapcar #'car (seq-partition settings 2)))
+         (options (parinfer-rust-make-option)))
+    (parinfer-rust--set-options
+     options
+     settings)
+    (equal settings
+           (cl-reduce (lambda (acc key)
+                        (append acc  (list key (parinfer-rust-get-option options key))))
+                      keys
+                      :initial-value '()))))
+
 ;; This covers issue #9
 ;; we expect fill paragraph to not cause the rest of the buffer to be realigned
 ;; This requires clojure-mode... need to think about _including_ this mode specific test
@@ -220,3 +239,7 @@
                                                           (plist-get test :commands)
                                                           (plist-get test :setup))
       (plist-get test :after)))))
+
+;;; Local Variables:
+;;; lisp-indent-function: common-lisp-indent-function
+;;; End:
