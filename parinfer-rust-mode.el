@@ -27,6 +27,12 @@
 
 ;; An intuitive editor mode to make paren management fun and easy without sacrificing power.
 
+;; Installation:
+;;
+;; If you're on Windows, Linux, or Arm Mac parinfer-rust will attempt to install the parinfer-rust
+;; library for you. However, if you want you can compile the library from source at:
+;; https://github.com/justinbarclay/parinfer-rust.
+
 ;; How it works:
 
 ;; Parinfer users the state of the buffer combined with the current mode (paren, indent, or smart)
