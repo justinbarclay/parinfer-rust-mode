@@ -31,7 +31,7 @@
 (require 'url)
 
 (defcustom parinfer-rust-troublesome-modes
-  '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode)
+  '(electric-pair-mode hungry-delete-mode global-hungry-delete-mode indent-tabs-mode)
   "Modes that may conflict when run alongside `parinfer-rust-mode'.
 
 To disable checking for troublesome modes set this to an empty
