@@ -258,11 +258,18 @@ against and is known to be api compatible.")
     (counsel-yank-pop . "paren")
     (evil-open-above . "paren")
     (evil-change-whole-line . "paren")
-    (quoted-insert . "paren")
+    (quoted-insert . "paren"))
   "Commands to run with certain Parinfer mode.
 
 A curated list of pairs consisting of a command and the mode the
-command should be run in."))
+command should be run in.")
+
+(defvar parinfer-rust--buffer-replace-strategy 'safe
+  "The strategy to use when replacing the buffer with the new text.
+
+When `safe' the buffer is replaced using the `buffer-watcher'.
+When `fast' the buffer is replaced using `delete-region' and
+`insert-buffer-substring'.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
@@ -418,6 +425,13 @@ CHANGES."
                       (new-buf (get-buffer-create "*parinfer*")))
                   (switch-to-buffer new-buf)
                   (insert replacement-string)
+                  (if (eq parinfer-rust--buffer-replace-strategy
+                          'fast)
+                      (progn
+                        (delete-region (point-min)
+                                       (point-max))
+                        (insert-buffer-substring new-buf))
+                    (replace-buffer-contents new-buf 1))
                   (switch-to-buffer current)
                   (replace-buffer-contents new-buf)
                   (kill-buffer new-buf)
