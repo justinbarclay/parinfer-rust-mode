@@ -142,6 +142,7 @@ it makes no sense to convert it to a string using
                                     (parinfer-rust-version)
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)
+      (indent-tabs-mode 0)
       (parinfer-rust-mode-enable)
       ;; Disable checks for deferral and do not run --execute on initialization
       ;; this breaks a lot of test because they expect the buffer to be in a specific state

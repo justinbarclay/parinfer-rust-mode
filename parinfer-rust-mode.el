@@ -425,6 +425,7 @@ CHANGES."
                       (new-buf (get-buffer-create "*parinfer*")))
                   (switch-to-buffer new-buf)
                   (insert replacement-string)
+                  (switch-to-buffer current)
                   (if (eq parinfer-rust--buffer-replace-strategy
                           'fast)
                       (progn
@@ -432,8 +433,6 @@ CHANGES."
                                        (point-max))
                         (insert-buffer-substring new-buf))
                     (replace-buffer-contents new-buf 1))
-                  (switch-to-buffer current)
-                  (replace-buffer-contents new-buf)
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
         (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
