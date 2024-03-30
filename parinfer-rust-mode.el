@@ -387,16 +387,15 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 (defvar parinfer-rust-major-mode-options
   (list
    'clojure-mode parinfer-rust-clojure-options
-
+   'clojurec-mode parinfer-rust-clojure-options
+   'clojurescript-mode parinfer-rust-clojure-options
    'janet-mode parinfer-rust-janet-options
-
-   'lisp-mode parinfer-rust-lisp-options
-
+   'common-lisp-mode parinfer-rust-lisp-options
    'racket-mode parinfer-rust-racket-options
-
-   'guile-mode parinfer-rust-guile-options
-
-   'scheme-mode parinfer-rust-scheme-options)
+   'scheme-mode parinfer-rust-scheme-options
+   ;; This doesn't work - there is no guile mode but I am not sure what we can
+   ;; use to set guile specific options
+   'guile-mode parinfer-rust-guile-options)
   "Major mode specific options for that controls how the parinfer-rust library behaves.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
