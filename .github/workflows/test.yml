@@ -19,5 +19,4 @@ jobs:
     - name: Check emacs version
       run: emacs --version
     - name: Check
-      continue-on-error: true
       run: nix develop -c make test

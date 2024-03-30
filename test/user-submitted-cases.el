@@ -240,6 +240,15 @@
                                                           (plist-get test :setup))
       (plist-get test :after)))))
 
+(ert-deftest handles-brackets-in-strings ()
+  (let ((before
+         "(map! \"] E\")")
+        (changes
+         nil)
+        (after
+         "(map! \"] E\")"))
+    (should (equal (simulate-parinfer-in-another-buffer before "paren" changes)
+                   after))))
 ;;; Local Variables:
 ;;; lisp-indent-function: common-lisp-indent-function
 ;;; End:

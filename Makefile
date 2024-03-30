@@ -30,7 +30,7 @@ version:
 download:
 ifeq (,$(wildcard $(HOME)/.emacs.d/parinfer-rust/parinfer-rust-$(OS).so))
 	mkdir -p $(HOME)/.emacs.d/parinfer-rust
-	curl -L "https://github.com/justinbarclay/parinfer-rust-emacs/releases/download/v0.4.5/parinfer-rust-$(OS).so" -o "$(HOME)/.emacs.d/parinfer-rust-emacs/parinfer-rust-$(OS).so"
+	curl -L "https://github.com/justinbarclay/parinfer-rust-emacs/releases/download/v0.4.6-beta1/parinfer-rust-$(OS).so" -o "$(HOME)/.emacs.d/parinfer-rust-emacs/parinfer-rust-$(OS).so"
 endif
 
 test: clean elpa version download build
