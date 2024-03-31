@@ -143,7 +143,7 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-versions '("0.4.6-beta1")
+(defconst parinfer-rust-supported-versions '("0.4.6-beta2")
   "The Supported versions of the parinfer-rust library.
 
 Versions of the library that `parinfer-rust-mode' was tested
@@ -264,7 +264,7 @@ node `(elisp)Replacing'"
                                                (:janet-long-strings boolean)
                                                (:comment-char string)
                                                (:string-delimiters (repeat string)))
-                                     :value-type (choice boolean string (vector string)))
+                                     :value-type (choice boolean string (repeat string)))
   "The available options to pass to the parinfer-rust library.
 
 These options are used to configure the behavior of the
@@ -314,8 +314,8 @@ The available options are:
     - Default: \";\"
 
   - `:string-delimiters' - the delimiters used for strings.
-    - Type: (vector string)
-    - Default: [\"\\\"\"]")
+    - Type: (repeat string)
+    - Default: (\"\\\"\")")
 
 
 (defvar parinfer-rust--default-options '(:force-balance nil
@@ -327,8 +327,8 @@ The available options are:
                                          :scheme-sexp-comments nil
                                          :janet-long-strings nil
                                          :comment-char ";"
-                                         :string-delimiters ["\""])
-  "The set of options parinfer-rust considers default.
+                                         :string-delimiters ("\""))
+   "The set of options parinfer-rust considers default.
 
 This is here mainly as reference for what is available to pass to
 the library and what needs to be changed for major mode specific

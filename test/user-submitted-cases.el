@@ -51,7 +51,7 @@
                      :scheme-sexp-comments t
                      :janet-long-strings nil
                      :comment-char "#"
-                     :string-delimiters (vector "\"")))
+                     :string-delimiters (list "\"")))
          (keys (mapcar #'car (seq-partition settings 2)))
          (options (parinfer-rust-make-option)))
     (parinfer-rust--set-options
