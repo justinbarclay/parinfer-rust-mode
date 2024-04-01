@@ -180,6 +180,10 @@ against and is known to be api compatible.")
 
 (defconst parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                                   ((or
+                                     (eq system-type 'gnu/berkley)
+                                     (eq system-type 'berkley-unix))
+                                    "parinfer-rust-freebsd.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so")
                                    ((eq system-type 'windows-nt) "parinfer-rust-windows.dll"))
   "System dependent library name for `parinfer-rust-mode'.")
