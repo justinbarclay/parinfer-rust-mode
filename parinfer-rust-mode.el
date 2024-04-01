@@ -292,7 +292,7 @@ The available options are:
     - Type: boolean
     - Default: nil
 
-  - `:lisp-block-comments': recognize |lisp-style vline symbol|s.
+  - `:lisp-block-comments': recognize #|lisp-style block comments|#.
     - Type: boolean
     - Default: nil
 
