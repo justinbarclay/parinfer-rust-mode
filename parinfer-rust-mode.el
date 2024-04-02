@@ -180,6 +180,10 @@ against and is known to be api compatible.")
 
 (defconst parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                                   ((or
+                                     (eq system-type 'gnu/berkley)
+                                     (eq system-type 'berkley-unix))
+                                    "parinfer-rust-freebsd.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so")
                                    ((eq system-type 'windows-nt) "parinfer-rust-windows.dll"))
   "System dependent library name for `parinfer-rust-mode'.")
@@ -565,35 +569,40 @@ not available."
   :lighter (:eval (concat " parinfer:" parinfer-rust--mode))
   :init-value nil
   :keymap parinfer-rust-mode-map
-  (if parinfer-rust-enabled
-      (parinfer-rust-mode-disable)
+  (cond
+   (parinfer-rust-enabled
+    (parinfer-rust-mode-disable))
+   ((not (eq (current-buffer)
+             (window-buffer (selected-window))))
+    (add-hook 'window-selection-change-functions #'parinfer-rust--defer-loading nil t))
+   (t
     (progn
-      ;; Make sure the library is installed at the appropriate location or offer to download it
-      (when (parinfer-rust--check-for-library parinfer-rust-supported-versions
-                                              parinfer-rust-library
-                                              parinfer-rust--lib-name
-                                              parinfer-rust-auto-download)
-        (require 'parinfer-rust parinfer-rust-library t))
-      ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
-      ;; reload dynamic libraries, which means that if we download a new library the user has to
-      ;; restart Emacs for changes to take effect.
-      (parinfer-rust--check-version parinfer-rust-supported-versions
-                                    (parinfer-rust-version)
-                                    parinfer-rust-library
-                                    parinfer-rust--lib-name)
-      (parinfer-rust-mode-enable)
-      (cond ((or (eq 'defer parinfer-rust-check-before-enable)
-                 buffer-read-only)
-             ;; Defer checking for changes until a user changes the buffer
-             (setq-local parinfer-rust--disable t)
-             (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
+     ;; Make sure the library is installed at the appropriate location or offer to download it
+     (when (parinfer-rust--check-for-library parinfer-rust-supported-versions
+                                             parinfer-rust-library
+                                             parinfer-rust--lib-name
+                                             parinfer-rust-auto-download)
+       (require 'parinfer-rust parinfer-rust-library t))
+     ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
+     ;; reload dynamic libraries, which means that if we download a new library the user has to
+     ;; restart Emacs for changes to take effect.
+     (parinfer-rust--check-version parinfer-rust-supported-versions
+                                   (parinfer-rust-version)
+                                   parinfer-rust-library
+                                   parinfer-rust--lib-name)
+     (parinfer-rust-mode-enable)
+     (cond ((or (eq 'defer parinfer-rust-check-before-enable)
+                buffer-read-only)
+            ;; Defer checking for changes until a user changes the buffer
+            (setq-local parinfer-rust--disable t)
+            (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
 
-            ((eq 'immediate parinfer-rust-check-before-enable)
-             (setq-local parinfer-rust--disable t)
-             (parinfer-rust--check-for-issues))
+           ((eq 'immediate parinfer-rust-check-before-enable)
+            (setq-local parinfer-rust--disable t)
+            (parinfer-rust--check-for-issues))
 
-            (t (let ((parinfer-rust--mode "paren"))
-                 (parinfer-rust--execute)))))))
+           (t (let ((parinfer-rust--mode "paren"))
+                (parinfer-rust--execute))))))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here

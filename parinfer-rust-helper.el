@@ -50,6 +50,13 @@ Set this to non-nil to disable troublesome modes without prompting."
 (defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst parinfer-rust--outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
+(defvar  parinfer-rust--download-url "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s"
+  "The url to download the parinfer-rust library from.
+
+This should be a format string that takes two arguments, the
+first is the version of the library and the second is the name of
+the library.")
+
 (defun parinfer-rust--check-for-library (supported-versions
                                          library-location
                                          lib-name
@@ -89,6 +96,7 @@ offer to download the LIB-NAME to LIBRARY-LOCATION."
     (parinfer-rust--download-from-github (car supported-versions) library-location lib-name)
     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
 
+
 (defun parinfer-rust--download-from-github (parinfer-rust-version
                                             library-location
                                             lib-name)
@@ -101,7 +109,7 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
           (make-directory (file-name-directory library-location) t))
         (shell-command
          (format "curl -L %s -o %s"
-                 (format "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s"
+                 (format parinfer-rust--download-url
                          parinfer-rust-version
                          lib-name)
                  (expand-file-name library-location)))
@@ -227,7 +235,12 @@ mode to better emulate users."
     (cond ((< num 0) 0)
           ((> num max) max)
           (t num))))
-
+(defun parinfer-rust--defer-loading (&rest _)
+  "Defer loading of `parinfer-rust-mode' until the buffer is in focus."
+  (when (eq (current-buffer)
+            (window-buffer (selected-window)))
+    (remove-hook 'window-selection-change-functions #'parinfer-rust--defer-loading t)
+    (parinfer-rust-mode)))
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.
 ;; Local Variables:
