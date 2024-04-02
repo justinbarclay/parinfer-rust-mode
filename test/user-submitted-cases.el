@@ -46,12 +46,12 @@
 
 (ert-deftest setting-options-works ()
   (let* ((settings (list :lisp-vline-symbols t
-                     :lisp-block-comments t
-                     :guile-block-comments nil
-                     :scheme-sexp-comments t
-                     :janet-long-strings nil
-                     :comment-char "#"
-                     :string-delimiters (list "\"")))
+                         :lisp-block-comments t
+                         :guile-block-comments nil
+                         :scheme-sexp-comments t
+                         :janet-long-strings nil
+                         :comment-char "#"
+                         :string-delimiters (list "\"")))
          (keys (mapcar #'car (seq-partition settings 2)))
          (options (parinfer-rust-make-option)))
     (parinfer-rust--set-options
@@ -69,8 +69,8 @@
 (ert-deftest user-fill-paragraph ()
   (let ((test
          '(:setup (clojure-mode)
-                  :before
-                  "(ns some-namespace.core
+           :before
+           "(ns some-namespace.core
   (:import [java.util.concurrent Executors])
   (:require [clojure.string :as string]))
 
@@ -78,8 +78,8 @@
   \"pretty long docsting that will be affected by `fill-paragraph` function\"
   [x]
   x)"
-                  :after
-                  "(ns some-namespace.core
+           :after
+           "(ns some-namespace.core
   (:import [java.util.concurrent Executors])
   (:require [clojure.string :as string]))
 
@@ -88,7 +88,7 @@
   function\"
   [x]
   x)"
-                  :commands (((:lineNo 6 :column 4) fill-paragraph)))))
+           :commands (((:lineNo 6 :column 4) fill-paragraph)))))
     (should
      (string=
       (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
@@ -102,8 +102,7 @@
 (ert-deftest use-paredit-barf-sexp ()
   (let ((test
          '(:setup
-           (clojure-mode paredit-mode
-                         )
+           (clojure-mode paredit-mode)
            :before
            "(foo- _foo [foo foo]
       (foo/foo foo {:foo foo-foo
@@ -166,21 +165,21 @@
     (add-to-list 'parinfer-rust-treat-command-as '(indent-buffer . "paren")))
   (let ((test
          '(:setup (clojure-mode add-func-to-treat-command-as)
-                  :before
-                  "               (defn vaiv []
+           :before
+           "               (defn vaiv []
         \"I am incorrect\"
    (let
  [a 1
          b 2]
                       (+ a b)))"
-                  :after
-                  "(defn vaiv []
+           :after
+           "(defn vaiv []
   \"I am incorrect\"
   (let
       [a 1
        b 2]
     (+ a b)))"
-                  :commands (((:lineNo 0 :column 0) indent-buffer)))))
+           :commands (((:lineNo 0 :column 0) indent-buffer)))))
     (should
      (string=
       (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
@@ -228,10 +227,10 @@
 (ert-deftest doesnt-handles-utf-8 ()
   (let ((test
          '(:before
-                  "(func 中)"
-                  :after
-                  "(func 中 )"
-                  :commands (((:lineNo 0 :column 8) (lambda () (insert " ")))))))
+           "(func 中)"
+           :after
+           "(func 中 )"
+           :commands (((:lineNo 1 :column 8) (lambda () (insert " ")))))))
     (should-not
      (string=
       (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
@@ -249,6 +248,31 @@
          "(map! \"] E\")"))
     (should (equal (simulate-parinfer-in-another-buffer before "paren" changes)
                    after))))
+
+(ert-deftest handles-deleting-whitespace-before-sexp ()
+  (let ((test
+         '(:before
+           "(thing
+ (defmacro foo nil
+  :a b
+  :b c
+  \"A doc comment\"))"
+           :after "(thing)
+(defmacro foo nil
+  :a b
+  :baz bar
+  :version \"29.1\"
+  \"A doc comment\")"
+           :commands (((:lineNo 2 :column 1) (lambda () (delete-backward-char 1)))
+                      ((:lineNo 1 :column 5) newline-and-indent)
+                      ((:lineNo 2 :column 1) (lambda () (delete-backward-char 1)))))))
+    (should-not
+     (string=
+      (simulate-parinfer-in-another-buffer--with-commands (plist-get test :before)
+                                                          "smart"
+                                                          (plist-get test :commands)
+                                                          (plist-get test :setup))
+      (plist-get test :after)))))
 ;;; Local Variables:
 ;;; lisp-indent-function: common-lisp-indent-function
 ;;; End:
