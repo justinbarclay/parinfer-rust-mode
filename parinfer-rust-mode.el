@@ -4,7 +4,7 @@
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.8.5
+;; Version: 0.8.6
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: lisp tools
 
@@ -137,7 +137,7 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-versions '("0.4.4" "0.4.3")
+(defconst parinfer-rust-supported-versions '("0.4.5" "0.4.3")
   "The Supported versions of the parinfer-rust library.
 
 Versions of the library that `parinfer-rust-mode' was tested
