@@ -3,6 +3,8 @@
 [[https://melpa.org/#/parinfer-rust-mode][file:https://melpa.org/packages/parinfer-rust-mode-badge.svg]]
 [[https://stable.melpa.org/#/parinfer-rust-mode][file:https://stable.melpa.org/packages/parinfer-rust-mode-badge.svg]]
 
+[[file:https://raw.githubusercontent.com/ocodo/parinfer-logo/master/pngs/parinfer-org-logo-128x128.png]]
+
 * Parinfer
   [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library is a minimalistic wrapper around [[https://github.com/eraserhd/parinfer-rust][eraserhd/parinfer-rust]] to provide an Emacs minor mode. parinfer-rust-mode aims to be a simpler adaptation of Parinfer that only offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
 ** Capabilities:
