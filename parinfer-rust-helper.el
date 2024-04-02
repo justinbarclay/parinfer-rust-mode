@@ -235,7 +235,12 @@ mode to better emulate users."
     (cond ((< num 0) 0)
           ((> num max) max)
           (t num))))
-
+(defun parinfer-rust--defer-loading (&rest _)
+  "Defer loading of `parinfer-rust-mode' until the buffer is in focus."
+  (when (eq (current-buffer)
+            (window-buffer (selected-window)))
+    (remove-hook 'window-selection-change-functions #'parinfer-rust--defer-loading t)
+    (parinfer-rust-mode)))
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.
 ;; Local Variables:
