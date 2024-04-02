@@ -33,22 +33,33 @@ After that add it to your load path and go wild.
 Alternatively, you can tell something like [[https://github.com/quelpa/quelpa-use-package][use-package]] to manage it for you.
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
-    :hook emacs-lisp-mode)    
+    :hook emacs-lisp-mode)
 #+END_SRC
 
 *** parinfer-rust library
 You'll also need to have the library installed on your system for you somewhere.
 **** Option 1: Let Parinfer Rust install it for you
-That's it. There are no instructions here.[1] When parinfer-rust-mode prompts you to download the library, say yes. ~parinfer-rust-mode~ will then use curl to download ~parinfer-rust~ and save it in ~${EMACS_DIRECTORY}/parinfer-rust/~.
+That's it. There are no instructions here. When parinfer-rust-mode prompts you to download the library, say yes. ~parinfer-rust-mode~ will then use curl to download ~parinfer-rust~ and save it in ~${EMACS_DIRECTORY}/parinfer-rust/~.
 
-If you're curious, you can find the library files that parinfer-rust-mode downloads as release artifacts for [[https://github.com/eraserhd/parinfer-rust/releases/tag/v0.4.3][parinfer-rust]].
+/Supported OS & Arch[fn:1]/
+#+NAME: Supported OS
+| Operating System | Architecture |
+| Windows          | x86_64       |
+| Darwin           | aarch64      |
+| Linux            | x86_64       |
+| Freebsd          | x86_64       |
+#+BEGIN_QUOTE
+List of supported operating systems and the architecture for which libraries are prebuilt
+#+END_QUOTE
+
+If you're curious, you can find the library files that parinfer-rust-mode downloads as release artifacts for [[https://github.com/eraserhd/parinfer-rust/releases][parinfer-rust-emacs]].
 
 If you would always like parinfer-rust-mode to keep the library version in sync for you, automatically download it, then add the following line into your config:
 #+BEGIN_SRC emacs-lisp
 (setq parinfer-rust-auto-download t)
 #+END_SRC
 
-If you are using the `use-package` snippet from above, that would look like:
+If you are using the ==use-package== snippet from above, that would look like:
 #+BEGIN_SRC emacs-lisp
   (use-package parinfer-rust-mode
       :hook emacs-lisp-mode
@@ -56,8 +67,7 @@ If you are using the `use-package` snippet from above, that would look like:
       (setq parinfer-rust-auto-download t))
 #+END_SRC
 
-[1] parinfer-rust-mode only supports auto-installing for Windows, Linux, and Arm MacOS. If you are running an intel mac you will need to compile yourself with as outlined in Option 2.
-
+[fn:1] Don't see your OS/Arch on here? Feel free to open up a PR at [[https://github.com/justinbarclay/parinfer-rust][parinfer-rust-emacs]] and add your OS to the GitHub actions.
 **** Option 2: Building library from sources
 For the more adventurous of you, you can also download the ~parinfer-rust~ library from source and compile it.
 ***** Step 1: Build the Parinfer Rust library
@@ -127,7 +137,7 @@ parinfer-rust-mode is purposefully light on option, but it does give a few optio
   #+BEGIN_QUOTE
    default: ~/.emacs.d/parinfer-rust/parinfer-rust-*.so
   #+END_QUOTE
-  
+
 - ~parinfer-rust-preferred-mode~
 
   The mode you want parinfer-rust-mode to start in.
@@ -142,7 +152,7 @@ parinfer-rust-mode is purposefully light on option, but it does give a few optio
 - ~parinfer-rust-check-before-enable~
 
   Perform check on indentation before enabling `parinfer-rust-mode'
-  
+
   If Parinfer detects that it needs to change the indentation in the before first running, it will prompt the user whether it is OK to adjust the indentation. If the user disagrees Parinfer will disable itself. The user may choose to get the prompt immediately whenever parinfer-rust-mode is enabled, defer it until the first change in the buffer, or disable it and never receive a prompt. When disabled, parinfer-rust-mode will run automatically balance the indentation for the user.
 
 Options:
@@ -198,12 +208,12 @@ Is parinfer misbehaving in ~smart-mode~? This could be due to a bug or because s
 
 You can extend to parinfer-rust-treat-command-as using ~add-to-list~ as shown below:
 #+BEGIN_SRC elisp
-  (add-to-list 'parinfer-rust-treat-command-as '(your-command . "paren")) 
+  (add-to-list 'parinfer-rust-treat-command-as '(your-command . "paren"))
   ;;or
   (add-to-list 'parinfer-rust-treat-command-as '(your-command . "indent"))
 #+END_SRC
 ** Contributing
-If you'd like to help contribute to the development of ~parinfer-rust-mode~ the only caveat interesting section of note is the testing framework. 
+If you'd like to help contribute to the development of ~parinfer-rust-mode~ the only caveat interesting section of note is the testing framework.
 
 ~parinfer-rust-mode~ relies on [[https://github.com/cask/cask][Cask]] to manage development libraries and to set-up the tests themselves.
 
