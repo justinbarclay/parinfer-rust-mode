@@ -240,7 +240,7 @@ mode to better emulate users."
   (when (eq (current-buffer)
             (window-buffer (selected-window)))
     (remove-hook 'window-selection-change-functions #'parinfer-rust--defer-loading t)
-    (parinfer-rust-mode)))
+    (parinfer-rust-mode-enable)))
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.
 ;; Local Variables:

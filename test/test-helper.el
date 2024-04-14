@@ -143,10 +143,9 @@ it makes no sense to convert it to a string using
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)
       (indent-tabs-mode 0)
-      (parinfer-rust-mode-enable)
       ;; Disable checks for deferral and do not run --execute on initialization
       ;; this breaks a lot of test because they expect the buffer to be in a specific state
-      )))
+      (parinfer-rust-mode-setup))))
 
 (defun simulate-parinfer-in-another-buffer--without-changes (test-string mode)
   "Run parinfer on buffer using text and cursor position
