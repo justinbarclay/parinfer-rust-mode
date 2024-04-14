@@ -1,4 +1,4 @@
-;;; indent-parinfer-tests.el --- Auto generates tests based on a json file  -*- lexical-binding: nil; -*-
+;;; user-submitted-cases.el --- User submitted test cases  -*- lexical-binding: nil; -*-
 ;; Copyright (C) 2019  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
