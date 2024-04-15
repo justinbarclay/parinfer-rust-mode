@@ -503,7 +503,7 @@ Checks if MODE is a valid Parinfer mode, and uses
   (parinfer-rust--set-default-state)
   (parinfer-rust--dim-parens))
 
-(defun parinfer-rust-mode-enable ()
+(defun parinfer-rust-mode-setup ()
   "Enable Parinfer."
   (setq-local parinfer-rust-enabled t)
   (parinfer-rust--detect-troublesome-modes)
@@ -534,6 +534,39 @@ This includes stopping tracking of all changes."
   (if parinfer-rust--disable
       (setq-local parinfer-rust--disable nil)
     (setq-local parinfer-rust--disable t)))
+
+(defun parinfer-rust-mode-enable ()
+  "Enable Parinfer."
+  ;; Make sure the library is installed at the appropriate location or offer to download it
+  (if (parinfer-rust--check-for-library parinfer-rust-supported-versions
+                                        parinfer-rust-library
+                                        parinfer-rust--lib-name
+                                        parinfer-rust-auto-download)
+      (progn
+        (require 'parinfer-rust parinfer-rust-library t)
+        ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
+        ;; reload dynamic libraries, which means that if we download a new library the user has to
+        ;; restart Emacs for changes to take effect.
+        (parinfer-rust--check-version parinfer-rust-supported-versions
+                                      (parinfer-rust-version)
+                                      parinfer-rust-library
+                                      parinfer-rust--lib-name)
+        (parinfer-rust-mode-setup)
+        (cond ((or (eq 'defer parinfer-rust-check-before-enable)
+                   buffer-read-only)
+               ;; Defer checking for changes until a user changes the buffer
+               (setq-local parinfer-rust--disable t)
+               (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
+
+              ((eq 'immediate parinfer-rust-check-before-enable)
+               (setq-local parinfer-rust--disable t)
+               (parinfer-rust--check-for-issues))
+
+              (t (let ((parinfer-rust--mode "paren"))
+                   (parinfer-rust--execute)))))
+    (progn
+      (message "Unable to load library parinfer-rust disabling parinfer-rust-mode")
+      (parinfer-rust-mode-disable))))
 
 ;;;###autoload
 (defun parinfer-rust-switch-mode ()
@@ -572,37 +605,16 @@ not available."
   (cond
    (parinfer-rust-enabled
     (parinfer-rust-mode-disable))
+   ;; Don't do anything if the buffer is not selected
+   ;; TODO: Come up with a better way to defer and disable loading
+   ;; Defer waits for window selection change and disabled waits for a change event
+   ;; there is also the idea of deferring the running of parinfer vs deferring the loading
    ((not (eq (current-buffer)
              (window-buffer (selected-window))))
+    (setq-local parinfer-rust-enabled t)
     (add-hook 'window-selection-change-functions #'parinfer-rust--defer-loading nil t))
    (t
-    (progn
-     ;; Make sure the library is installed at the appropriate location or offer to download it
-     (when (parinfer-rust--check-for-library parinfer-rust-supported-versions
-                                             parinfer-rust-library
-                                             parinfer-rust--lib-name
-                                             parinfer-rust-auto-download)
-       (require 'parinfer-rust parinfer-rust-library t))
-     ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
-     ;; reload dynamic libraries, which means that if we download a new library the user has to
-     ;; restart Emacs for changes to take effect.
-     (parinfer-rust--check-version parinfer-rust-supported-versions
-                                   (parinfer-rust-version)
-                                   parinfer-rust-library
-                                   parinfer-rust--lib-name)
-     (parinfer-rust-mode-enable)
-     (cond ((or (eq 'defer parinfer-rust-check-before-enable)
-                buffer-read-only)
-            ;; Defer checking for changes until a user changes the buffer
-            (setq-local parinfer-rust--disable t)
-            (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
-
-           ((eq 'immediate parinfer-rust-check-before-enable)
-            (setq-local parinfer-rust--disable t)
-            (parinfer-rust--check-for-issues))
-
-           (t (let ((parinfer-rust--mode "paren"))
-                (parinfer-rust--execute))))))))
+    (parinfer-rust-mode-enable))))
 
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here

@@ -68,17 +68,18 @@ download LIB-NAME for the user. Automatically downloads if
 AUTO-DOWNLOAD is supplied or parinfer-rust runs in test mode,
 otherwise will promt user. Return non-nil if the parinfer-rust
 library was downloaded."
-  (when (and (not (file-exists-p library-location))
-             (or
-              auto-download
-              (parinfer-rust--test-p)
-              (yes-or-no-p parinfer-rust--ask-to-download)))
-    (parinfer-rust--download-from-github (car supported-versions)
-                                         ;; This is a hold over because I am lazy. I've stuctured
-                                         ;; this data such that my version is the first one in the
-                                         ;; list
-                                         library-location lib-name)
-    t))
+  (if (file-exists-p library-location)
+      t
+    (when (or
+           auto-download
+           (parinfer-rust--test-p)
+           (yes-or-no-p parinfer-rust--ask-to-download))
+      (parinfer-rust--download-from-github (car supported-versions)
+                                           ;; This is a hold over because I am lazy. I've stuctured
+                                           ;; this data such that my version is the first one in the
+                                           ;; list
+                                           library-location lib-name)
+      t)))
 ;; This function has a problem: Emacs can't reload dynamic libraries. This means that if we download
 ;; a new library the user has to restart Emacs.
 (defun parinfer-rust--check-version (supported-versions current-version library-location lib-name)
@@ -237,10 +238,12 @@ mode to better emulate users."
           (t num))))
 (defun parinfer-rust--defer-loading (&rest _)
   "Defer loading of `parinfer-rust-mode' until the buffer is in focus."
-  (when (eq (current-buffer)
-            (window-buffer (selected-window)))
+  ;; This is a parinfer enabled buffer that started in the background and has now been moved to the foreground
+  (when (and parinfer-rust-enabled
+             (eq (current-buffer)
+                 (window-buffer (selected-window))))
     (remove-hook 'window-selection-change-functions #'parinfer-rust--defer-loading t)
-    (parinfer-rust-mode)))
+    (parinfer-rust-mode-enable)))
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.
 ;; Local Variables:
