@@ -606,8 +606,12 @@ not available."
    (parinfer-rust-enabled
     (parinfer-rust-mode-disable))
    ;; Don't do anything if the buffer is not selected
+   ;; TODO: Come up with a better way to defer and disable loading
+   ;; Defer waits for window selection change and disabled waits for a change event
+   ;; there is also the idea of deferring the running of parinfer vs deferring the loading
    ((not (eq (current-buffer)
              (window-buffer (selected-window))))
+    (setq-local parinfer-rust-enabled t)
     (add-hook 'window-selection-change-functions #'parinfer-rust--defer-loading nil t))
    (t
     (parinfer-rust-mode-enable))))
