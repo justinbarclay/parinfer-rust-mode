@@ -538,31 +538,35 @@ This includes stopping tracking of all changes."
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
   ;; Make sure the library is installed at the appropriate location or offer to download it
-     (when (parinfer-rust--check-for-library parinfer-rust-supported-versions
-                                             parinfer-rust-library
-                                             parinfer-rust--lib-name
-                                             parinfer-rust-auto-download)
-       (require 'parinfer-rust parinfer-rust-library t))
-     ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
-     ;; reload dynamic libraries, which means that if we download a new library the user has to
-     ;; restart Emacs for changes to take effect.
-     (parinfer-rust--check-version parinfer-rust-supported-versions
-                                   (parinfer-rust-version)
-                                   parinfer-rust-library
-                                   parinfer-rust--lib-name)
-     (parinfer-rust-mode-setup)
-     (cond ((or (eq 'defer parinfer-rust-check-before-enable)
-                buffer-read-only)
-            ;; Defer checking for changes until a user changes the buffer
-            (setq-local parinfer-rust--disable t)
-            (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
+  (if (parinfer-rust--check-for-library parinfer-rust-supported-versions
+                                        parinfer-rust-library
+                                        parinfer-rust--lib-name
+                                        parinfer-rust-auto-download)
+      (progn
+        (require 'parinfer-rust parinfer-rust-library t)
+        ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
+        ;; reload dynamic libraries, which means that if we download a new library the user has to
+        ;; restart Emacs for changes to take effect.
+        (parinfer-rust--check-version parinfer-rust-supported-versions
+                                      (parinfer-rust-version)
+                                      parinfer-rust-library
+                                      parinfer-rust--lib-name)
+        (parinfer-rust-mode-setup)
+        (cond ((or (eq 'defer parinfer-rust-check-before-enable)
+                   buffer-read-only)
+               ;; Defer checking for changes until a user changes the buffer
+               (setq-local parinfer-rust--disable t)
+               (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
 
-           ((eq 'immediate parinfer-rust-check-before-enable)
-            (setq-local parinfer-rust--disable t)
-            (parinfer-rust--check-for-issues))
+              ((eq 'immediate parinfer-rust-check-before-enable)
+               (setq-local parinfer-rust--disable t)
+               (parinfer-rust--check-for-issues))
 
-           (t (let ((parinfer-rust--mode "paren"))
-                (parinfer-rust--execute)))))
+              (t (let ((parinfer-rust--mode "paren"))
+                   (parinfer-rust--execute)))))
+    (progn
+      (message "Unable to load library parinfer-rust disabling parinfer-rust-mode")
+      (parinfer-rust-mode-disable))))
 
 ;;;###autoload
 (defun parinfer-rust-switch-mode ()
