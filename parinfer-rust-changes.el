@@ -138,22 +138,10 @@ on similar regions of texts."
 ;;  (equal
 ;;   (parinfer-rust--combine-changes some-changes)
 ;;   '((lineNo 7 x 10 start 170 end 171 before-text "\n  " after-text " " length 3 group t))))
-
-(defun parinfer-rust--get-before-and-after-text (start end length)
-  "Builds before and after change text using START, END, and LENGTH.
-
-Uses on `parinfer-rust--previous-buffer-text' and
-`current-buffer' text to generate info."
-  (let* ((previous-text parinfer-rust--previous-buffer-text)
-         (old-region-end (parinfer-rust--bound-number previous-text (+ start length -1)))
-         (old-region-start (parinfer-rust--bound-number previous-text (- start 1))))
-    (list
-     (if previous-text
-         (substring-no-properties previous-text
-                                  old-region-start
-                                  old-region-end)
-       "")
-     (buffer-substring-no-properties start end))))
+(defun parinfer-rust--get-before-text (start end)
+  "Text before change using START and END."
+  (setq-local parinfer-rust--before-text-change
+              (buffer-substring-no-properties start end)))
 
 (defun parinfer-rust--build-changes (change-list)
   "Convert CHANGE-LIST to a list of change structs for parinfer-rust."
@@ -177,21 +165,20 @@ previous buffer and current buffer."
   (if parinfer-rust--disable
       nil
     ;; If we're in test-mode we want the absolute position otherwise relative is fine
-    (let ((lineNo (- (line-number-at-pos start t)
+    (let* ((lineNo (- (line-number-at-pos start t)
                      1))
-          (x (save-excursion
-               (save-restriction
-                 (widen)
-                 (goto-char start)
-                 (parinfer-rust--get-cursor-x))))
-          (changes (parinfer-rust--get-before-and-after-text start end length)))
+           (x (save-excursion
+                (save-restriction
+                  (widen)
+                  (goto-char start)
+                  (parinfer-rust--get-cursor-x)))))
       (push (list 'lineNo lineNo
                   'x x
                   'start start
                   'end end
                   'length length
-                  'before-text (car changes)
-                  'after-text (cadr changes)
+                  'before-text (or parinfer-rust--before-text-change "")
+                  'after-text (buffer-substring-no-properties start end)
                   'group nil)
             parinfer-rust--changes))
     (setq parinfer-rust--previous-buffer-text
