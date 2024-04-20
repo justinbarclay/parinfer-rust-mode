@@ -5,7 +5,7 @@
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
 ;; Version: 0.8.6
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((emacs "26.1") (track-changes "1.1"))
 ;; Keywords: lisp tools
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -125,8 +125,8 @@
 ;;; Code:
 
 ;; For a complete list of state that needs to be tracked read:
-;; https://github.com/shaunlebron/parinfer/tree/master/lib#api
-;; https://github.com/shaunlebron/parinfer/blob/master/lib/doc/integrating.md
+;; https://github.com/parinfer/parinfer.js/tree/master#api
+;; https://github.com/parinfer/parinfer.js/blob/master/doc/integrating.md
 
 ;; In broad strokes we must:
 
@@ -145,6 +145,7 @@ against and is known to be api compatible.")
 
 ;; Require helper so we can check for library
 (require 'parinfer-rust-helper)
+(require 'track-changes)
 
 (eval-when-compile
   (declare-function parinfer-rust-make-option "ext:parinfer-rust" t t)
@@ -294,7 +295,9 @@ Either `paren', `indent', or `smart'.")
 (defvar-local parinfer-rust--ignore-post-command-hook nil
   "A hack to not run parinfer-execute after an undo has finished processing.")
 
-(defvar parinfer-rust--last-mode nil
+(defvar-local parinfer-rust--change-tracker nil)
+
+(defvar-local parinfer-rust--last-mode nil
   "Last active Parinfer mode.
 Used for toggling between paren mode and last active mode.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -316,11 +319,14 @@ parinfer."
   (setq-local parinfer-rust--disable nil))
 
 
-;; The idea for this function: 1. is to never run during an undo operation 2. Set a flag to ignore
-;; the first post command execution after an undo operation 2 is important because if we undo our
-;; last key press and that causes parinfer to modify the buffer we get stuck in a loop of trying to
-;; undo things and parinfer redoing them
-
+;; The idea for this function:
+;;
+;; 1. is to never run during an undo operation
+;;
+;; 2. Set a flag to ignore the first post command execution after an undo operation
+;;
+;; 2 is important because if we undo our last key press and that causes parinfer to modify the
+;; buffer we get stuck in a loop of trying to undo things and parinfer redoing them
 (defun parinfer-rust--track-undo (orig-func &rest args)
   "Wraps ORIG-FUNC and ARGS in some state tracking for `parinfer-rust-mode'."
   (condition-case-unless-debug err
@@ -328,6 +334,7 @@ parinfer."
     ;; We want to "Ignore" errors here otherwise the function exits
     ;; and causes the following commands, where we set flags, to be
     ;; ignored
+    ;; FIXME: IIUC maybe you simply want to use `unwind-protect' instead.
     (error
      (message "%s" (cadr err))
      nil))
@@ -368,6 +375,8 @@ CHANGES."
 
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer."
+  (when parinfer-rust--change-tracker
+    (parinfer-rust--fetch-changes parinfer-rust--change-tracker))
   (if (or parinfer-rust--disable
           undo-in-progress
           parinfer-rust--ignore-post-command-hook)
@@ -400,9 +409,7 @@ CHANGES."
              (old-options (or (parinfer-rust--local-bound-and-true parinfer-rust--previous-options)
                               (parinfer-rust-make-option)))
              (changes (if (> (length parinfer-rust--changes) 0)
-                          (parinfer-rust--build-changes
-                           (parinfer-rust--combine-changes
-                            parinfer-rust--changes))
+                          (parinfer-rust--build-changes parinfer-rust--changes)
                         (parinfer-rust-make-changes)))
              (options (parinfer-rust--generate-options old-options
                                                        changes))
@@ -413,9 +420,6 @@ CHANGES."
              (answer (parinfer-rust-execute request))
              (replacement-string (parinfer-rust-get-in-answer answer "text"))
              (error-p (parinfer-rust-get-in-answer answer "error")))
-        ;; We don't want other hooks to run while we're modifying the buffer
-        ;; that could lead to weird and unwanted behavior
-        (setq-local inhibit-modification-hooks t)
         (when (and (local-variable-if-set-p 'parinfer-rust--in-debug)
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
@@ -443,8 +447,9 @@ CHANGES."
                    (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
           (parinfer-rust--reposition-cursor new-x new-line))
         (setq parinfer-rust--previous-options options)
-        (with-no-warnings ;; TODO: Should not need with-no-warnings function
-          (setq-local inhibit-modification-hooks nil))))))
+        (when parinfer-rust--change-tracker
+          ;; Ignore our own changes.
+          (track-changes-fetch parinfer-rust--change-tracker #'ignore))))))
 
 ;; Interactive or functions meant to be called by user
 (defun parinfer-rust-toggle-debug ()
@@ -510,12 +515,15 @@ Checks if MODE is a valid Parinfer mode, and uses
   (parinfer-rust--set-default-state)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
   (advice-add 'undo :around #'parinfer-rust--track-undo)
-  (when (fboundp 'undo-tree-undo)
-    (advice-add 'undo-tree-undo :around #'parinfer-rust--track-undo))
-  ;; Track changes as they happen in the buffer
-  (add-hook 'before-change-functions #'parinfer-rust--get-before-text t t)
-  (add-hook 'after-change-functions #'parinfer-rust--track-changes t t)
-  ;; Run parinfer after whatever command caused the change(s) has finished
+  (advice-add 'undo-tree-undo :around #'parinfer-rust--track-undo)
+  (if (fboundp 'track-changes-register)
+    (progn
+      (when parinfer-rust--change-tracker
+        (track-changes-unregister parinfer-rust--change-tracker)
+        (setq parinfer-rust--change-tracker nil))
+      (setq parinfer-rust--change-tracker
+            (track-changes-register #'parinfer-rust--changes-signal
+                                    :disjoint t))))
   (add-hook 'post-command-hook #'parinfer-rust--execute t t)
   (parinfer-rust--dim-parens))
 
@@ -524,8 +532,6 @@ Checks if MODE is a valid Parinfer mode, and uses
   (advice-remove 'undo #'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
     (advice-remove 'undo-tree-undo #'parinfer-rust--track-undo))
-  (remove-hook 'before-change-functions #'parinfer-rust--get-before-text t)
-  (remove-hook 'after-change-functions #'parinfer-rust--track-changes t)
   (remove-hook 'post-command-hook #'parinfer-rust--execute t)
   (setq-local parinfer-rust-enabled nil)
   (parinfer-rust--dim-parens))
@@ -580,10 +586,10 @@ Either: indent, smart, or paren."
   (interactive)
   (parinfer-rust--switch-mode
    (completing-read "Choose parinfer mode:"
-                    (remove parinfer-rust--mode
-                            parinfer-rust--mode-types)
-                    nil
-                    t)))
+                      (remove parinfer-rust--mode
+                              parinfer-rust--mode-types)
+                      nil
+                      t)))
 
 ;;;###autoload
 (defun parinfer-rust-toggle-paren-mode ()
@@ -607,7 +613,7 @@ not available."
   :init-value nil
   :keymap parinfer-rust-mode-map
   (cond
-   (parinfer-rust-enabled
+   (parinfer-rust-enabled ;; FIXME: Why?
     (parinfer-rust-mode-disable))
    ;; Don't do anything if the buffer is not selected
    ;; TODO: Come up with a better way to defer and disable loading
