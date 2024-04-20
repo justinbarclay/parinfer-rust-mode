@@ -329,18 +329,15 @@ parinfer."
 ;; buffer we get stuck in a loop of trying to undo things and parinfer redoing them
 (defun parinfer-rust--track-undo (orig-func &rest args)
   "Wraps ORIG-FUNC and ARGS in some state tracking for `parinfer-rust-mode'."
-  (condition-case-unless-debug err
-      (apply orig-func args)
+  (unwind-protect
+    (apply orig-func args)
     ;; We want to "Ignore" errors here otherwise the function exits
     ;; and causes the following commands, where we set flags, to be
     ;; ignored
-    ;; FIXME: IIUC maybe you simply want to use `unwind-protect' instead.
-    (error
-     (message "%s" (cadr err))
-     nil))
-  ;; Always ignore the first post-command-hook run of parinfer after an undo
-  (setq-local parinfer-rust--ignore-post-command-hook t)
-  (parinfer-rust--set-default-state))
+    (progn
+      ;; Always ignore the first post-command-hook run of parinfer after an undo
+      (setq-local parinfer-rust--ignore-post-command-hook t)
+      (parinfer-rust--set-default-state))))
 
 (defun parinfer-rust--execute-change-buffer-p (mode)
   "Return non-nil if running `parinfer-rust--execute' with MODE would change the current buffer."
