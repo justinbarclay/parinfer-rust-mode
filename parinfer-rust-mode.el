@@ -514,13 +514,13 @@ Checks if MODE is a valid Parinfer mode, and uses
   (advice-add 'undo :around #'parinfer-rust--track-undo)
   (advice-add 'undo-tree-undo :around #'parinfer-rust--track-undo)
   (if (fboundp 'track-changes-register)
-    (progn
-      (when parinfer-rust--change-tracker
-        (track-changes-unregister parinfer-rust--change-tracker)
-        (setq parinfer-rust--change-tracker nil))
-      (setq parinfer-rust--change-tracker
-            (track-changes-register #'parinfer-rust--changes-signal
-                                    :disjoint t))))
+      (progn
+        (when parinfer-rust--change-tracker
+          (track-changes-unregister parinfer-rust--change-tracker)
+          (setq parinfer-rust--change-tracker nil))
+        (setq parinfer-rust--change-tracker
+              (track-changes-register #'parinfer-rust--changes-signal
+                                      :disjoint t))))
   (add-hook 'post-command-hook #'parinfer-rust--execute t t)
   (parinfer-rust--dim-parens))
 
@@ -583,10 +583,10 @@ Either: indent, smart, or paren."
   (interactive)
   (parinfer-rust--switch-mode
    (completing-read "Choose parinfer mode:"
-                      (remove parinfer-rust--mode
-                              parinfer-rust--mode-types)
-                      nil
-                      t)))
+                    (remove parinfer-rust--mode
+                            parinfer-rust--mode-types)
+                    nil
+                    t)))
 
 ;;;###autoload
 (defun parinfer-rust-toggle-paren-mode ()
