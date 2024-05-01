@@ -372,8 +372,6 @@ CHANGES."
 
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer."
-  (when parinfer-rust--change-tracker
-    (parinfer-rust--fetch-changes parinfer-rust--change-tracker))
   (if (or parinfer-rust--disable
           undo-in-progress
           parinfer-rust--ignore-post-command-hook)
@@ -485,9 +483,16 @@ Disable `parinfer-rust-mode' if the user does not want to have
 parinfer autofix them, or if there is no reasonable way for
 `parinfer-rust-mode' to automatically fix them."
   (setq-local parinfer-rust--disable nil)
+  ;; Disable change tracker for now or we have to deal with sync issues
+  (track-changes-unregister parinfer-rust--change-tracker)
+  (setq-local parinfer-rust--change-tracker nil)
   (if-let (issue (or (parinfer-rust--check-for-tabs)
                      (parinfer-rust--check-for-indentation)))
-      (parinfer-rust-mode -1))
+      (parinfer-rust-mode -1)
+    ;; Re-enable change trackers now that we've succeeded in our tasks
+    (setq-local parinfer-rust--change-tracker
+                (track-changes-register #'parinfer-rust--changes-signal
+                                        :disjoint t)))
   (remove-hook 'before-change-functions #'parinfer-rust--check-for-issues t))
 
 (defun parinfer-rust--switch-mode (&optional mode)
@@ -517,8 +522,8 @@ Checks if MODE is a valid Parinfer mode, and uses
       (progn
         (when parinfer-rust--change-tracker
           (track-changes-unregister parinfer-rust--change-tracker)
-          (setq parinfer-rust--change-tracker nil))
-        (setq parinfer-rust--change-tracker
+          (setq-local parinfer-rust--change-tracker nil))
+        (setq-local parinfer-rust--change-tracker
               (track-changes-register #'parinfer-rust--changes-signal
                                       :disjoint t))))
   (parinfer-rust--dim-parens))
@@ -528,7 +533,11 @@ Checks if MODE is a valid Parinfer mode, and uses
   (advice-remove 'undo #'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
     (advice-remove 'undo-tree-undo #'parinfer-rust--track-undo))
+  (when parinfer-rust--change-tracker
+    (track-changes-unregister parinfer-rust--change-tracker)
+    (setq-local parinfer-rust--change-tracker nil))
   (setq-local parinfer-rust-enabled nil)
+  (remove-hook 'before-change-functions #'parinfer-rust--check-for-issues t)
   (parinfer-rust--dim-parens))
 
 (defun parinfer-rust-toggle-disable ()
@@ -561,12 +570,11 @@ This includes stopping tracking of all changes."
                    buffer-read-only)
                ;; Defer checking for changes until a user changes the buffer
                (setq-local parinfer-rust--disable t)
-               (add-hook 'before-change-functions #'parinfer-rust--check-for-issues t t))
+               (add-hook 'before-change-functions #'parinfer-rust--check-for-issues nil t))
 
               ((eq 'immediate parinfer-rust-check-before-enable)
                (setq-local parinfer-rust--disable t)
                (parinfer-rust--check-for-issues))
-
               (t (let ((parinfer-rust--mode "paren"))
                    (parinfer-rust--execute)))))
     (progn
