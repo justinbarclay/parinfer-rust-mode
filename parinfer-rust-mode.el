@@ -521,7 +521,6 @@ Checks if MODE is a valid Parinfer mode, and uses
         (setq parinfer-rust--change-tracker
               (track-changes-register #'parinfer-rust--changes-signal
                                       :disjoint t))))
-  (add-hook 'post-command-hook #'parinfer-rust--execute t t)
   (parinfer-rust--dim-parens))
 
 (defun parinfer-rust-mode-disable ()
@@ -529,7 +528,6 @@ Checks if MODE is a valid Parinfer mode, and uses
   (advice-remove 'undo #'parinfer-rust--track-undo)
   (when (fboundp 'undo-tree-undo)
     (advice-remove 'undo-tree-undo #'parinfer-rust--track-undo))
-  (remove-hook 'post-command-hook #'parinfer-rust--execute t)
   (setq-local parinfer-rust-enabled nil)
   (parinfer-rust--dim-parens))
 

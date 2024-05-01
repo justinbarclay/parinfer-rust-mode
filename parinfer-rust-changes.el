@@ -111,7 +111,12 @@
 
 (defun parinfer-rust--changes-signal (id &optional distance)
   "Signal changes for ID with optional DISTANCE."
-  (parinfer-rust--fetch-changes id))
+  (parinfer-rust--fetch-changes id)
+  (if distance
+      ;; We're still in the middle of changes, but they're "far",
+      ;; so record the past changes and keep going.
+      nil
+    (parinfer-rust--execute)))
 
 ;; Local Variables:
 ;; package-lint-main-file: "parinfer-rust-mode.el"
