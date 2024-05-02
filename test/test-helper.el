@@ -35,41 +35,10 @@
 (defvar-local remove-first-line nil "A flag to let our test harness to remove the first line in a file, because we inserted one")
 (defvar parinfer-result-string nil "Result of running a test on parinfer")
 
+
 ;; Don't prompt for permission to modify buffer
 ;; We're running tests, prompting will break things
 (setq parinfer-rust-check-before-enable nil)
-
-
-;; (when (not (fboundp 'replace-region-contents))) ;; This function does not exist in Emacs <27
-
-(defun replace-region-contents (beg end replace-fn
-                                    &optional max-secs max-costs)
-  "Replace the region between BEG and END using REPLACE-FN.
-REPLACE-FN runs on the current buffer narrowed to the region.  It
-should return either a string or a buffer replacing the region.
-
-The replacement is performed using `replace-buffer-contents'
-which also describes the MAX-SECS and MAX-COSTS arguments and the
-return value.
-
-Note: If the replacement is a string, it'll be placed in a
-temporary buffer so that `replace-buffer-contents' can operate on
-it.  Therefore, if you already have the replacement in a buffer,
-it makes no sense to convert it to a string using
-`buffer-substring' or similar."
-  (save-excursion
-    (save-restriction
-      (narrow-to-region beg end)
-      (goto-char (point-min))
-      (let ((repl (funcall replace-fn)))
-        (if (bufferp repl)
-            (replace-buffer-contents repl max-secs max-costs)
-          (let ((source-buffer (current-buffer)))
-            (with-temp-buffer
-              (insert repl)
-              (let ((tmp-buffer (current-buffer)))
-                (set-buffer source-buffer)
-                (replace-buffer-contents tmp-buffer)))))))))
 
 (defun move-cursor-to-previous-position ()
   (setq-local inhibit-modification-hooks t) ;; we don't need to track this change
@@ -88,7 +57,7 @@ it makes no sense to convert it to a string using
 (defun reverse-changes-in-buffer (change)
   "Revert a list of CHANGE to the specified area of the buffer."
   (with-no-warnings
-    (goto-line (+ 1 (cdr (assoc 'lineNo change))))) ;; This is normally bad, but because we're just doing this in a test
+    (goto-line (+ 1 (cdr (assoc 'lineNo change))))) ;; This is normally bad, but we're just doing this in a test
   (forward-char (cdr (assoc 'x change)))            ;; and we need to go to the line specified by the current change
   (replace-region-contents (point)
                            (+ (point) (length (cdr (assoc 'newText change))))
@@ -129,6 +98,7 @@ it makes no sense to convert it to a string using
      nil
      old-options
      changes)))
+
 ;; Shadow function form parinfer-rust-mode because it executes buffer before everything is set-up in some test cases
 (define-minor-mode parinfer-rust-mode
   "A simpler way to write lisps"
@@ -166,6 +136,8 @@ extracted from the json-alist."
         (setq parinfer-rust--previous-options (parinfer-rust--generate-options (parinfer-rust-make-option)
                                                                                (parinfer-rust-make-changes))))
       (move-cursor-to-current-position)
+      ;; Parinfer's change tracking system is not triggered, signaled, so we need to
+      ;; signal and call it ourselves
       (parinfer-rust--execute)
       (when remove-first-line ;; if we created a new line in move-cursor-current-position
         (progn                 ;; remove it
@@ -199,11 +171,14 @@ extracted from the json-alist."
       (parinfer-rust-mode)
       (setq-local parinfer-rust--mode mode)
       (when changes
-        (mapc
-         'apply-changes-in-buffer
-         changes))
+        (progn
+         (mapc
+          'apply-changes-in-buffer
+          changes)))
+      ;; Parinfer's change tracking system is not triggered, signaled, so we need to signal and call it ourselves
+      (parinfer-rust--fetch-changes parinfer-rust--change-tracker)
       (move-cursor-to-current-position)
-      (parinfer-rust--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
+      (parinfer-rust--execute)
       (parinfer-rust-mode)
       (when remove-first-line
         (progn
@@ -237,6 +212,8 @@ extracted from the json-alist."
                (forward-line (1- lineNo))
                (forward-char column)
                (apply command nil)
+               ;; Parinfer's change tracking system is not triggered, signaled, so we need to signal and call it ourselves
+               (parinfer-rust--fetch-changes parinfer-rust--change-tracker)
                (parinfer-rust--execute)))
     (setq parinfer-result-string (buffer-substring-no-properties (point-min) (point-max))) ;; Save the string before we kill our current buffer
     (switch-to-buffer current)
