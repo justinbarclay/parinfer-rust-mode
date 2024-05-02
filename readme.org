@@ -28,6 +28,7 @@ You can install ~parinfer-rust-mode~ from source (this github repo)
 After that add it to your load path and go wild.
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "/path/to/parinfer-rust-mode")
+  (require 'parinfer-rust-mode)
   (add-hook 'emacs-lisp-mode 'parinfer-rust-mode)
 #+END_SRC
 

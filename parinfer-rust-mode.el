@@ -271,9 +271,10 @@ command should be run in.")
 (defvar parinfer-rust--buffer-replace-strategy 'safe
   "The strategy to use when replacing the buffer with the new text.
 
-When `safe' the buffer is replaced using the `buffer-watcher'.
-When `fast' the buffer is replaced using `delete-region' and
-`insert-buffer-substring'.")
+When set to `'safe' the buffer is replaced using the slower but more fastiduous `replace-buffer-contents'.
+When set to `'fast' the buffer is replaced using `delete-region'.
+
+For more info on why the default is `replace-buffer-contents', see Info node `(elisp)Replacing'")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
