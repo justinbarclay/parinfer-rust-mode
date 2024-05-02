@@ -166,6 +166,8 @@ extracted from the json-alist."
         (setq parinfer-rust--previous-options (parinfer-rust--generate-options (parinfer-rust-make-option)
                                                                                (parinfer-rust-make-changes))))
       (move-cursor-to-current-position)
+      ;; Parinfer's change tracking system is not triggered, signaled, so we need to
+      ;; signal and call it ourselves
       (parinfer-rust--execute)
       (when remove-first-line ;; if we created a new line in move-cursor-current-position
         (progn                 ;; remove it
@@ -199,11 +201,14 @@ extracted from the json-alist."
       (parinfer-rust-mode)
       (setq-local parinfer-rust--mode mode)
       (when changes
-        (mapc
-         'apply-changes-in-buffer
-         changes))
+        (progn
+         (mapc
+          'apply-changes-in-buffer
+          changes)))
+      ;; Parinfer's change tracking system is not triggered, signaled, so we need to signal and call it ourselves
+      (parinfer-rust--fetch-changes parinfer-rust--change-tracker)
       (move-cursor-to-current-position)
-      (parinfer-rust--execute)   ;; Parinfer execute doesn't run after apply-changes so we have to call in manually
+      (parinfer-rust--execute)
       (parinfer-rust-mode)
       (when remove-first-line
         (progn
@@ -237,6 +242,8 @@ extracted from the json-alist."
                (forward-line (1- lineNo))
                (forward-char column)
                (apply command nil)
+               ;; Parinfer's change tracking system is not triggered, signaled, so we need to signal and call it ourselves
+               (parinfer-rust--fetch-changes parinfer-rust--change-tracker)
                (parinfer-rust--execute)))
     (setq parinfer-result-string (buffer-substring-no-properties (point-min) (point-max))) ;; Save the string before we kill our current buffer
     (switch-to-buffer current)
