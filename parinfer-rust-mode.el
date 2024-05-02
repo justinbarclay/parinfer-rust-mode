@@ -483,7 +483,7 @@ Disable `parinfer-rust-mode' if the user does not want to have
 parinfer autofix them, or if there is no reasonable way for
 `parinfer-rust-mode' to automatically fix them."
   (setq-local parinfer-rust--disable nil)
-  ;; Disable change tracker for now or we have to deal with sync issues
+  ;; Disable change tracker for now because we are about to make changes in an change hook.
   (track-changes-unregister parinfer-rust--change-tracker)
   (setq-local parinfer-rust--change-tracker nil)
   (if-let (issue (or (parinfer-rust--check-for-tabs)
@@ -493,7 +493,7 @@ parinfer autofix them, or if there is no reasonable way for
     (setq-local parinfer-rust--change-tracker
                 (track-changes-register #'parinfer-rust--changes-signal
                                         :disjoint t)))
-  (remove-hook 'before-change-functions #'parinfer-rust--check-for-issues t))
+  (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t))
 
 (defun parinfer-rust--switch-mode (&optional mode)
   "Switch to a different Parinfer MODE.
@@ -537,7 +537,7 @@ Checks if MODE is a valid Parinfer mode, and uses
     (track-changes-unregister parinfer-rust--change-tracker)
     (setq-local parinfer-rust--change-tracker nil))
   (setq-local parinfer-rust-enabled nil)
-  (remove-hook 'before-change-functions #'parinfer-rust--check-for-issues t)
+  (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t)
   (parinfer-rust--dim-parens))
 
 (defun parinfer-rust-toggle-disable ()
@@ -570,7 +570,7 @@ This includes stopping tracking of all changes."
                    buffer-read-only)
                ;; Defer checking for changes until a user changes the buffer
                (setq-local parinfer-rust--disable t)
-               (add-hook 'before-change-functions #'parinfer-rust--check-for-issues nil t))
+               (add-hook 'first-change-hook #'parinfer-rust--check-for-issues nil t))
 
               ((eq 'immediate parinfer-rust-check-before-enable)
                (setq-local parinfer-rust--disable t)
