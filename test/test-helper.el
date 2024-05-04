@@ -101,11 +101,11 @@
 
 ;; Shadow function form parinfer-rust-mode because it executes buffer before everything is set-up in some test cases
 (define-minor-mode parinfer-rust-mode
-  "A simpler way to write lisps"
+    "A simpler way to write lisps"
   :lighter " parinfer"
   :init-value nil
   :keymap parinfer-rust-mode-map
-  (if parinfer-rust-mode
+  (if (not parinfer-rust-mode)
       (parinfer-rust-mode-disable)
     (progn
       (parinfer-rust--check-version parinfer-rust-supported-versions
