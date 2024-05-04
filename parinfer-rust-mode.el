@@ -1,10 +1,10 @@
 ;;; parinfer-rust-mode.el --- An interface for the parinfer-rust library -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2023  Justin Barclay
+;; Copyright (C) 2019-2024  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.8.6
+;; Version: 0.8.7
 ;; Package-Requires: ((emacs "26.1") (track-changes "1.1"))
 ;; Keywords: lisp tools
 
@@ -229,6 +229,22 @@ against and is known to be api compatible.")
   :type 'boolean
   :group 'parinfer-rust-mode)
 
+(defcustom parinfer-rust-buffer-replace-strategy 'safe
+  "The strategy to use when replacing the buffer's text.
+
+When set to `safe' the buffer is replaced using the slower but more
+fastiduous `replace-buffer-contents'.
+
+When set to `fast' the buffer is replaced using `delete-region'.
+
+For more info on why the default is `replace-buffer-contents', see Info
+node `(elisp)Replacing'"
+  :type '(radio (const :tag "Safe" safe)
+                (const :tag "Fast" fast))
+  :group 'parinfer-rust-mode)
+
+(define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,14 +284,6 @@ against and is known to be api compatible.")
 
 A curated list of pairs consisting of a command and the mode the
 command should be run in.")
-
-(defvar parinfer-rust--buffer-replace-strategy 'safe
-  "The strategy to use when replacing the buffer with the new text.
-
-When set to `'safe' the buffer is replaced using the slower but more fastiduous `replace-buffer-contents'.
-When set to `'fast' the buffer is replaced using `delete-region'.
-
-For more info on why the default is `replace-buffer-contents', see Info node `(elisp)Replacing'")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
@@ -430,7 +438,7 @@ CHANGES."
                   (switch-to-buffer new-buf)
                   (insert replacement-string)
                   (switch-to-buffer current)
-                  (if (eq parinfer-rust--buffer-replace-strategy
+                  (if (eq parinfer-rust-buffer-replace-strategy
                           'fast)
                       (progn
                         (delete-region (point-min)
