@@ -288,7 +288,6 @@ command should be run in.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar-local parinfer-rust-enabled nil "Tracks if parinfer has been enabled.")
 (defvar-local parinfer-rust--in-debug nil
   "When enabled, outputs the response input and output of the parinfer response to a file.")
 (defvar-local parinfer-rust--mode "paren"
@@ -521,7 +520,6 @@ Checks if MODE is a valid Parinfer mode, and uses
 
 (defun parinfer-rust-mode-setup ()
   "Enable Parinfer."
-  (setq-local parinfer-rust-enabled t)
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
@@ -545,7 +543,6 @@ Checks if MODE is a valid Parinfer mode, and uses
   (when parinfer-rust--change-tracker
     (track-changes-unregister parinfer-rust--change-tracker)
     (setq-local parinfer-rust--change-tracker nil))
-  (setq-local parinfer-rust-enabled nil)
   (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t)
   (parinfer-rust--dim-parens))
 
@@ -625,7 +622,7 @@ not available."
   :init-value nil
   :keymap parinfer-rust-mode-map
   (cond
-   (parinfer-rust-enabled ;; FIXME: Why?
+   (parinfer-rust-mode
     (parinfer-rust-mode-disable))
    ;; Don't do anything if the buffer is not selected
    ;; TODO: Come up with a better way to defer and disable loading
@@ -633,7 +630,6 @@ not available."
    ;; there is also the idea of deferring the running of parinfer vs deferring the loading
    ((not (eq (current-buffer)
              (window-buffer (selected-window))))
-    (setq-local parinfer-rust-enabled t)
     (add-hook 'window-selection-change-functions #'parinfer-rust--defer-loading nil t))
    (t
     (parinfer-rust-mode-enable))))

@@ -105,7 +105,7 @@
   :lighter " parinfer"
   :init-value nil
   :keymap parinfer-rust-mode-map
-  (if parinfer-rust-enabled
+  (if parinfer-rust-mode
       (parinfer-rust-mode-disable)
     (progn
       (parinfer-rust--check-version parinfer-rust-supported-versions

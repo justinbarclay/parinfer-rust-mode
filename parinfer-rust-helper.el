@@ -25,7 +25,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (defvar parinfer-rust-enabled)
   (defvar parinfer-rust--mode)
   (defvar parinfer-rust-dim-parens))
 (require 'url)
@@ -186,7 +185,7 @@ This search is bound to occur before LIMIT."
 
 (defun parinfer-rust--dim-parens ()
   "Apply paren dimming if appropriate."
-  (if (and parinfer-rust-enabled
+  (if (and parinfer-rust-mode
            (not (string-equal parinfer-rust--mode "paren"))
            parinfer-rust-dim-parens)
       (font-lock-add-keywords
@@ -239,7 +238,7 @@ mode to better emulate users."
 (defun parinfer-rust--defer-loading (&rest _)
   "Defer loading of `parinfer-rust-mode' until the buffer is in focus."
   ;; This is a parinfer enabled buffer that started in the background and has now been moved to the foreground
-  (when (and parinfer-rust-enabled
+  (when (and parinfer-rust-mode
              (eq (current-buffer)
                  (window-buffer (selected-window))))
     (remove-hook 'window-selection-change-functions #'parinfer-rust--defer-loading t)
