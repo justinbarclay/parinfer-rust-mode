@@ -25,7 +25,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (defvar parinfer-rust-enabled)
   (defvar parinfer-rust--mode)
   (defvar parinfer-rust-dim-parens))
 (require 'url)
@@ -87,16 +86,21 @@ library was downloaded."
 
 If SUPPORTED-VERSIONS is not compatible with CURRENT-VERSION,
 offer to download the LIB-NAME to LIBRARY-LOCATION."
-  (when (and current-version
-             (not (member-ignore-case
-                   current-version
-                   supported-versions))
-             (and
-              (not (parinfer-rust--test-p))
-              (yes-or-no-p parinfer-rust--outdated-version)))
-    (parinfer-rust--download-from-github (car supported-versions) library-location lib-name)
-    (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
-
+  (cond
+   ((and current-version
+           (not (member-ignore-case
+                 current-version
+                 supported-versions))
+           (and
+            (not (parinfer-rust--test-p))
+            (yes-or-no-p parinfer-rust--outdated-version)))
+    (progn
+     (parinfer-rust--download-from-github (car supported-versions) library-location lib-name)
+     (message "A new version has been downloaded, you will need to reload Emacs for the changes to take effect.")))
+   ((string= "0.4.3" current-version)
+    (display-warning '(parinfer-rust-mode)
+                     "parinfer-rust-mode now relies on a fork of parinfer-rust and has dropped support for v0.4.3.\nPlease go to https://github.com/justinbarclay/parinfer-rust/discussions/9 to find out more."))
+   (t 't)))
 
 (defun parinfer-rust--download-from-github (parinfer-rust-version
                                             library-location
@@ -186,7 +190,7 @@ This search is bound to occur before LIMIT."
 
 (defun parinfer-rust--dim-parens ()
   "Apply paren dimming if appropriate."
-  (if (and parinfer-rust-enabled
+  (if (and parinfer-rust-mode
            (not (string-equal parinfer-rust--mode "paren"))
            parinfer-rust-dim-parens)
       (font-lock-add-keywords
@@ -239,7 +243,7 @@ mode to better emulate users."
 (defun parinfer-rust--defer-loading (&rest _)
   "Defer loading of `parinfer-rust-mode' until the buffer is in focus."
   ;; This is a parinfer enabled buffer that started in the background and has now been moved to the foreground
-  (when (and parinfer-rust-enabled
+  (when (and parinfer-rust-mode
              (eq (current-buffer)
                  (window-buffer (selected-window))))
     (remove-hook 'window-selection-change-functions #'parinfer-rust--defer-loading t)

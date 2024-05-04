@@ -1,10 +1,10 @@
 ;;; parinfer-rust-mode.el --- An interface for the parinfer-rust library -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2023  Justin Barclay
+;; Copyright (C) 2019-2024  Justin Barclay
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.8.6
+;; Version: 0.8.7
 ;; Package-Requires: ((emacs "26.1") (track-changes "1.1"))
 ;; Keywords: lisp tools
 
@@ -229,6 +229,22 @@ against and is known to be api compatible.")
   :type 'boolean
   :group 'parinfer-rust-mode)
 
+(defcustom parinfer-rust-buffer-replace-strategy 'safe
+  "The strategy to use when replacing the buffer's text.
+
+When set to `safe' the buffer is replaced using the slower but more
+fastiduous `replace-buffer-contents'.
+
+When set to `fast' the buffer is replaced using `delete-region'.
+
+For more info on why the default is `replace-buffer-contents', see Info
+node `(elisp)Replacing'"
+  :type '(radio (const :tag "Safe" safe)
+                (const :tag "Fast" fast))
+  :group 'parinfer-rust-mode)
+
+(define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -269,18 +285,9 @@ against and is known to be api compatible.")
 A curated list of pairs consisting of a command and the mode the
 command should be run in.")
 
-(defvar parinfer-rust--buffer-replace-strategy 'safe
-  "The strategy to use when replacing the buffer with the new text.
-
-When set to `'safe' the buffer is replaced using the slower but more fastiduous `replace-buffer-contents'.
-When set to `'fast' the buffer is replaced using `delete-region'.
-
-For more info on why the default is `replace-buffer-contents', see Info node `(elisp)Replacing'")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar-local parinfer-rust-enabled nil "Tracks if parinfer has been enabled.")
 (defvar-local parinfer-rust--in-debug nil
   "When enabled, outputs the response input and output of the parinfer response to a file.")
 (defvar-local parinfer-rust--mode "paren"
@@ -430,7 +437,7 @@ CHANGES."
                   (switch-to-buffer new-buf)
                   (insert replacement-string)
                   (switch-to-buffer current)
-                  (if (eq parinfer-rust--buffer-replace-strategy
+                  (if (eq parinfer-rust-buffer-replace-strategy
                           'fast)
                       (progn
                         (delete-region (point-min)
@@ -513,7 +520,6 @@ Checks if MODE is a valid Parinfer mode, and uses
 
 (defun parinfer-rust-mode-setup ()
   "Enable Parinfer."
-  (setq-local parinfer-rust-enabled t)
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
   (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
@@ -537,7 +543,6 @@ Checks if MODE is a valid Parinfer mode, and uses
   (when parinfer-rust--change-tracker
     (track-changes-unregister parinfer-rust--change-tracker)
     (setq-local parinfer-rust--change-tracker nil))
-  (setq-local parinfer-rust-enabled nil)
   (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t)
   (parinfer-rust--dim-parens))
 
@@ -553,19 +558,19 @@ This includes stopping tracking of all changes."
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
   ;; Make sure the library is installed at the appropriate location or offer to download it
-  (if (parinfer-rust--check-for-library parinfer-rust-supported-versions
+  (if (and (parinfer-rust--check-for-library parinfer-rust-supported-versions
                                         parinfer-rust-library
                                         parinfer-rust--lib-name
                                         parinfer-rust-auto-download)
+           (require 'parinfer-rust parinfer-rust-library t)
+           (parinfer-rust--check-version parinfer-rust-supported-versions
+                                      (parinfer-rust-version)
+                                      parinfer-rust-library
+                                      parinfer-rust--lib-name))
       (progn
-        (require 'parinfer-rust parinfer-rust-library t)
         ;; Check version and prompt to download latest version if out of date Problem: Emacs can't
         ;; reload dynamic libraries, which means that if we download a new library the user has to
         ;; restart Emacs for changes to take effect.
-        (parinfer-rust--check-version parinfer-rust-supported-versions
-                                      (parinfer-rust-version)
-                                      parinfer-rust-library
-                                      parinfer-rust--lib-name)
         (parinfer-rust-mode-setup)
         (cond ((or (eq 'defer parinfer-rust-check-before-enable)
                    buffer-read-only)
@@ -580,7 +585,7 @@ This includes stopping tracking of all changes."
                    (parinfer-rust--execute)))))
     (progn
       (message "Unable to load library parinfer-rust disabling parinfer-rust-mode")
-      (parinfer-rust-mode-disable))))
+      (parinfer-rust-mode -1))))
 
 ;;;###autoload
 (defun parinfer-rust-switch-mode ()
@@ -617,7 +622,7 @@ not available."
   :init-value nil
   :keymap parinfer-rust-mode-map
   (cond
-   (parinfer-rust-enabled ;; FIXME: Why?
+   ((not parinfer-rust-mode)
     (parinfer-rust-mode-disable))
    ;; Don't do anything if the buffer is not selected
    ;; TODO: Come up with a better way to defer and disable loading
@@ -625,7 +630,6 @@ not available."
    ;; there is also the idea of deferring the running of parinfer vs deferring the loading
    ((not (eq (current-buffer)
              (window-buffer (selected-window))))
-    (setq-local parinfer-rust-enabled t)
     (add-hook 'window-selection-change-functions #'parinfer-rust--defer-loading nil t))
    (t
     (parinfer-rust-mode-enable))))
