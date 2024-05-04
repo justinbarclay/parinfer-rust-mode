@@ -50,7 +50,7 @@ Set this to non-nil to disable troublesome modes without prompting."
 (defconst parinfer-rust--ask-to-download "Could not find the parinfer-rust library, would you like to automatically download it from github?")
 (defconst parinfer-rust--outdated-version "You are using a parinfer-rust library that is not compatible with this file, would you like to download the appropriate file from github?")
 
-(defvar  parinfer-rust--download-url "https://github.com/justinbarclay/parinfer-rust/releases/download/v%s/%s"
+(defvar  parinfer-rust--download-url "https://github.com/justinbarclay/parinfer-rust-emacs/releases/download/v%s/%s"
   "The url to download the parinfer-rust library from.
 
 This should be a format string that takes two arguments, the
