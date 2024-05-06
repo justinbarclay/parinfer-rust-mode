@@ -555,6 +555,12 @@ This includes stopping tracking of all changes."
       (setq-local parinfer-rust--disable nil)
     (setq-local parinfer-rust--disable t)))
 
+(defun parinfer-rust--auto-apply-fast-mode ()
+  "Switch to the fast buffer replace strategy when the buffer is over 1000 lines."
+    (when (< 1000 (count-lines (point-min)
+                             (point-max)))
+      (setq-local parinfer-rust-buffer-replace-strategy 'fast)))
+
 (defun parinfer-rust-mode-enable ()
   "Enable Parinfer."
   ;; Make sure the library is installed at the appropriate location or offer to download it
@@ -634,5 +640,6 @@ not available."
    (t
     (parinfer-rust-mode-enable))))
 
+(setq-default parinfer-rust-mode-hook '(parinfer-rust--auto-apply-fast-mode))
 (provide 'parinfer-rust-mode)
 ;;; parinfer-rust-mode.el ends here
