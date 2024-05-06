@@ -53,6 +53,7 @@
   (declare-function parinfer-rust-new-change "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-make-changes "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-add-change "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust--execute "parinfer-rust-mode" t t)
   (defvar parinfer-rust-library
     (concat user-emacs-directory "parinfer-rust/"
             (cond

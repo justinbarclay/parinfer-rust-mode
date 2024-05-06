@@ -25,8 +25,10 @@
 
 ;;; Code:
 (eval-when-compile
+  (declare-function parinfer-rust-mode-enable "parinfer-rust-mode")
   (defvar parinfer-rust--mode)
-  (defvar parinfer-rust-dim-parens))
+  (defvar parinfer-rust-dim-parens)
+  (defvar parinfer-rust-mode))
 (require 'url)
 
 (defcustom parinfer-rust-troublesome-modes

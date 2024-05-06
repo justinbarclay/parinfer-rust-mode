@@ -236,6 +236,8 @@ against and is known to be api compatible.")
   :type 'boolean
   :group 'parinfer-rust-mode)
 
+(define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
+
 (defcustom parinfer-rust-buffer-replace-strategy 'safe
   "The strategy to use when replacing the buffer's text.
 
@@ -249,8 +251,6 @@ node `(elisp)Replacing'"
   :type '(radio (const :tag "Safe" safe)
                 (const :tag "Fast" fast))
   :group 'parinfer-rust-mode)
-
-(define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
 
 (defvar parinfer-rust--option-type '(plist
                                      :key-type symbol
@@ -523,16 +523,16 @@ parinfer."
 
 This mutates the current reference to `OPTIONS'
 Ex:
-  (parinfer-rust--set-options parinfer-rust--previous-options ;; '((:cursor-x . 1) (:cursor-line . 1))
-                               '(:cursor-x 2 :cursor-line 2))
-;;=> '((:cursor-x . 2) (:cursor-line . 2))"
-  (mapcar (lambda (option)
-            ;; Note to self set-option might need to clone in order to keep old option immutable
-            (parinfer-rust-set-option options
-                                      (car option)
-                                      (cadr option)))
-             ;; partition plist into key-value pairs
-          (seq-partition new-options 2))
+  (parinfer-rust--set-options parinfer-rust--previous-options ;; \='((:cursor-x . 1) (:cursor-line . 1))
+                               \='(:cursor-x 2 :cursor-line 2))
+;;=> \='((:cursor-x . 2) (:cursor-line . 2))"
+  (mapc (lambda (option)
+          ;; Note to self set-option might need to clone in order to keep old option immutable
+          (parinfer-rust-set-option options
+                                    (car option)
+                                    (cadr option)))
+        ;; partition plist into key-value pairs
+        (seq-partition new-options 2))
   options)
 
 ;; The change interface and associated functions for change tracking
