@@ -6,7 +6,15 @@
 [[file:https://raw.githubusercontent.com/ocodo/parinfer-logo/master/pngs/parinfer-org-logo-128x128.png]]
 
 * Parinfer
-  [[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library is a minimalistic wrapper around [[https://github.com/eraserhd/parinfer-rust][eraserhd/parinfer-rust]] to provide an Emacs minor mode. parinfer-rust-mode aims to be a simpler adaptation of Parinfer that only offers "smart mode", leveraging the parinfer-rust plugin to do most of the heavy lifting.
+[[https://shaunlebron.github.io/parinfer/][Parinfer]] is a plugin that aims to make writing lisp simple. This library is a minimalistic wrapper around [[https://github.com/justinbarclay/parinfer-rust][justinbarclay/parinfer-rust-emacs]], an Emacs-centric fork of [[https://github.com/eraserhd/parinfer-rust][eraserhd/parinfer-rust]], to provide an Emacs minor mode. parinfer-rust-mode aims to be a simple implementation of Parinfer that leverages the parinfer-rust plugin to do most of the heavy lifting.
+
+#+begin_quote
+[!WARNING]
+Version 0.9 and greater of ~parinfer-rust-mode~ only supports my fork of ~parinfer-rust~, ~parinfer-rust-emacs~. My primary reason for forking was to add better support for ~parinfer-rust~ options, which will allow ~parinfer-rust-mode~ to work better with non-clojure-like lisps. You can read more [[https://github.com/justinbarclay/parinfer-rust/discussions/9][here]].
+
+For those wanting to continue using ~parinfer-rust~, you should pin your install to version 0.8.5.
+#+end_quote
+
 ** Capabilities:
    - Making code auto-adhere to formatting conventions
    - Influencing expression-nesting with indentation
@@ -72,9 +80,9 @@ If you are using the ==use-package== snippet from above, that would look like:
 
 [fn:1] Don't see your OS/Arch on here? Feel free to open up a PR at [[https://github.com/justinbarclay/parinfer-rust][parinfer-rust-emacs]] and add your OS to the GitHub actions.
 **** Option 2: Building library from sources
-For the more adventurous of you, you can also download the ~parinfer-rust~ library from source and compile it.
-***** Step 1: Build the Parinfer Rust library
-     When compiling manually the library name differs from platform to platform. Additionally, Emacs expects that these libraries have specific file extensions when first loading them up. This is a problem for MacOS because Rust compiles it as ~.dylib~ and we'll need to give the file an ~.so~ extension when we copy it to it's final location.
+For the more adventurous, you can also download and compile the ~parinfer-rust~ library from source.
+***** Step 1: Build the Parinfer Rust Emacs library
+     When manually compiling the library, the file name differs from platform to platform. Additionally, Emacs expects that these libraries have specific file extensions when first loading them up. This is a problem for MacOS because Rust compiles it as ~.dylib~, and we'll need to give the file an ~.so~ extension when we copy it to its final location.
 
      | Platform | File name              | Required extension |
      |----------+------------------------+--------------------|
@@ -83,9 +91,9 @@ For the more adventurous of you, you can also download the ~parinfer-rust~ libra
      | Windows  | parinfer_rust.dll      | .dll               |
 
      #+BEGIN_SRC shell
-       git clone https://github.com/eraserhd/parinfer-rust.git
+       git clone https://github.com/justinbarclay/parinfer-rust-emacs.git
        cd parinfer-rust
-       cargo build --release --features emacs
+       cargo build --release
        cp ./target/release/${library-name} ~/.emacs.d/parinfer-rust/${lib-name}
      #+END_SRC
 ***** Step 2: Configure parinfer-rust-mode
@@ -271,3 +279,4 @@ Ran 143 tests in 0.061 seconds
    - Jason Felice for creating and maintaining the parinfer-rust project
    - tianshu for helping me fall in love with parinfer-mode in Emacs.
    - Andrey Orst for his contributions to this project
+   - Gerry Agbobada for adding support to customize options in parinfer-rust-emacs

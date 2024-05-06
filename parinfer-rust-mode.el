@@ -4,7 +4,7 @@
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.8.8
+;; Version: 0.9.0
 ;; Package-Requires: ((emacs "26.1") (track-changes "1.1"))
 ;; Keywords: lisp tools
 
@@ -26,6 +26,12 @@
 ;;; Commentary:
 
 ;; An intuitive editor mode to make paren management fun and easy without sacrificing power.
+
+;; Installation:
+;;
+;; If you're on Windows, Linux, or Arm Mac parinfer-rust will attempt to install the parinfer-rust
+;; library for you. However, if you want you can compile the library from source at:
+;; https://github.com/justinbarclay/parinfer-rust.
 
 ;; How it works:
 
@@ -137,7 +143,7 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-versions '("0.4.5" "0.4.3")
+(defconst parinfer-rust-supported-versions '("0.4.6")
   "The Supported versions of the parinfer-rust library.
 
 Versions of the library that `parinfer-rust-mode' was tested
@@ -153,10 +159,11 @@ against and is known to be api compatible.")
   (declare-function parinfer-rust-new-options "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-make-request "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-execute "ext:parinfer-rust" t t)
-  (declare-function parinfer-rust-get-in-answer "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-get-answer "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-debug "ext:parinfer-rust" t t)
-  (declare-function parinfer-rust-print-error "ext:parinfer-rust" t t)
   (declare-function parinfer-rust-version "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-set-option "ext:parinfer-rust" t t)
+  (declare-function parinfer-rust-get-option "ext:parinfer-rust" t t)
   (defvar parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so")
@@ -245,6 +252,151 @@ node `(elisp)Replacing'"
 
 (define-obsolete-variable-alias 'parinfer-rust--buffer-replace-strategy 'parinfer-rust-buffer-replace-strategy "0.8.7")
 
+(defvar parinfer-rust--option-type '(plist
+                                     :key-type symbol
+                                     :options ((:force-balance boolean)
+                                               (:return-parens boolean)
+                                               (:partial-result boolean)
+                                               (:lisp-vline-symbols boolean)
+                                               (:lisp-block-comments boolean)
+                                               (:guile-block-comments boolean)
+                                               (:scheme-sexp-comments boolean)
+                                               (:janet-long-strings boolean)
+                                               (:comment-char string)
+                                               (:string-delimiters (repeat string)))
+                                     :value-type (choice boolean string (repeat string)))
+  "The available options to pass to the parinfer-rust library.
+
+These options are used to configure the behavior of the
+parinfer-rust library to handle special cases in different lisps
+and schemes.
+
+The available options are:
+
+  - `:force-balance': employ the aggressive paren-balancing rules
+    from v1.
+    - Type: boolean
+    - Default: nil
+
+  - `:return-parens': return the parens in the result text.
+    - Type: boolean
+    - Default: nil
+
+  - `:partial-result': return partially processed text/cursor if
+    an error occurs
+
+    - Type: boolean
+    - Default: nil
+
+  - `:lisp-vline-symbols': recognize |lisp-style vline symbol|s.
+    - Type: boolean
+    - Default: nil
+
+  - `:lisp-block-comments': recognize #|lisp-style block comments|#.
+    - Type: boolean
+    - Default: nil
+
+  - `:guile-block-comments': recognize #!/guile/block/comments \\n!#
+    - Type: boolean
+    - Default: nil
+
+  - `:scheme-sexp-comments': recognize #;( scheme sexp comments )
+    - Type: boolean
+    - Default: nil
+
+  - `:janet-long-strings': recognize ``` janet-style long strings ```
+    - Type: boolean
+    - Default: nil
+
+  - `:comment-char': a character (ie: string of length 1) that
+    should be considered comments in the code
+    - Type: string
+    - Default: \";\"
+
+  - `:string-delimiters' - the delimiters used for strings.
+    - Type: (repeat string)
+    - Default: (\"\\\"\")")
+
+
+(defvar parinfer-rust--default-options '(:force-balance nil
+                                         :return-parens nil
+                                         :partial-result nil
+                                         :lisp-vline-symbols nil
+                                         :lisp-block-comments nil
+                                         :guile-block-comments nil
+                                         :scheme-sexp-comments nil
+                                         :janet-long-strings nil
+                                         :comment-char ";"
+                                         :string-delimiters ("\""))
+   "The set of options parinfer-rust considers default.
+
+This is here mainly as reference for what is available to pass to
+the library and what needs to be changed for major mode specific
+implementations.")
+
+(defcustom parinfer-rust-clojure-options '()
+  "Options to configure parinfer-rust for clojure mode.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-janet-options '(:comment-char "#")
+  "Options to configure parinfer-rust for janet.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-lisp-options '(:lisp-vline-symbols t
+                                        :lisp-block-comments t)
+  "Options to configure parinfer-rust for LISP.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-racket-options '(:lisp-vline-symbols t
+                                          :lisp-block-comments t
+                                          :scheme-sexp-comments t)
+  "Options to configure parinfer-rust for racket.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-guile-options '(:lisp-vline-symbols t
+                                         :lisp-block-comments t
+                                         :guile-block-comments t
+                                         :scheme-sexp-comments t)
+  "Options to configure parinfer-rust for guile.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defcustom parinfer-rust-scheme-options '(:lisp-vline-symbols t
+                                          :lisp-block-comments t
+                                          :scheme-sexp-comments t)
+  "Options to configure parinfer-rust for scheme.
+
+See `parinfer-rust--option-type' for a more complete explanation of the options."
+  :type parinfer-rust--option-type
+  :group 'parinfer-rust-mode)
+
+(defvar parinfer-rust-major-mode-options
+  (list
+   'clojure-mode parinfer-rust-clojure-options
+   'clojurec-mode parinfer-rust-clojure-options
+   'clojurescript-mode parinfer-rust-clojure-options
+   'janet-mode parinfer-rust-janet-options
+   'common-lisp-mode parinfer-rust-lisp-options
+   'racket-mode parinfer-rust-racket-options
+   'scheme-mode parinfer-rust-scheme-options
+   ;; This doesn't work - there is no guile mode but I am not sure what we can
+   ;; use to set guile specific options
+   'guile-mode parinfer-rust-guile-options)
+  "Major mode specific options for that controls how the parinfer-rust library behaves.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -296,6 +448,7 @@ command should be run in.")
 Either `paren', `indent', or `smart'.")
 (defvar-local parinfer-rust--previous-options nil
   "The last set of record of changes and meta information of changes in the buffer.")
+
 ;; TODO this might be not needed anymore
 (defvar-local parinfer-rust--disable nil "Temporarily disable parinfer.")
 (defvar-local parinfer-rust--previous-buffer-text ""
@@ -317,15 +470,18 @@ Used for toggling between paren mode and last active mode.")
 
 Good for switching modes, after an undo, or when first starting
 parinfer."
-  (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
-                                               (parinfer-rust-make-option)
-                                               (parinfer-rust-make-changes)))
-  (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties
-                                                   (point-min)
-                                                   (point-max)))
-  (setq-local parinfer-rust--changes nil)
-  (setq-local parinfer-rust--disable nil))
-
+  (let ((major-mode-defaults (or (plist-get parinfer-rust-major-mode-options major-mode)
+                                 parinfer-rust--default-options)))
+    (setq-local parinfer-rust--previous-options (parinfer-rust--generate-options
+                                                 (parinfer-rust--set-options
+                                                   (parinfer-rust-make-option)
+                                                   major-mode-defaults)
+                                                 (parinfer-rust-make-changes)))
+    (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties
+                                                     (point-min)
+                                                     (point-max)))
+    (setq-local parinfer-rust--changes nil)
+    (setq-local parinfer-rust--disable nil)))
 
 ;; The idea for this function:
 ;;
@@ -362,6 +518,23 @@ parinfer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interfaces for parinfer-rust
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun parinfer-rust--set-options (options new-options)
+  "Update the `OPTIONS' with values in the plist `NEW-OPTIONS'.
+
+This mutates the current reference to `OPTIONS'
+Ex:
+  (parinfer-rust--set-options parinfer-rust--previous-options ;; '((:cursor-x . 1) (:cursor-line . 1))
+                               '(:cursor-x 2 :cursor-line 2))
+;;=> '((:cursor-x . 2) (:cursor-line . 2))"
+  (mapcar (lambda (option)
+            ;; Note to self set-option might need to clone in order to keep old option immutable
+            (parinfer-rust-set-option options
+                                      (car option)
+                                      (cadr option)))
+             ;; partition plist into key-value pairs
+          (seq-partition new-options 2))
+  options)
+
 ;; The change interface and associated functions for change tracking
 ;; can be found in parinfer-rust-changes.el
 (defun parinfer-rust--generate-options (old-options changes)
@@ -421,13 +594,13 @@ CHANGES."
                                                                                   (point-max))
                                                   options))
              (answer (parinfer-rust-execute request))
-             (replacement-string (parinfer-rust-get-in-answer answer "text"))
-             (error-p (parinfer-rust-get-in-answer answer "error")))
+             (replacement-string (parinfer-rust-get-answer answer :text))
+             (error-p (parinfer-rust-get-answer answer :error)))
         (when (and (local-variable-if-set-p 'parinfer-rust--in-debug)
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
         (if error-p
-            (message "%s" (parinfer-rust-print-error error-p)) ;; TODO handle errors
+            (message "%s" error-p) ;; TODO handle errors
           ;; This stops Emacs from flickering when scrolling
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string))
               (save-mark-and-excursion
@@ -446,8 +619,8 @@ CHANGES."
                     (replace-buffer-contents new-buf 1))
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
-        (when-let ((new-x (parinfer-rust-get-in-answer answer "cursor_x"))
-                   (new-line (parinfer-rust-get-in-answer answer "cursor_line")))
+        (when-let ((new-x (parinfer-rust-get-answer answer :cursor-x))
+                   (new-line (parinfer-rust-get-answer answer :cursor-line)))
           (parinfer-rust--reposition-cursor new-x new-line))
         (setq parinfer-rust--previous-options options)
         (when parinfer-rust--change-tracker
@@ -642,4 +815,5 @@ not available."
 
 (setq-default parinfer-rust-mode-hook '(parinfer-rust--auto-apply-fast-mode))
 (provide 'parinfer-rust-mode)
+
 ;;; parinfer-rust-mode.el ends here

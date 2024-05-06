@@ -101,18 +101,18 @@
 
 ;; Shadow function form parinfer-rust-mode because it executes buffer before everything is set-up in some test cases
 (define-minor-mode parinfer-rust-mode
-  "A simpler way to write lisps"
+    "A simpler way to write lisps"
   :lighter " parinfer"
   :init-value nil
   :keymap parinfer-rust-mode-map
-  (if parinfer-rust-mode
+  (if (not parinfer-rust-mode)
       (parinfer-rust-mode-disable)
     (progn
       (parinfer-rust--check-version parinfer-rust-supported-versions
                                     (parinfer-rust-version)
                                     parinfer-rust-library
                                     parinfer-rust--lib-name)
-      (indent-tabs-mode 0)
+      (setq-local parinfer-rust-disable-troublesome-modes t)
       ;; Disable checks for deferral and do not run --execute on initialization
       ;; this breaks a lot of test because they expect the buffer to be in a specific state
       (parinfer-rust-mode-setup))))
