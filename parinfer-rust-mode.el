@@ -385,18 +385,20 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
   :group 'parinfer-rust-mode)
 
 (defvar parinfer-rust-major-mode-options
-  (list
-   'clojure-mode parinfer-rust-clojure-options
-   'clojurec-mode parinfer-rust-clojure-options
-   'clojurescript-mode parinfer-rust-clojure-options
-   'janet-mode parinfer-rust-janet-options
-   'common-lisp-mode parinfer-rust-lisp-options
-   'racket-mode parinfer-rust-racket-options
-   'scheme-mode parinfer-rust-scheme-options
-   ;; This doesn't work - there is no guile mode but I am not sure what we can
-   ;; use to set guile specific options
-   'guile-mode parinfer-rust-guile-options)
-  "Major mode specific options for that controls how the parinfer-rust library behaves.")
+  (list 'clojure-mode parinfer-rust-clojure-options
+        'clojurec-mode parinfer-rust-clojure-options
+        'clojurescript-mode parinfer-rust-clojure-options
+        'clojure-ts-mode parinfer-rust-clojure-options
+        'clojure-ts-clojurescript-mode parinfer-rust-clojure-options
+        'janet-mode parinfer-rust-janet-options
+        'common-lisp-mode parinfer-rust-lisp-options
+        'racket-mode parinfer-rust-racket-options
+        'scheme-mode parinfer-rust-scheme-options)
+  ;; Rewrite this string to be more readable
+  "A plist that controls how parinfer-rust behaves for a given major mode.
+
+For more information see `parinfer-rust--option-type'")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
