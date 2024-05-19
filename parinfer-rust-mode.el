@@ -719,6 +719,7 @@ Checks if MODE is a valid Parinfer mode, and uses
     (track-changes-unregister parinfer-rust--change-tracker)
     (setq-local parinfer-rust--change-tracker nil))
   (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t)
+  (setq-local parinfer-rust--disable nil)
   (parinfer-rust--dim-parens))
 
 (defun parinfer-rust-toggle-disable ()
