@@ -815,7 +815,7 @@ not available."
    (t
     (parinfer-rust-mode-enable))))
 
-(setq-default parinfer-rust-mode-hook '(parinfer-rust--auto-apply-fast-mode))
+
 (provide 'parinfer-rust-mode)
 
 ;;; parinfer-rust-mode.el ends here
