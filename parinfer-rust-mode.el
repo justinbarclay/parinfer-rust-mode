@@ -671,6 +671,8 @@ If a change is detected in the buffer, prompt the user to see if they still want
 Disable `parinfer-rust-mode' if the user does not want to have
 parinfer autofix them, or if there is no reasonable way for
 `parinfer-rust-mode' to automatically fix them."
+  ;; TODO: this should only run the first time the buffer is actually changed.
+  ;; buffer searching or navigating should not trigger this.
   (setq-local parinfer-rust--disable nil)
   ;; Disable change tracker for now because we are about to make changes in an change hook.
   (track-changes-unregister parinfer-rust--change-tracker)
@@ -682,7 +684,7 @@ parinfer autofix them, or if there is no reasonable way for
     (setq-local parinfer-rust--change-tracker
                 (track-changes-register #'parinfer-rust--changes-signal
                                         :disjoint t)))
-  (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t))
+  (remove-hook 'pre-command-hook #'parinfer-rust--check-for-issues t))
 
 (defun parinfer-rust--switch-mode (&optional mode)
   "Switch to a different Parinfer MODE.
@@ -724,7 +726,7 @@ Checks if MODE is a valid Parinfer mode, and uses
   (when parinfer-rust--change-tracker
     (track-changes-unregister parinfer-rust--change-tracker)
     (setq-local parinfer-rust--change-tracker nil))
-  (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t)
+  (remove-hook 'pre-command-hook #'parinfer-rust--check-for-issues t)
   (setq-local parinfer-rust--disable nil)
   (parinfer-rust--dim-parens))
 
@@ -764,8 +766,7 @@ This includes stopping tracking of all changes."
                    buffer-read-only)
                ;; Defer checking for changes until a user changes the buffer
                (setq-local parinfer-rust--disable t)
-               (add-hook 'first-change-hook #'parinfer-rust--check-for-issues nil t))
-
+               (add-hook 'pre-command-hook #'parinfer-rust--check-for-issues nil t))
               ((eq 'immediate parinfer-rust-check-before-enable)
                (setq-local parinfer-rust--disable t)
                (parinfer-rust--check-for-issues))
