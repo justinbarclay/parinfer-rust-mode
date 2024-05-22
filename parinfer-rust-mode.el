@@ -384,6 +384,18 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
   :type parinfer-rust--option-type
   :group 'parinfer-rust-mode)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setup
+;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'parinfer-rust parinfer-rust-library t)
+(require 'parinfer-rust-changes)
+
+(require 'subr-x)
+(require 'font-lock)
+
+(defconst parinfer-rust--mode-types '("indent" "smart" "paren")
+  "The different modes that parinfer can operate on.")
+
 (defvar parinfer-rust-major-mode-options
   (list 'clojure-mode parinfer-rust-clojure-options
         'clojurec-mode parinfer-rust-clojure-options
@@ -398,19 +410,6 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
   "A plist that controls how parinfer-rust behaves for a given major mode.
 
 For more information see `parinfer-rust--option-type'")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Setup
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defconst parinfer-rust--mode-types '("indent" "smart" "paren")
-  "The different modes that parinfer can operate on.")
-
-(require 'parinfer-rust parinfer-rust-library t)
-(require 'parinfer-rust-changes)
-
-(require 'subr-x)
-(require 'font-lock)
 
 ;; Check version and prompt to download latest version if out of date
 ;; Problem: Emacs can't reload dynamic libraries, which means that if we

@@ -87,7 +87,7 @@
     changes))
 
 (defun parinfer-rust--fetch-changes (id)
-  "Fetch changes for current buffer using signal ID."
+  "Fetch change for current buffer using signal ID."
   (track-changes-fetch id
                        (lambda (start end before)
                          (if parinfer-rust--disable
@@ -111,7 +111,7 @@
                                    parinfer-rust--changes))))))
 
 (defun parinfer-rust--changes-signal (id &optional distance)
-  "Signal changes for ID with optional DISTANCE."
+  "Signal change for ID with optional DISTANCE."
   (parinfer-rust--fetch-changes id)
   (if distance
       ;; We're still in the middle of changes, but they're "far",
