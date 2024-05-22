@@ -614,10 +614,17 @@ CHANGES."
                   (switch-to-buffer current)
                   (if (eq parinfer-rust-buffer-replace-strategy
                           'fast)
-                      (progn
+                      (let ((window-start-pos (window-start)))
                         (delete-region (point-min)
                                        (point-max))
-                        (insert-buffer-substring new-buf))
+                        (insert-buffer-substring new-buf)
+                        (when (not (= window-start-pos
+                                      (window-start)))
+                          ;; If the buffer is not pixel aligned, this will cause a slight jump. But
+                          ;; if we want speed and not to jump around too much, this is the best we
+                          ;; can do for now. I wish there was a way to maintain buffer height with
+                          ;; pixel precision.
+                          (set-window-start (selected-window) window-start-pos)))
                     (replace-buffer-contents new-buf 1))
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
