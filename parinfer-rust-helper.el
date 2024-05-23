@@ -28,6 +28,7 @@
   (declare-function parinfer-rust-mode-enable "parinfer-rust-mode")
   (defvar parinfer-rust--mode)
   (defvar parinfer-rust-dim-parens)
+  (defvar parinfer-rust-buffer-replace-strategy)
   (defvar parinfer-rust-mode))
 (require 'url)
 
@@ -139,7 +140,10 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
 
 If the user does not disable these modes then it may cause bugs or crashes"
   (let ((warning-list))
-    (dolist (mode parinfer-rust-troublesome-modes)
+    (dolist (mode (if (eq parinfer-rust-buffer-replace-strategy
+                          'fast)
+                      (cons 'flyspell-mode parinfer-rust-troublesome-modes)
+                    parinfer-rust-troublesome-modes))
       (when (parinfer-rust--is-active-minor-mode mode)
         (push mode warning-list)))
     (if (and
