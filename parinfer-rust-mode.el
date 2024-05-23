@@ -384,31 +384,32 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
   :type parinfer-rust--option-type
   :group 'parinfer-rust-mode)
 
-(defvar parinfer-rust-major-mode-options
-  (list
-   'clojure-mode parinfer-rust-clojure-options
-   'clojurec-mode parinfer-rust-clojure-options
-   'clojurescript-mode parinfer-rust-clojure-options
-   'janet-mode parinfer-rust-janet-options
-   'common-lisp-mode parinfer-rust-lisp-options
-   'racket-mode parinfer-rust-racket-options
-   'scheme-mode parinfer-rust-scheme-options
-   ;; This doesn't work - there is no guile mode but I am not sure what we can
-   ;; use to set guile specific options
-   'guile-mode parinfer-rust-guile-options)
-  "Major mode specific options for that controls how the parinfer-rust library behaves.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defconst parinfer-rust--mode-types '("indent" "smart" "paren")
-  "The different modes that parinfer can operate on.")
-
 (require 'parinfer-rust parinfer-rust-library t)
 (require 'parinfer-rust-changes)
 
 (require 'subr-x)
 (require 'font-lock)
+
+(defconst parinfer-rust--mode-types '("indent" "smart" "paren")
+  "The different modes that parinfer can operate on.")
+
+(defvar parinfer-rust-major-mode-options
+  (list 'clojure-mode parinfer-rust-clojure-options
+        'clojurec-mode parinfer-rust-clojure-options
+        'clojurescript-mode parinfer-rust-clojure-options
+        'clojure-ts-mode parinfer-rust-clojure-options
+        'clojure-ts-clojurescript-mode parinfer-rust-clojure-options
+        'janet-mode parinfer-rust-janet-options
+        'common-lisp-mode parinfer-rust-lisp-options
+        'racket-mode parinfer-rust-racket-options
+        'scheme-mode parinfer-rust-scheme-options)
+  ;; Rewrite this string to be more readable
+  "A plist that controls how parinfer-rust behaves for a given major mode.
+
+For more information see `parinfer-rust--option-type'")
 
 ;; Check version and prompt to download latest version if out of date
 ;; Problem: Emacs can't reload dynamic libraries, which means that if we
@@ -612,10 +613,17 @@ CHANGES."
                   (switch-to-buffer current)
                   (if (eq parinfer-rust-buffer-replace-strategy
                           'fast)
-                      (progn
+                      (let ((window-start-pos (window-start)))
                         (delete-region (point-min)
                                        (point-max))
-                        (insert-buffer-substring new-buf))
+                        (insert-buffer-substring new-buf)
+                        (when (not (= window-start-pos
+                                      (window-start)))
+                          ;; If the buffer is not pixel aligned, this will cause a slight jump. But
+                          ;; if we want speed and not to jump around too much, this is the best we
+                          ;; can do for now. I wish there was a way to maintain buffer height with
+                          ;; pixel precision.
+                          (set-window-start (selected-window) window-start-pos)))
                     (replace-buffer-contents new-buf 1))
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
@@ -663,6 +671,8 @@ If a change is detected in the buffer, prompt the user to see if they still want
 Disable `parinfer-rust-mode' if the user does not want to have
 parinfer autofix them, or if there is no reasonable way for
 `parinfer-rust-mode' to automatically fix them."
+  ;; TODO: this should only run the first time the buffer is actually changed.
+  ;; buffer searching or navigating should not trigger this.
   (setq-local parinfer-rust--disable nil)
   ;; Disable change tracker for now because we are about to make changes in an change hook.
   (track-changes-unregister parinfer-rust--change-tracker)
@@ -674,7 +684,7 @@ parinfer autofix them, or if there is no reasonable way for
     (setq-local parinfer-rust--change-tracker
                 (track-changes-register #'parinfer-rust--changes-signal
                                         :disjoint t)))
-  (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t))
+  (remove-hook 'pre-command-hook #'parinfer-rust--check-for-issues t))
 
 (defun parinfer-rust--switch-mode (&optional mode)
   "Switch to a different Parinfer MODE.
@@ -716,7 +726,8 @@ Checks if MODE is a valid Parinfer mode, and uses
   (when parinfer-rust--change-tracker
     (track-changes-unregister parinfer-rust--change-tracker)
     (setq-local parinfer-rust--change-tracker nil))
-  (remove-hook 'first-change-hook #'parinfer-rust--check-for-issues t)
+  (remove-hook 'pre-command-hook #'parinfer-rust--check-for-issues t)
+  (setq-local parinfer-rust--disable nil)
   (parinfer-rust--dim-parens))
 
 (defun parinfer-rust-toggle-disable ()
@@ -755,8 +766,7 @@ This includes stopping tracking of all changes."
                    buffer-read-only)
                ;; Defer checking for changes until a user changes the buffer
                (setq-local parinfer-rust--disable t)
-               (add-hook 'first-change-hook #'parinfer-rust--check-for-issues nil t))
-
+               (add-hook 'pre-command-hook #'parinfer-rust--check-for-issues nil t))
               ((eq 'immediate parinfer-rust-check-before-enable)
                (setq-local parinfer-rust--disable t)
                (parinfer-rust--check-for-issues))
@@ -813,7 +823,7 @@ not available."
    (t
     (parinfer-rust-mode-enable))))
 
-(setq-default parinfer-rust-mode-hook '(parinfer-rust--auto-apply-fast-mode))
+
 (provide 'parinfer-rust-mode)
 
 ;;; parinfer-rust-mode.el ends here

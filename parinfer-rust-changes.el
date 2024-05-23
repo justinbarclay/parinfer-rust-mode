@@ -87,7 +87,7 @@
     changes))
 
 (defun parinfer-rust--fetch-changes (id)
-  "Fetch changes for current buffer using signal ID."
+  "Fetch change for current buffer using signal ID."
   (track-changes-fetch id
                        (lambda (start end before)
                          (if parinfer-rust--disable
@@ -102,16 +102,13 @@
                                         (parinfer-rust--get-cursor-x)))))
                              (push (list 'lineNo lineNo
                                          'x x
-                                         'start start
-                                         'end end
                                          'length (length before)
                                          'before-text before
-                                         'after-text (buffer-substring-no-properties start end)
-                                         'group nil)
+                                         'after-text (buffer-substring-no-properties start end))
                                    parinfer-rust--changes))))))
 
 (defun parinfer-rust--changes-signal (id &optional distance)
-  "Signal changes for ID with optional DISTANCE."
+  "Signal change for ID with optional DISTANCE."
   (parinfer-rust--fetch-changes id)
   (if distance
       ;; We're still in the middle of changes, but they're "far",

@@ -28,6 +28,7 @@
   (declare-function parinfer-rust-mode-enable "parinfer-rust-mode")
   (defvar parinfer-rust--mode)
   (defvar parinfer-rust-dim-parens)
+  (defvar parinfer-rust-buffer-replace-strategy)
   (defvar parinfer-rust-mode))
 (require 'url)
 
@@ -139,7 +140,10 @@ Uses PARINFER-RUST-VERSION to download a compatible version of the library."
 
 If the user does not disable these modes then it may cause bugs or crashes"
   (let ((warning-list))
-    (dolist (mode parinfer-rust-troublesome-modes)
+    (dolist (mode (if (eq parinfer-rust-buffer-replace-strategy
+                          'fast)
+                      (cons 'flyspell-mode parinfer-rust-troublesome-modes)
+                    parinfer-rust-troublesome-modes))
       (when (parinfer-rust--is-active-minor-mode mode)
         (push mode warning-list)))
     (if (and
@@ -242,6 +246,7 @@ mode to better emulate users."
     (cond ((< num 0) 0)
           ((> num max) max)
           (t num))))
+
 (defun parinfer-rust--defer-loading (&rest _)
   "Defer loading of `parinfer-rust-mode' until the buffer is in focus."
   ;; This is a parinfer enabled buffer that started in the background and has now been moved to the foreground
@@ -250,6 +255,7 @@ mode to better emulate users."
                  (window-buffer (selected-window))))
     (remove-hook 'window-selection-change-functions #'parinfer-rust--defer-loading t)
     (parinfer-rust-mode-enable)))
+
 ;; Disable fill column warning only for this buffer to enable long strings of text without
 ;; having to do a weird mapconcat.
 ;; Local Variables:
