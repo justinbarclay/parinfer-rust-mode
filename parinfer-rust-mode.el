@@ -178,6 +178,16 @@ against and is known to be api compatible.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User customization options
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgroup parinfer-rust-mode nil
+  "Smart paren management for lisps using the parinfer-rust library."
+  :group 'lisp
+  :prefix "parinfer-rust-")
+
+(defgroup parinfer-rust-options nil
+  "Language specific options for parinfer-rust."
+  :group 'parinfer-rust-mode
+  :prefix "parinfer-rust-")
+
 (defcustom parinfer-rust-auto-download nil
   "Automatically download the latest version of parinfer-rust from GitHub."
   :type 'boolean
@@ -339,14 +349,14 @@ implementations.")
 
 See `parinfer-rust--option-type' for a more complete explanation of the options."
   :type parinfer-rust--option-type
-  :group 'parinfer-rust-mode)
+  :group 'parinfer-rust-options)
 
 (defcustom parinfer-rust-janet-options '(:comment-char "#")
   "Options to configure parinfer-rust for janet.
 
 See `parinfer-rust--option-type' for a more complete explanation of the options."
   :type parinfer-rust--option-type
-  :group 'parinfer-rust-mode)
+  :group 'parinfer-rust-options)
 
 (defcustom parinfer-rust-lisp-options '(:lisp-vline-symbols t
                                         :lisp-block-comments t)
@@ -354,7 +364,7 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 
 See `parinfer-rust--option-type' for a more complete explanation of the options."
   :type parinfer-rust--option-type
-  :group 'parinfer-rust-mode)
+  :group 'parinfer-rust-options)
 
 (defcustom parinfer-rust-racket-options '(:lisp-vline-symbols t
                                           :lisp-block-comments t
@@ -363,7 +373,7 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 
 See `parinfer-rust--option-type' for a more complete explanation of the options."
   :type parinfer-rust--option-type
-  :group 'parinfer-rust-mode)
+  :group 'parinfer-rust-options)
 
 (defcustom parinfer-rust-guile-options '(:lisp-vline-symbols t
                                          :lisp-block-comments t
@@ -373,7 +383,7 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 
 See `parinfer-rust--option-type' for a more complete explanation of the options."
   :type parinfer-rust--option-type
-  :group 'parinfer-rust-mode)
+  :group 'parinfer-rust-options)
 
 (defcustom parinfer-rust-scheme-options '(:lisp-vline-symbols t
                                           :lisp-block-comments t
@@ -382,7 +392,7 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 
 See `parinfer-rust--option-type' for a more complete explanation of the options."
   :type parinfer-rust--option-type
-  :group 'parinfer-rust-mode)
+  :group 'parinfer-rust-options)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup
@@ -664,6 +674,7 @@ If a change is detected in the buffer, prompt the user to see if they still want
         (let ((parinfer-rust--mode "paren"))
           (parinfer-rust--execute))
       t)))
+
 
 (defun parinfer-rust--check-for-issues (&rest _)
   "Check for issues that can cause unwanted behaviors.
