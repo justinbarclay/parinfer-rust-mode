@@ -351,7 +351,8 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
   :type parinfer-rust--option-type
   :group 'parinfer-rust-options)
 
-(defcustom parinfer-rust-janet-options '(:comment-char "#")
+(defcustom parinfer-rust-janet-options '(:comment-char "#"
+                                         :janet-long-strings t)
   "Options to configure parinfer-rust for janet.
 
 See `parinfer-rust--option-type' for a more complete explanation of the options."
