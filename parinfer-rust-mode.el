@@ -594,7 +594,10 @@ CHANGES."
                     ;; those parinfer expects.
                     (setq parinfer-rust--changes nil)
                     mode)
-                parinfer-rust--mode))
+                ;; Through impropriety or mistakes parinfer-rust--mode _could_ be set to nil.
+                ;; So let's make sure a sensible default is set just in case.
+                (or parinfer-rust--mode
+                    "paren")))
              (old-options (or (parinfer-rust--local-bound-and-true parinfer-rust--previous-options)
                               (parinfer-rust-make-option)))
              (changes (if (> (length parinfer-rust--changes) 0)
@@ -718,7 +721,11 @@ Checks if MODE is a valid Parinfer mode, and uses
   "Enable Parinfer."
   (parinfer-rust--detect-troublesome-modes)
   (parinfer-rust--set-default-state)
-  (setq-local parinfer-rust--mode parinfer-rust-preferred-mode)
+  (setq-local parinfer-rust--mode (if (stringp parinfer-rust-preferred-mode)
+                                      parinfer-rust-preferred-mode
+                                    (and (symbolp parinfer-rust-preferred-mode)
+                                     (symbol-name parinfer-rust-preferred-mode))))
+
   (advice-add 'undo :around #'parinfer-rust--track-undo)
   (advice-add 'undo-tree-undo :around #'parinfer-rust--track-undo)
   (if (fboundp 'track-changes-register)
