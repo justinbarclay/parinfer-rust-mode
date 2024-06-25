@@ -635,10 +635,9 @@ CHANGES."
                       (setq was-replaced-safely-safely (replace-buffer-contents new-buf 1)))
                     (when (and (not was-replaced-safely)
                                (not (= window-start-pos (window-start))))
-                      ;; If the buffer is not pixel aligned, this will cause a slight jump. But
-                      ;; if we want speed and not to jump around too much, this is the best we
-                      ;; can do for now. I wish there was a way to maintain buffer height with
-                      ;; pixel precision.
+                      ;; If the buffer is not pixel aligned, this will cause a slight jump. But if
+                      ;; we want speed and not to jump around too much, this is the best we can do
+                      ;; for now.
                       (set-window-start (selected-window) window-start-pos)))
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
