@@ -626,20 +626,20 @@ CHANGES."
                   (switch-to-buffer new-buf)
                   (insert replacement-string)
                   (switch-to-buffer current)
-                  (if (eq parinfer-rust-buffer-replace-strategy
-                          'fast)
-                      (let ((window-start-pos (window-start)))
-                        (delete-region (point-min)
-                                       (point-max))
-                        (insert-buffer-substring new-buf)
-                        (when (not (= window-start-pos
-                                      (window-start)))
-                          ;; If the buffer is not pixel aligned, this will cause a slight jump. But
-                          ;; if we want speed and not to jump around too much, this is the best we
-                          ;; can do for now. I wish there was a way to maintain buffer height with
-                          ;; pixel precision.
-                          (set-window-start (selected-window) window-start-pos)))
-                    (replace-buffer-contents new-buf 1))
+                  (let ((window-start-pos (window-start))
+                        (was-replaced-safely nil))
+                    (if (eq parinfer-rust-buffer-replace-strategy 'fast)
+                        (progn
+                          (delete-region (point-min) (point-max))
+                          (insert-buffer-substring new-buf))
+                      (setq was-replaced-safely-safely (replace-buffer-contents new-buf 1)))
+                    (when (and (not was-replaced-safely)
+                               (not (= window-start-pos (window-start))))
+                      ;; If the buffer is not pixel aligned, this will cause a slight jump. But
+                      ;; if we want speed and not to jump around too much, this is the best we
+                      ;; can do for now. I wish there was a way to maintain buffer height with
+                      ;; pixel precision.
+                      (set-window-start (selected-window) window-start-pos)))
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
         (when-let ((new-x (parinfer-rust-get-answer answer :cursor-x))
