@@ -166,6 +166,9 @@ against and is known to be api compatible.")
   (declare-function parinfer-rust-get-option "ext:parinfer-rust" t t)
   (defvar parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
+                                   ((or (eq system-type 'gnu/berkeley)
+                                        (eq system-type 'berkeley-unix))
+                                    "parinfer-rust-freebsd.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so")
                                    ((eq system-type 'windows-nt) "parinfer-rust-windows.dll")))
   (defvar parinfer-rust-library-dir
@@ -199,8 +202,8 @@ against and is known to be api compatible.")
 (defconst parinfer-rust--lib-name (cond
                                    ((eq system-type 'darwin) "parinfer-rust-darwin.so")
                                    ((or
-                                     (eq system-type 'gnu/berkley)
-                                     (eq system-type 'berkley-unix))
+                                     (eq system-type 'gnu/berkeley)
+                                     (eq system-type 'berkeley-unix))
                                     "parinfer-rust-freebsd.so")
                                    ((eq system-type 'gnu/linux) "parinfer-rust-linux.so")
                                    ((eq system-type 'windows-nt) "parinfer-rust-windows.dll"))
