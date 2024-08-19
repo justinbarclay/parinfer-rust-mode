@@ -119,7 +119,7 @@ Parinfer can operate under three different modes when writing lisp.
 ** Commands
    | Command                         | Description                                           |
    |---------------------------------+-------------------------------------------------------|
-   | parinfer-switch-mode            | Quickly switch between paren, indent, and smart modes |
+   | parinfer-rust-switch-mode       | Quickly switch between paren, indent, and smart modes |
    | parinfer-rust-toggle-disable    | Toggle parinfer-rust-mode mode on or off              |
    | parinfer-rust-toggle-paren-mode | Toggle between paren mode and current mode            |
 
