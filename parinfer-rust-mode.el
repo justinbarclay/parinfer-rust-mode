@@ -4,7 +4,7 @@
 
 ;; Author: Justin Barclay <justinbarclay@gmail.com>
 ;; URL: https://github.com/justinbarclay/parinfer-rust-mode
-;; Version: 0.9.0
+;; Version: 0.9.3
 ;; Package-Requires: ((emacs "26.1") (track-changes "1.1"))
 ;; Keywords: lisp tools
 
@@ -143,7 +143,7 @@
 
 ;; 3. Run parinfer-rust and update the state of the buffer accordingly
 
-(defconst parinfer-rust-supported-versions '("0.4.6")
+(defconst parinfer-rust-supported-versions '("0.4.7")
   "The Supported versions of the parinfer-rust library.
 
 Versions of the library that `parinfer-rust-mode' was tested
@@ -614,12 +614,14 @@ CHANGES."
                                                   options))
              (answer (parinfer-rust-execute request))
              (replacement-string (parinfer-rust-get-answer answer :text))
-             (error-p (parinfer-rust-get-answer answer :error)))
+             (parinfer-error (parinfer-rust-get-answer answer :error)))
         (when (and (local-variable-if-set-p 'parinfer-rust--in-debug)
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
-        (if error-p
-            (message "%s" error-p) ;; TODO handle errors
+        (if parinfer-error
+            (message "Problem on line %s: %s"
+             (plist-get parinfer-error :line_no)
+             (plist-get parinfer-error :message)) ;; TODO - Handler errors
           ;; This stops Emacs from flickering when scrolling
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string))
               (save-mark-and-excursion
