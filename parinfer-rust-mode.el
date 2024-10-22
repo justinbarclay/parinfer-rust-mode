@@ -582,7 +582,9 @@ CHANGES."
       (let* ((parinfer-rust--mode
               (if-let ((mode
                         (and (string= "smart" parinfer-rust--mode)
-                             (alist-get this-command parinfer-rust-treat-command-as))))
+                             (alist-get (or this-command
+                                            last-command)
+                                        parinfer-rust-treat-command-as))))
                   (progn
                     ;; By saying a command should run under another mode, we're
                     ;; going to simplify parinfer-rust's behavior and clear all
