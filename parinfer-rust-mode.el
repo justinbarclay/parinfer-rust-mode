@@ -407,6 +407,9 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 (require 'subr-x)
 (require 'font-lock)
 
+(with-eval-after-load 'flycheck
+  (require 'parinfer-rust-flycheck))
+
 (defconst parinfer-rust--mode-types '("indent" "smart" "paren")
   "The different modes that parinfer can operate on.")
 
@@ -620,6 +623,7 @@ CHANGES."
         (when (and (local-variable-if-set-p 'parinfer-rust--in-debug)
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
+        (setq parinfer-rust--errors (list parinfer-error))
         (if parinfer-error
             (message "Problem on line %s: %s"
              (plist-get parinfer-error :line_no)
