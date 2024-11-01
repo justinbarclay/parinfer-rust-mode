@@ -410,6 +410,9 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 (with-eval-after-load 'flycheck
   (require 'parinfer-rust-flycheck))
 
+(with-eval-after-load 'flymake
+  (require 'parinfer-rust-flymake))
+
 (defconst parinfer-rust--mode-types '("indent" "smart" "paren")
   "The different modes that parinfer can operate on.")
 
