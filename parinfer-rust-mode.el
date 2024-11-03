@@ -457,7 +457,7 @@ command should be run in.")
 ;; Local State
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 (defvar-local parinfer-rust--in-debug nil
-  "When enabled, outputs the response input and output of the parinfer response to a file.")
+  "When enabled, writes the input and output of the parinfer response to a file.")
 (defvar-local parinfer-rust--mode "paren"
   "The current mode that parinfer running under to managing your parenthesis.
 
@@ -639,7 +639,7 @@ CHANGES."
                         (progn
                           (delete-region (point-min) (point-max))
                           (insert-buffer-substring new-buf))
-                      (setq was-replaced-safely-safely (replace-buffer-contents new-buf 1)))
+                      (setq was-replaced-safely (replace-buffer-contents new-buf 1)))
                     (when (and (not was-replaced-safely)
                                (not (= window-start-pos (window-start))))
                       ;; If the buffer is not pixel aligned, this will cause a slight jump. But if
