@@ -407,6 +407,12 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
 (require 'subr-x)
 (require 'font-lock)
 
+(with-eval-after-load 'flycheck
+  (require 'parinfer-rust-flycheck))
+
+(with-eval-after-load 'flymake
+  (require 'parinfer-rust-flymake))
+
 (defconst parinfer-rust--mode-types '("indent" "smart" "paren")
   "The different modes that parinfer can operate on.")
 
@@ -620,10 +626,16 @@ CHANGES."
         (when (and (local-variable-if-set-p 'parinfer-rust--in-debug)
                    parinfer-rust--in-debug)
           (parinfer-rust-debug "./parinfer-rust-debug.txt" options answer))
-        (if parinfer-error
+        (setq parinfer-rust--error parinfer-error)
+        ;; If we have an error and are not being reported by a backend, warn the user
+        (if (and parinfer-error
+                 (not (and (boundp 'flycheck-mode)
+                           (memq 'parinfer-rust flycheck--automatically-enabled-checkers)))
+                 (not (and (boundp 'flymake-mode)
+                          (memq 'parinfer-rust-flymake (flymake-reporting-backends)))))
             (message "Problem on line %s: %s"
              (plist-get parinfer-error :line_no)
-             (plist-get parinfer-error :message)) ;; TODO - Handler errors
+             (plist-get parinfer-error :message))
           ;; This stops Emacs from flickering when scrolling
           (if (not (string-equal parinfer-rust--previous-buffer-text replacement-string))
               (save-mark-and-excursion
