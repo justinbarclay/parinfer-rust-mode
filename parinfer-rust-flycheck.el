@@ -66,7 +66,7 @@
 
 (flycheck-add-next-checker 'emacs-lisp 'parinfer-rust)
 
-(add-to-list 'flycheck-checkers 'parinfer-rust)
+(add-to-list 'flycheck-checkers 'parinfer-rust t)
 
 (provide 'parinfer-rust-flycheck)
 ;;; parinfer-rust-flycheck.el ends here
