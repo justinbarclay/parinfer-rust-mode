@@ -30,6 +30,8 @@
 
 (require 'flycheck nil t)
 
+(defvar parinfer-rust--error nil)
+
 (defun parinfer-rust--flycheck-start (checker callback)
   (funcall callback 'finished
            (when-let ((error parinfer-rust--error))
