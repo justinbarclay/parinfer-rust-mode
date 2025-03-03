@@ -30,6 +30,8 @@
 
 (require 'flycheck nil t)
 
+(defvar parinfer-rust--error nil)
+
 (defun parinfer-rust--flycheck-start (checker callback)
   (funcall callback 'finished
            (when-let ((error parinfer-rust--error))
@@ -43,26 +45,26 @@
                :checker checker)))))
 
 (flycheck-define-generic-checker 'parinfer-rust
-    "A checker for parinfer-rust."
-    :start 'parinfer-rust--flycheck-start
-    :verify (lambda (&rest args)
-              (list (flycheck-verification-result-new
-                     :label "parinfer-rust-mode"
-                     :message (if parinfer-rust-mode
-                                  "enabled"
-                                "not enabled"))))
-    :modes '(clojure-mode
-             clojurec-mode
-             clojurescript-mode
-             clojure-ts-mode
-             clojure-ts-clojurescript-mode
-             janet-mode
-             common-lisp-mode
-             lisp-mode
-             racket-mode
-             scheme-mode
-             lisp-interaction-mode
-             emacs-lisp-mode))
+  "A checker for parinfer-rust."
+  :start 'parinfer-rust--flycheck-start
+  :verify (lambda (&rest args)
+            (list (flycheck-verification-result-new
+                   :label "parinfer-rust-mode"
+                   :message (if parinfer-rust-mode
+                                "enabled"
+                              "not enabled"))))
+  :modes '(clojure-mode
+           clojurec-mode
+           clojurescript-mode
+           clojure-ts-mode
+           clojure-ts-clojurescript-mode
+           janet-mode
+           common-lisp-mode
+           lisp-mode
+           racket-mode
+           scheme-mode
+           lisp-interaction-mode
+           emacs-lisp-mode))
 
 (flycheck-add-next-checker 'emacs-lisp 'parinfer-rust)
 
