@@ -545,9 +545,11 @@ parinfer."
 
 This mutates the current reference to `OPTIONS'
 Ex:
-  (parinfer-rust--set-options parinfer-rust--previous-options ;; \='((:cursor-x . 1) (:cursor-line . 1))
-                               \='(:cursor-x 2 :cursor-line 2))
-;;=> \='((:cursor-x . 2) (:cursor-line . 2))"
+  ;; With parinfer-rust--previous-options being: \\='((:cursor-x . 1) (:cursor-line . 1))
+
+  (parinfer-rust--set-options parinfer-rust--previous-options
+                              \\='(:cursor-x 2 :cursor-line 2))
+;;=> \\='((:cursor-x . 2) (:cursor-line . 2))"
   (mapc (lambda (option)
           ;; Note to self set-option might need to clone in order to keep old option immutable
           (parinfer-rust-set-option options
@@ -572,6 +574,8 @@ CHANGES."
                   changes)))
     (setq-local parinfer-rust--changes nil)
     options))
+
+(defvar parinfer-rust--error)           ; prevent byte-compiler warning below.
 
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer."
@@ -630,9 +634,11 @@ CHANGES."
         ;; If we have an error and are not being reported by a backend, warn the user
         (if (and parinfer-error
                  (not (and (boundp 'flycheck-mode)
+                           (boundp 'flycheck--automatically-enabled-checkers)
                            (memq 'parinfer-rust flycheck--automatically-enabled-checkers)))
                  (not (and (boundp 'flymake-mode)
-                          (memq 'parinfer-rust-flymake (flymake-reporting-backends)))))
+                           (fboundp 'flymake-reporting-backends)
+                           (memq 'parinfer-rust-flymake (flymake-reporting-backends)))))
             (message "Problem on line %s: %s"
              (plist-get parinfer-error :line_no)
              (plist-get parinfer-error :message))
