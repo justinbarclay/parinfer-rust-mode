@@ -423,6 +423,7 @@ See `parinfer-rust--option-type' for a more complete explanation of the options.
         'clojure-ts-mode parinfer-rust-clojure-options
         'clojure-ts-clojurescript-mode parinfer-rust-clojure-options
         'janet-mode parinfer-rust-janet-options
+        'janet-ts-mode parinfer-rust-janet-options
         'common-lisp-mode parinfer-rust-lisp-options
         'lisp-mode parinfer-rust-lisp-options
         'racket-mode parinfer-rust-racket-options
