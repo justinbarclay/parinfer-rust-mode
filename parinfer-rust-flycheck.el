@@ -44,10 +44,13 @@
                :id (plist-get error :name)
                :checker checker)))))
 
+(defvar parinfer-rust-mode)   ; prevent byte-compiler warning below
+(declare-function flycheck-verification-result-new "flycheck.el")
+
 (flycheck-define-generic-checker 'parinfer-rust
   "A checker for parinfer-rust."
   :start 'parinfer-rust--flycheck-start
-  :verify (lambda (&rest args)
+  :verify (lambda (&rest _args)
             (list (flycheck-verification-result-new
                    :label "parinfer-rust-mode"
                    :message (if parinfer-rust-mode
@@ -66,9 +69,11 @@
            lisp-interaction-mode
            emacs-lisp-mode))
 
-(flycheck-add-next-checker 'emacs-lisp 'parinfer-rust)
+(when (fboundp 'flycheck-add-next-checker)
+  (flycheck-add-next-checker 'emacs-lisp 'parinfer-rust))
 
-(add-to-list 'flycheck-checkers 'parinfer-rust t)
+(when (boundp 'flycheck-checkers)
+  (add-to-list 'flycheck-checkers 'parinfer-rust t))
 
 (provide 'parinfer-rust-flycheck)
 ;;; parinfer-rust-flycheck.el ends here
