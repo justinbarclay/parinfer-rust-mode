@@ -255,11 +255,11 @@ against and is known to be api compatible.")
   "The strategy to use when replacing the buffer's text.
 
 When set to `safe' the buffer is replaced using the slower but more
-fastiduous `replace-buffer-contents'.
+fastiduous `replace-region-contents'.
 
 When set to `fast' the buffer is replaced using `delete-region'.
 
-For more info on why the default is `replace-buffer-contents', see Info
+For more info on why the default is `replace-region-contents', see Info
 node `(elisp)Replacing'"
   :type '(radio (const :tag "Safe" safe)
                 (const :tag "Fast" fast))
@@ -592,11 +592,11 @@ CHANGES."
       (setq-local parinfer-rust--previous-buffer-text (buffer-substring-no-properties (point-min)
                                                                                       (point-max)))
       (let* ((parinfer-rust--mode
-              (if-let ((mode
-                        (and (string= "smart" parinfer-rust--mode)
-                             (alist-get (or this-command
-                                            last-command)
-                                        parinfer-rust-treat-command-as))))
+              (if-let* ((mode
+                         (and (string= "smart" parinfer-rust--mode)
+                              (alist-get (or this-command
+                                             last-command)
+                                         parinfer-rust-treat-command-as))))
                   (progn
                     ;; By saying a command should run under another mode, we're
                     ;; going to simplify parinfer-rust's behavior and clear all
@@ -659,7 +659,7 @@ CHANGES."
                         (progn
                           (delete-region (point-min) (point-max))
                           (insert-buffer-substring new-buf))
-                      (setq was-replaced-safely (replace-buffer-contents new-buf 1)))
+                      (setq was-replaced-safely (replace-region-contents (point-min) (point-max) (lambda () new-buf) 1)))
                     (when (and (not was-replaced-safely)
                                (not (= window-start-pos (window-start))))
                       ;; If the buffer is not pixel aligned, this will cause a slight jump. But if
@@ -668,8 +668,8 @@ CHANGES."
                       (set-window-start (selected-window) window-start-pos)))
                   (kill-buffer new-buf)
                   (undo-amalgamate-change-group change-group)))))
-        (when-let ((new-x (parinfer-rust-get-answer answer :cursor-x))
-                   (new-line (parinfer-rust-get-answer answer :cursor-line)))
+        (when-let* ((new-x (parinfer-rust-get-answer answer :cursor-x))
+                    (new-line (parinfer-rust-get-answer answer :cursor-line)))
           (parinfer-rust--reposition-cursor new-x new-line))
         (setq parinfer-rust--previous-options options)
         (when parinfer-rust--change-tracker
@@ -719,8 +719,8 @@ parinfer autofix them, or if there is no reasonable way for
   ;; Disable change tracker for now because we are about to make changes in an change hook.
   (track-changes-unregister parinfer-rust--change-tracker)
   (setq-local parinfer-rust--change-tracker nil)
-  (if-let (issue (or (parinfer-rust--check-for-tabs)
-                     (parinfer-rust--check-for-indentation)))
+  (if-let* ((issue (or (parinfer-rust--check-for-tabs)
+                       (parinfer-rust--check-for-indentation))))
       (parinfer-rust-mode -1)
     ;; Re-enable change trackers now that we've succeeded in our tasks
     (setq-local parinfer-rust--change-tracker

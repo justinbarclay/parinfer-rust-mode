@@ -28,12 +28,11 @@
 
 (eval-when-compile
   (defvar parinfer-rust--error nil))
-
 (defvar parinfer-rust--error nil)
 
 (defun parinfer-rust-flymake (report-fn &rest _args)
   (funcall report-fn
-           (when-let ((error parinfer-rust--error))
+           (when-let* ((error parinfer-rust--error))
              (list
               (let ((loc (flymake-diag-region
                           (current-buffer)
