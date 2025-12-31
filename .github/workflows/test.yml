@@ -1,15 +1,16 @@
 name: "Build and Test"
 on:
   push:
-    - main
+    branches: [main]
   pull_request:
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        emacs_version: [27.2, 28.2, 29.1, 29.2, release-snapshot]
+        emacs_version: ["29.2", "30.2", release-snapshot]
 
     steps:
       - uses: actions/checkout@v6
