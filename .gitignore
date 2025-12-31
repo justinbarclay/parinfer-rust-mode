@@ -2,3 +2,6 @@ elpa-emacs
 .cask/*
 .node_modules/
 .DS_Store
+**.elc
+.eask
+.eask-deps
