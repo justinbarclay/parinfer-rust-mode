@@ -459,6 +459,9 @@ For more information see `parinfer-rust--option-type'")
 A curated list of pairs consisting of a command and the mode the
 command should be run in.")
 
+(defvar parinfer-rust--error nil
+  "The last error reported by parinfer-rust. For use with flycheck and flymake integrations.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local State
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -545,7 +548,7 @@ parinfer."
 
 This mutates the current reference to `OPTIONS'
 Ex:
-  ;; With parinfer-rust--previous-options being: \\='((:cursor-x . 1) (:cursor-line . 1))
+  ;; With `parinfer-rust--previous-options' being: \\='((:cursor-x . 1) (:cursor-line . 1))
 
   (parinfer-rust--set-options parinfer-rust--previous-options
                               \\='(:cursor-x 2 :cursor-line 2))
@@ -574,8 +577,6 @@ CHANGES."
                   changes)))
     (setq-local parinfer-rust--changes nil)
     options))
-
-(defvar parinfer-rust--error)           ; prevent byte-compiler warning below.
 
 (defun parinfer-rust--execute (&rest _args)
   "Run parinfer in the current buffer."

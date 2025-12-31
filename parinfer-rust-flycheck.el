@@ -26,7 +26,8 @@
 (eval-when-compile
   (declare-function flycheck-error-new-at "flycheck")
   (declare-function flycheck-define-generic-checker "flycheck")
-  (defvar parinfer-rust--error nil))
+  (defvar parinfer-rust--error nil)
+  (defvar parinfer-rust-mode nil))
 
 (require 'flycheck nil t)
 
@@ -44,7 +45,6 @@
                :id (plist-get error :name)
                :checker checker)))))
 
-(defvar parinfer-rust-mode)   ; prevent byte-compiler warning below
 (declare-function flycheck-verification-result-new "flycheck.el")
 
 (flycheck-define-generic-checker 'parinfer-rust
