@@ -22,7 +22,7 @@
             pname = "parinfer-rust-mode";
             version = "0.8.4";
             src = ./.;
-            nativeBuildInputs = with pkgs; [ emacsPackages.cask python3 which ];
+            nativeBuildInputs = with pkgs; [ emacsPackages.eask python3 which ];
             checkPhase = ''
               echo "Running tests"
               PARINFER_RUST_TEST=true
@@ -42,7 +42,7 @@
         };
         devShells.default = pkgs.mkShell {
           packages = with pkgs;
-            [ emacsPackages.cask python3 ];
+            [ eask-cli ];
         };
 
       });

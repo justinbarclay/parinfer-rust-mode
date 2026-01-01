@@ -1,13 +1,23 @@
-export EMACS ?= emacs
+EMACS ?= emacs
+EASK ?= eask
+# emacs version
+EVERSION =
 EMACSFLAGS = -Q -L .
-CASK = cask
+
+EASK_DIR = ./.eask/$(shell $(EMACS) --batch --eval "(princ emacs-version)")
+DEPS_FILE = .eask-deps
+
 VERSION = $(shell git describe --tags --abbrev=0 | sed 's/^v//')
 PKG = parinfer-rust-mode
 FILTER_FILES =  $(PKG)-autoloads.el test-helper.el run-tests.el generate-tests.el
+
 ELS_ALL = $(wildcard *.el)
 ELS = $(filter-out $(FILTER_FILES),$(ELS_ALL))
 OBJECTS = $(ELS:.el=.elc)
+
 OS = $(shell uname | tr '[:upper:]' '[:lower:]')
+
+
 .PHONY: elpa build version test lint clean elpaclean run-$(PKG)
 
 all: build
@@ -15,29 +25,34 @@ all: build
 -include .depend
 
 elpa-$(EMACS):
-	$(CASK) install
-	$(CASK) update
+	$(EASK) install --all
 	touch $@
 
 elpa: elpa-$(EMACS)
 
 build: version elpa
-	$(CASK) build
+	$(EASK) compile
 
 version:
 	$(EMACS) --version
 
+$(DEPS_FILE): Eask
+	$(EASK) install-deps --dev
+	@touch $@
+
+install-dev: $(DEPS_FILE)
+
 download:
-ifeq (,$(wildcard $(HOME)/.emacs.d/parinfer-rust/parinfer-rust-$(OS).so))
+ifeq (,$(wildcard $$(EASK_DIR)/parinfer-rust/parinfer-rust-$(OS).so))
 	mkdir -p $(HOME)/.emacs.d/parinfer-rust
-	curl -L "https://github.com/justinbarclay/parinfer-rust-emacs/releases/download/v0.4.7/parinfer-rust-$(OS).so" -o "$(HOME)/.emacs.d/parinfer-rust/parinfer-rust-$(OS).so"
+	curl -L "https://github.com/justinbarclay/parinfer-rust-emacs/releases/download/v0.4.7/parinfer-rust-$(OS).so" --create-dirs -o "$(EASK_DIR)/parinfer-rust/parinfer-rust-$(OS).so"
 endif
 
-test: clean elpa version download build
-	$(CASK) exec ert-runner test/**.el --quiet
+test: clean elpa version download build install-dev
+	$(EASK) test ert-runner test/**.el 2> /dev/null
 
 lint: version elpa
-	$(CASK) exec $(EMACS) -Q --batch \
+	$(EASK) exec $(EMACS) -Q --batch \
 		--eval "(setq enable-local-variables :safe)" \
 		-l elisp-lint.el -f elisp-lint-files-batch \
 		$(ELS)
@@ -49,4 +64,4 @@ clean:
 
 elpaclean: clean
 	rm -f elpa*
-	rm -rf .cask # Clean packages installed for development
+	rm -rf .eask # Clean packages installed for development

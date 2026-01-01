@@ -26,6 +26,7 @@
 (eval-when-compile
   (declare-function flycheck-error-new-at "flycheck")
   (declare-function flycheck-define-generic-checker "flycheck")
+  (declare-function flycheck-verification-result-new "flycheck.el")
   (defvar parinfer-rust--error nil)
   (defvar parinfer-rust-mode nil))
 
@@ -35,7 +36,7 @@
 
 (defun parinfer-rust--flycheck-start (checker callback)
   (funcall callback 'finished
-           (when-let ((error parinfer-rust--error))
+           (when-let* ((error parinfer-rust--error))
              (list
               (flycheck-error-new-at
                (+ 1 (plist-get error :line_no))
@@ -44,8 +45,6 @@
                (plist-get error :message)
                :id (plist-get error :name)
                :checker checker)))))
-
-(declare-function flycheck-verification-result-new "flycheck.el")
 
 (flycheck-define-generic-checker 'parinfer-rust
   "A checker for parinfer-rust."
